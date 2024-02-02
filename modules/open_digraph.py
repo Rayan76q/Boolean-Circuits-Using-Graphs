@@ -142,18 +142,13 @@ class open_digraph: # for open directed graph
         new_ID= self.new_id()
         new_node = node(new_ID,label=label)
         self.nodes[new_ID] = new_node
+        
         #ajout des arretes
         p = [(par , new_ID) for par in p_ids]
         c = [(new_ID, chi) for chi in c_ids]
         total=p+c
         mult = parents.values() + children.values()
         self.add_edges(total,mult)
-            def new_id(self):
-        id = 0
-        for i in self.nodes.keys():
-            if id==i:
-                id +=1
-        return id
     
     
 
