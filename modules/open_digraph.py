@@ -106,8 +106,29 @@ class open_digraph: # for open directed graph
 
     def add_output_id(self , id):
         self.outputs.append(id)
-    
 
+    def new_id(self):
+        id = 0
+        for i in self.nodes.keys():
+            if id==i :
+                id=+1
+        return id
+    
+    def add_node(self,label="",parents={},children={}):
+        p_ids = parents.keys()
+        c_ids= children.keys()
+        r= p_ids+c_ids
+        assert all(elem in r for elem in self.nodes.keys())
+        new_ID= self.new_id()
+        new_node = node(new_ID,label=label)
+        self.nodes[new_ID] = new_node
+        #ajout des arretes
+        p = [(par , new_ID) for par in p_ids]
+        c = [(new_ID, chi) for chi in c_ids]
+        total=p+c
+        mult = parents.values() + children.values()
+        self.add_edges(total,mult)
+        
     
 
     
