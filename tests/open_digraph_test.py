@@ -19,15 +19,18 @@ class InitTest(unittest.TestCase):
             
             
     def test_init_open_digraph(self):
-        n0 = [node(0, 'i', {}, {1:1})]
-        inp= [1,2,3] 
-        outputs = [5]
+        n0 = [node(0, 'a', {}, {}) , node(1, 'b', {}, {})]
+        inp= [] 
+        outputs = []
         
         g = open_digraph(inp , outputs , n0)
         self.assertEqual(g.nodes[0], n0[0])
         self.assertEqual(g.inputs, inp)
         self.assertEqual(g.outputs, outputs)
         self.assertIsNot(g.copy() , g)
+        print(g)
+        g.add_edge(0,1)
+        print(g)
         
             
             
