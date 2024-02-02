@@ -153,13 +153,4 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g.outputs, outputs)
 
 
-n0 = [node(0, 'i', {}, {1:1})]
-inp= [1,2,3] 
-outputs = [5]
-g = open_digraph(inp , outputs , n0)
-n = node(0, 'i', {}, {1:1})
-print(g)
 
-            
-"""if __name__ == '__main__': # the following code is called only when
-    unittest.main() """

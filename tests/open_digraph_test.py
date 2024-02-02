@@ -1,8 +1,9 @@
-import unittest
 import sys
 import os
-sys.path.insert(1, "../modules")
-import open_digraph
+root = r"C:\Users\HP\Desktop\vscode\graphs-and-logic"
+sys.path.append(root) # allows us to fetch files from the project root
+import unittest
+from modules.open_digraph import * 
 
 
 
@@ -30,3 +31,9 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g.outputs, outputs)
         if __name__ == '__main__': # the following code is called only when
             unittest.main() 
+            
+            
+            
+            
+if __name__ == '__main__': # the following code is called only when
+    unittest.main()
