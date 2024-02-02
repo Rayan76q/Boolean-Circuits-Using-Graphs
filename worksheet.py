@@ -1,4 +1,7 @@
 from modules.open_digraph import *
+import inspect
+
+print(inspect.getsource(inspect.getmodule(open_digraph)))
 
 
 n0 = [node(0, 'i', {}, {1:1})]

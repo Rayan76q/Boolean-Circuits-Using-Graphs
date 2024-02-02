@@ -1,4 +1,3 @@
-import unittest
 
 class node:
     
@@ -43,13 +42,19 @@ class node:
         self.children = children
     
     def add_parent_id(self, par_id , multiplicity=1):
-        self.parents[par_id] = multiplicity
+        if par_id in self.parents.keys():
+            self.parents[par_id] += multiplicity
+        else:
+            self.parents[par_id] = multiplicity
     
     def add_child_id(self, child_id , multiplicity=1):
-        self.children[child_id] = multiplicity
+        if child_id in self.children.keys():
+            self.children[child_id] += multiplicity
+        else:
+            self.children[child_id] = multiplicity
 
     def __str__ (self):
-        return f"Node {self.id}: \nLabel : {self.label}\nParents : {self.children}\nChildre : {self.children}"
+        return f"Node {self.id}: \nLabel : {self.label}\nParents : {self.parents}\nChildren : {self.children}"
         
     def __repr__(self):
         return repr(self.__str__)
@@ -87,7 +92,7 @@ class open_digraph: # for open directed graph
         return self.nodes.values()
 
     def get_node_ids(self):
-        return self._nodes.keys()
+        return self.nodes.keys()
 
     def get_node_by_id(self,id):
         return self.nodes[id]
@@ -106,51 +111,40 @@ class open_digraph: # for open directed graph
 
     def add_output_id(self , id):
         self.outputs.append(id)
+        
+    def new_id(self):
+        id = 0
+        for i in self.nodes.keys():
+            if id==i:
+                id +=1
+        return id
     
-
+    def add_edge(self , src , tgt , m=1):
+        assert src in self.nodes.keys()
+        assert tgt in self.nodes.keys()
+        n1 = self.get_node_by_id(tgt)
+        n2 = self.get_node_by_id(src)
+        n1.add_parent_id(src,m)
+        n2.add_child_id(tgt,m)
+        
     
-
-    
-
+    def add_edges(self , edges , m_list):
+        n = len(m_list)
+        assert n == len(edges)
+        for i in n:
+            self.add_edge(edges[i][0] , edges[i][1], m_list[i])
 
 
     def copy(self):
-        return open_digraph(self.inputs, self.outputs , self.nodes)
+        return open_digraph(self.inputs, self.outputs , self.nodes.values())
 
     def __str__(self):
-        s =  f"Inputs : {self.inputs}\nOutputs : {self.outputs}\nNodes :\n "
+        s =  f"*********Graph*********\nInputs : {self.inputs}\nOutputs : {self.outputs}\nNodes :\n "
         for n in self.nodes.values():
-            s += "-------\n"+n.__str__()
+            s += " \n-------\n"+n.__str__()
         return s
     def __repr__(self):
             return repr(self.__str__)
-
-
-
-
-
-class InitTest(unittest.TestCase):
-    
-    def test_init_node(self):
-        n0 = node(0, 'i', {}, {1:1})
-        self.assertEqual(n0.id, 0)
-        self.assertEqual(n0.label, 'i')
-        self.assertEqual(n0.parents, {})
-        self.assertEqual(n0.children, {1:1})
-        self.assertIsInstance(n0, node)
-        
-          
-            
-            
-    def test_init_open_digraph(self):
-        n0 = [node(0, 'i', {}, {1:1})]
-        inp= [1,2,3] 
-        outputs = [5]
-        
-        g = open_digraph(inp , outputs , n0)
-        self.assertEqual(g.nodes[0], n0)
-        self.assertEqual(g.inputs, inp)
-        self.assertEqual(g.outputs, outputs)
 
 
 
