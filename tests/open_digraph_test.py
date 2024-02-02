@@ -1,7 +1,6 @@
 import sys
 import os
-root = r"C:\Users\HP\Desktop\vscode\graphs-and-logic"
-sys.path.append(root) # allows us to fetch files from the project root
+sys.path.append(r"..") # allows us to fetch files from the project root
 import unittest
 from modules.open_digraph import * 
 
