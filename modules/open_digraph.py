@@ -20,6 +20,8 @@ class node:
         return node(self.id , self.label , self.parents , self.children)
 
     
+    
+    #Getters and setters
     def get_id(self):
         return self.id
     
@@ -41,12 +43,30 @@ class node:
     def set_children(self , children):
         self.children = children
     
+    
+    #Adding and removing
     def add_parent_id(self, par_id , multiplicity=1):
         self.parents[par_id] = multiplicity
     
     def add_child_id(self, child_id , multiplicity=1):
         self.children[child_id] = multiplicity
 
+    def remove_parent_once(self,id):
+        self.parents[id] -=1
+        if self.parents[id] == 0:
+            del  self.parents[id]
+            
+    def remove_child_once(self,id):
+        self.children[id] -=1
+        if self.children[id] == 0:
+            del  self.children[id]
+    
+    def remove_parent_id(self , id):
+        del  self.parents[id]
+    
+    def remove_child_id(self , id):
+        del  self.children[id]
+    
     def __str__ (self):
         return f"Node {self.id}: \nLabel : {self.label}\nParents : {self.parents}\nChildren : {self.children}"
         
@@ -113,6 +133,10 @@ class open_digraph: # for open directed graph
                 id+=1
         return id
     
+    
+    
+    #Adding and removing edges/nodes
+    
     def add_edge(self , src , tgt , m=1):
         assert src in self.nodes.keys()
         assert tgt in self.nodes.keys()
@@ -121,6 +145,7 @@ class open_digraph: # for open directed graph
         n2 = self.get_node_by_id(src)
         n1.add_parent_id(src,m)
         n2.add_child_id(tgt,m)
+    
     
     def add_edges(self , edges , m_list):
         n = len(m_list)
@@ -145,6 +170,42 @@ class open_digraph: # for open directed graph
         self.add_edges(total,mult)
     
     
+    
+    #**************A FACTORISER PLUS TARD*******************
+    
+    def remove_edge(self, src, tgt):
+        s = self.get_node_by_id(src)
+        t = self.get_node_by_id(tgt)
+        
+        s.remove_child_once(tgt)
+        t.remove_parent_once(src)
+    
+    def remove_parallel_edges(self, src ,tgt):
+        s = self.get_node_by_id(src)
+        t = self.get_node_by_id(tgt)
+        
+        s.remove_child_id(tgt)
+        t.remove_parent_id(src)
+        
+    def remove_node_by_id(self , id):
+        all_edges =  [(p,id) for p in self.get_node_by_id(id).get_parents()] + [(id,p) for p in self.get_node_by_id(id).get_children()]
+        
+        for pair in all_edges:
+            self.remove_parallel_edges(pair[0] , pair[1])
+        
+        del self.nodes[id]
+        
+    def remove_edges(self , edges):
+        for p in edges:
+            self.remove_edge(p[0] , p[1])
+    
+    def remove_several_parallel_edges(self ,edges):
+        for p in edges:
+            self.remove_parallel_edges(p[0] , p[1])
+            
+    def remove_nodes_by_id(self, ids):
+        for id in ids:
+            self.remove_node_by_id(id)
 
 
     def copy(self):
