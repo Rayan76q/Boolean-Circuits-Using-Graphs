@@ -42,16 +42,10 @@ class node:
         self.children = children
     
     def add_parent_id(self, par_id , multiplicity=1):
-        if par_id in self.parents.keys():
-            self.parents[par_id] += multiplicity
-        else:
-            self.parents[par_id] = multiplicity
+        self.parents[par_id] = multiplicity
     
     def add_child_id(self, child_id , multiplicity=1):
-        if child_id in self.children.keys():
-            self.children[child_id] += multiplicity
-        else:
-            self.children[child_id] = multiplicity
+        self.children[child_id] = multiplicity
 
     def __str__ (self):
         return f"Node {self.id}: \nLabel : {self.label}\nParents : {self.parents}\nChildren : {self.children}"
@@ -116,38 +110,38 @@ class open_digraph: # for open directed graph
         id = 0
         for i in self.nodes.keys():
             if id==i :
-                id=+1
+                id+=1
         return id
     
     def add_edge(self , src , tgt , m=1):
         assert src in self.nodes.keys()
         assert tgt in self.nodes.keys()
+        
         n1 = self.get_node_by_id(tgt)
         n2 = self.get_node_by_id(src)
         n1.add_parent_id(src,m)
         n2.add_child_id(tgt,m)
-        
     
     def add_edges(self , edges , m_list):
         n = len(m_list)
         assert n == len(edges)
-        for i in n:
-            self.add_edge(edges[i][0] , edges[i][1], m_list[i])
+        for i in range(n):
+            self.add_edge(edges[i][0] , edges[i][1], m=m_list[i])
     
     def add_node(self,label="",parents={},children={}):
-        p_ids = parents.keys()
-        c_ids= children.keys()
-        r= p_ids+c_ids
-        assert all(elem in r for elem in self.nodes.keys())
+        p_ids = list(parents.keys())
+        c_ids = list(children.keys())
+        r = p_ids + c_ids
+        assert ( (elem not in self.nodes.keys()) for elem in r)
         new_ID= self.new_id()
-        new_node = node(new_ID,label=label)
+        new_node = node(new_ID,label=label , parents=parents , children=children)
         self.nodes[new_ID] = new_node
         
         #ajout des arretes
         p = [(par , new_ID) for par in p_ids]
         c = [(new_ID, chi) for chi in c_ids]
         total=p+c
-        mult = parents.values() + children.values()
+        mult = list(parents.values()) + list(children.values())
         self.add_edges(total,mult)
     
     

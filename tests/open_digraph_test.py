@@ -31,6 +31,8 @@ class InitTest(unittest.TestCase):
         print(g)
         g.add_edge(0,1)
         print(g)
+        g.add_node('c', {1:1}, {0:2})
+        print(g)
         
             
             
