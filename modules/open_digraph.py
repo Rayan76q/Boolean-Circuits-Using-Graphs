@@ -168,7 +168,7 @@ class open_digraph: # for open directed graph
         total=p+c
         mult = list(parents.values()) + list(children.values())
         self.add_edges(total,mult)
-    
+        return new_ID
     
     
     #**************A FACTORISER PLUS TARD*******************
@@ -208,6 +208,57 @@ class open_digraph: # for open directed graph
             self.remove_node_by_id(id)
 
 
+    
+    def is_well_formed(self):
+        for i in self.inputs:
+            if i not in self.nodes.keys():
+                return False          
+            if self.get_node_by_id(i).get_children() != {}:
+                return False
+            children = [self.get_node_by_id(i).get_children().values()]
+            if len(children) !=1 or children[0] != 1:
+                return False
+            
+        for o in self.outputs:
+            if o not in self.nodes.keys():
+                return False          
+            if self.get_node_by_id(i).get_parents() != {}:
+                return False
+            parents = [self.get_node_by_id(i).get_parents().values()]
+            if len(parents) !=1 or parents[0] != 1:
+                return False
+            
+
+        for key , node in self.nodes.items():
+            if key != node.get_id():
+                return False
+
+            parents = self.get_node_by_ids(nodes.get_parents().keys())
+            for p in parents:
+                if p.get_children()[key] != node.get_parents()[p.get_id()]:
+                    return False
+            
+            children = self.get_node_by_ids(nodes.get_children().keys())
+            for c in children:
+                if p.get_parents()[key] != node.get_children()[c.get_id()]:
+                    return False
+        return True
+    
+    def assert_is_well_formed(self):
+        assert self.is_well_formed() , "The graph is not well formed."
+    
+    
+    def add_input_node(self , child_id):
+        assert child_id in self.nodes.values() , "Node connected to input doesn't exist."
+        new_inp = self.add_node(children={child_id: self.nodes[child_id]})
+        self.add_input_id(new_inp)
+    
+    def add_output_node(self , par_id):
+        assert par_id in self.nodes.values() , "Node connected to output doesn't exist."
+        new_out = self.add_node(parents={par_id: self.nodes[par_id]})
+        self.add_output_id(new_out)
+    
+    
     def copy(self):
         return open_digraph(self.inputs, self.outputs , self.nodes.values())
 
