@@ -1,3 +1,69 @@
+import random
+
+
+
+"""  Generating Random Lists and Matrices  """
+
+def random_int_list(n , bound):
+    return [random.randint(0 , bound) for k in range(n)]
+
+def random_int_matrix(n ,bound , null_diag = True):
+    if not null_diag:
+        return [random_int_list(n , bound) for k in range(n)]
+    return [random_int_list(k , bound)+[0]+random_int_list(n-k-1 , bound) for k in range(n)]
+
+
+def random_symetric_int_matrix(n , bound , null_diag = True):
+    mat = [[0 for j in range(n)] for i in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if i==j:
+                mat[i][j] = int(not null_diag)*random.randint(0,bound)
+            else:
+                v = random.randint(0,bound)
+                mat[i][j] = v
+                mat[j][i] = v
+    return mat
+
+
+def random_oriented_int_matrix(n , bound , null_diag = True):
+    m = random_int_matrix(n , bound , null_diag=null_diag)
+    for i in range(n):
+        for j in range(n):
+            if i<j and m[i][j] != 0 and m[j][i] != 0:
+                if random.randint(0,1):
+                    m[i][j] = 0
+                else:
+                    m[j][i] = 0
+    return m
+    
+
+
+def random_dag_int_matrix(n ,bound , null_diag = True):
+    mat = [[0 for j in range(n)] for i in range(n)]
+    if random.randint(0,1):
+        for i in range(n):
+            for j in range(n):
+                if i<=j:
+                    mat[i][j]= int(not(null_diag and i==j))*random.randint(0,bound)
+    else:
+        for i in range(n):
+            for j in range(n):
+                if i<=j:
+                    mat[j][i]= int(not(null_diag and i==j))*random.randint(0,bound)
+    return mat
+
+def print_m(m):
+    print("[")
+    for i in range(len(m)):
+        print(m[i].__str__() + ",")
+    print("]")
+    
+print_m(random_symetric_int_matrix(5,9))
+print_m(random_oriented_int_matrix(5,9))
+print_m(random_dag_int_matrix(5,9))
+
+
 
 class node:
     
