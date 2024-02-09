@@ -46,10 +46,16 @@ class node:
     
     #Adding and removing
     def add_parent_id(self, par_id , multiplicity=1):
-        self.parents[par_id] = multiplicity
+        if par_id in self.parents.keys():
+            self.parents[par_id] += multiplicity
+        else:
+            self.parents[par_id] = multiplicity
     
     def add_child_id(self, child_id , multiplicity=1):
-        self.children[child_id] = multiplicity
+        if child_id in self.children.keys():
+            self.children[child_id] += multiplicity
+        else:
+            self.children[child_id] = multiplicity
 
     def remove_parent_once(self,id):
         self.parents[id] -=1
@@ -121,9 +127,11 @@ class open_digraph: # for open directed graph
         self.outputs = outputs
 
     def add_input_id(self , id):
+        assert id in self.nodes.keys() , "Input Node doesn't exist in graph"
         self.inputs.append(id)
 
     def add_output_id(self , id):
+        assert id in self.nodes.keys(), "Ouput Node doesn't exist in graph"
         self.outputs.append(id)
     
     def new_id(self):
@@ -159,8 +167,9 @@ class open_digraph: # for open directed graph
         r = p_ids + c_ids
         assert ( (elem not in self.nodes.keys()) for elem in r)
         new_ID= self.new_id()
-        new_node = node(new_ID,label=label , parents=parents , children=children)
+        new_node = node(new_ID,label=label , parents={} , children={})
         self.nodes[new_ID] = new_node
+        
         
         #ajout des arretes
         p = [(par , new_ID) for par in p_ids]
@@ -249,13 +258,14 @@ class open_digraph: # for open directed graph
     
     
     def add_input_node(self , child_id):
-        assert child_id in self.nodes.values() , "Node connected to input doesn't exist."
-        new_inp = self.add_node(children={child_id: self.nodes[child_id]})
+        assert child_id in self.nodes.keys() , "Node connected to input doesn't exist."
+        new_inp = self.add_node(children={child_id: 1})
         self.add_input_id(new_inp)
     
     def add_output_node(self , par_id):
-        assert par_id in self.nodes.values() , "Node connected to output doesn't exist."
-        new_out = self.add_node(parents={par_id: self.nodes[par_id]})
+        assert par_id in self.nodes.keys() , "Node connected to output doesn't exist."
+        
+        new_out = self.add_node(parents={par_id: 1})
         self.add_output_id(new_out)
     
     
