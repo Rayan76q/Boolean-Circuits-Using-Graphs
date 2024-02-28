@@ -18,7 +18,7 @@ def random_symetric_int_matrix(n , bound , null_diag = True):
     for i in range(n):
         for j in range(n):
             if i==j:
-                mat[i][j] = int(not null_diag)*random.randint(0,bound)
+                mat[i][j] = int(not null_diag)* random.randint( 0,bound )
             else:
                 v = random.randint(0,bound)
                 mat[i][j] = v
@@ -37,9 +37,7 @@ def random_oriented_int_matrix(n , bound , null_diag = True):
                     m[j][i] = 0
     return m
     
-
-
-def random_dag_int_matrix(n ,bound , null_diag = True):
+def random_dag_int_matrix(n,bound,null_diag=True):
     mat = [[0 for j in range(n)] for i in range(n)]
     if random.randint(0,1):
         for i in range(n):
@@ -59,11 +57,34 @@ def print_m(m):
         print(m[i].__str__() + ",")
     print("]")
     
-print_m(random_symetric_int_matrix(5,9))
-print_m(random_oriented_int_matrix(5,9))
-print_m(random_dag_int_matrix(5,9))
 
+def graph_from_adjacency_matrix(mat):
+    graph = open_digraph([],[],[])
+    nodelistIDS= {i:node(i,"",{},{}) for i in range(len(mat[0]))}
+    graph.nodes= nodelistIDS
+    N = range(len(mat[0]))
+    for i in N:
+        iemeNode = nodelistIDS[i]
+        for j in N:
+            graph.add_edge(i,j,mat[i][j])
+    return graph
 
+def random_mat(n, bound, inputs=0, outputs=0, form="free"): 
+    if form=="free":
+        return random_int_matrix(n,bound,False) 
+    elif form=="DAG":
+        return random_dag_int_matrix(n,bound)
+    elif form=="oriented": 
+        return random_oriented_int_matrix(n,bound,False)
+    elif form=="loop-free": 
+        return random_int_matrix(n,bound)
+    elif form=="undirected":
+        return random_symetric_int_matrix(n,bound)
+    elif form=="loop-free undirected":
+        return random_symetric_int_matrix(n,bound)
+    elif form=="loop-free oriented": 
+        return random_oriented_int_matrix(n,bound)
+    else : return [[]]
 
 class node:
     
@@ -308,12 +329,12 @@ class open_digraph: # for open directed graph
             if key != node.get_id():
                 return False
 
-            parents = self.get_node_by_ids(nodes.get_parents().keys())
+            parents = self.get_node_by_ids(node.get_parents().keys())
             for p in parents:
                 if p.get_children()[key] != node.get_parents()[p.get_id()]:
                     return False
             
-            children = self.get_node_by_ids(nodes.get_children().keys())
+            children = self.get_node_by_ids(node.get_children().keys())
             for c in children:
                 if p.get_parents()[key] != node.get_children()[c.get_id()]:
                     return False
@@ -345,6 +366,46 @@ class open_digraph: # for open directed graph
         return s
     def __repr__(self):
             return repr(self.__str__)
-
-
-
+    
+    def adjacency_matrix(self):
+        mat = [[0 for _ in self.nodes] for _ in self.nodes]
+        node_ids = list(self.nodes.keys())
+        
+        for i in range(len(node_ids)):
+            node_i = self.nodes[node_ids[i]]
+            children_ids = list(node_i.get_children().keys())
+            
+            for j in range(len(node_ids)):
+                node_j = self.nodes[node_ids[j]]
+                if node_j.get_id() in children_ids:
+                    mat[i][j] = node_i.get_children()[node_j.get_id()]
+        
+        return mat
+        
+    def adj_mat(self):
+        mat = [[0 for _ in self.nodes] for _ in self.nodes]
+        node_ids = self.nodes
+        
+        for i in node_ids:
+            node_i = self.nodes[i]
+            children_ids = node_i.get_children()
+            
+            for j in node_ids:
+                node_j = self.nodes[j]
+                if node_j.get_id() in children_ids:
+                    mat[i][j] = children_ids[node_j.get_id()]
+        
+        return mat
+n0 = [node(0, 'a', {}, {}) , node(1, 'b', {}, {})]
+inp= [] 
+outputs = []
+g = open_digraph(inp , outputs , n0)
+g.add_node('c', {1:1}, {0:2})
+print_m(g.adj_mat())
+print_m(random_symetric_int_matrix(5,9,True))
+print_m(random_oriented_int_matrix(5,9))
+print_m(random_dag_int_matrix(5,9))
+rand_mat = random_dag_int_matrix(5,5,False)
+m = graph_from_adjacency_matrix(rand_mat)
+print(m)
+print_m(rand_mat)
