@@ -36,7 +36,7 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g.get_node_by_id(2).get_parents() , {1:1})
         self.assertEqual(g.get_node_by_id(0).get_parents() , {2:2})
         self.assertEqual(g.get_node_by_id(1).get_children() , {2:1})
-        g.remove_edge(0,1);
+        g.remove_edge(0,1)
         self.assertEqual(g.get_node_by_id(0).get_children() , {})
         self.assertEqual(g.get_node_by_id(1).get_parents() , {})
         g.remove_edge(2,0);    
@@ -74,5 +74,6 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g.get_node_by_id(4).get_children() , {})
         self.assertEqual(g.get_node_by_id(4).get_parents() , {2:1})
         self.assertEqual(g.get_outputs_ids() , [4])
+
 if __name__ == '__main__': # the following code is called only when
     unittest.main()
