@@ -1,6 +1,5 @@
 import random
-
-
+import os
 
 """  Generating Random Lists and Matrices  """
 
@@ -393,9 +392,88 @@ class open_digraph: # for open directed graph
             for j in node_ids:
                 node_j = self.nodes[j]
                 if node_j.get_id() in children_ids:
-                    mat[i][j] = children_ids[node_j.get_id()]
-        
+                    mat[i][j] = children_ids[node_j.get_id()]      
         return mat
+
+    def save_as_dot_file(self, path, verbose = True):
+        assert path[-4:] == ".dot" , "Not the right extension"
+        s = "digraph G {\n"
+        edges = ""
+        for iden, node in self.nodes.items():
+            s += f'v{iden} [label="{node.get_label()}"'
+            if verbose:
+                s += f"id = {iden}"
+            if iden in self.inputs:
+                s+= f",input={True} ,output={False} "
+            elif iden in self.inputs:
+                s+= f",input={False},output={True}"
+            else:
+                s+= f",input={False},output={False}"
+            s += "];\n"
+            for child in node.get_children():
+                edges += f"v{iden} -> v{child};\n"
+        edges += "}"
+        
+        f = open(path, "w")
+        f.write(s + edges)
+        f.close()
+
+
+    def display_graph(self,verbose=False):
+        self.save_as_dot_file("display.dot",verbose = verbose)
+        os.system("dot -Tpdf display.dot -o display.pdf ")
+        os.system("explorer.exe display.pdf")
+
+
+    @classmethod
+    def from_dot_file(cls , path):
+        assert path[-4:] == ".dot" , "Not the right extension"
+        f = open(path, "r")
+        text  = f.read()
+        g = open_digraph([], [] , {})
+        st = text.index("{")
+        end = text.index("}")
+        assert st != -1 and end != -1 , "Invalid File , no {}"
+        text = text[st+1 : end]
+        elements = text.split(";")
+        nodes_dict = {}  # dict from nodes names to their ids in the graph
+        for e in elements:
+            if "[" in e: #declaration de noeud
+                bracketstart = e.index("[")
+                bracketend = e.index("]")
+                if bracketstart != -1:
+                    node_name = e[:bracketstart].strip()
+                    att_val_liste = [(attribute.split("=")[0] ,attribute.split("=")[1].replace("\"" , "") ) for attribute in e[bracketstart+1 : bracketend].split(",")]
+                    for pair in att_val_liste:
+                        lab = ""
+                        inp = out = False
+                        if pair[0] == "label":
+                            lab = pair[1]
+                        elif pair[0] == "input":
+                            inp = True;
+                        elif  pair[0] == "output":
+                            out = True;
+                        assert not (inp and out) , "The node is both an input and output node"
+                        nid = g.add_node(label= lab)
+                        if inp:
+                            g.add_input_id(nid)
+                        if out:
+                            g.add_input_id(nid)
+                        nodes_dict[node_name] = nid
+            elif "->" in e:
+                chain = e.strip().split(" -> ")
+                parent = chain[0]
+                children = chain[1:]
+                if parent not in nodes_dict.keys():
+                    parent_id = g.add_node()
+                    nodes_dict[parent] = parent_id
+                for child in children:
+                    if child not in nodes_dict.keys():
+                        child_id = g.add_node()
+                        nodes_dict[child] = child_id
+                    g.add_edge(nodes_dict[parent],nodes_dict[child])
+        return g
+
 n0 = [node(0, 'a', {}, {}) , node(1, 'b', {}, {})]
 inp= [] 
 outputs = []
@@ -409,3 +487,5 @@ rand_mat = random_dag_int_matrix(5,5,False)
 m = graph_from_adjacency_matrix(rand_mat)
 print(m)
 print_m(rand_mat)
+test_g = open_digraph.from_dot_file("test.dot")
+test_g.display_graph()
