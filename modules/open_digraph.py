@@ -490,8 +490,6 @@ class open_digraph: # for open directed graph
                     g.add_edge(nodes_dict[parent],nodes_dict[child])
         return g
 
-
-    
     def is_acyclic(self):
         visited = set()
         stack = set()
@@ -520,7 +518,28 @@ class open_digraph: # for open directed graph
 
         return True  # No cycle found
 
+    def min_id(self):
+        m = -1
+        for node in self.nodes.values():
+            cid = node.get_id() 
+            if m==-1:
+                m = cid
+            elif cid < m:
+                m = cid
+        return cid
+    
+    def max_id(self):
+        m = -1
+        for node in self.nodes.values():
+            cid = node.get_id() 
+            elif cid > m:
+                m = cid
+        return cid
 
+    def shift_indices(self,n):
+        for node in self.nodes.values():
+            cid = node.get_id() 
+            node.set_id(cid+n)
 
 
 class bool_circ(open_digraph):
