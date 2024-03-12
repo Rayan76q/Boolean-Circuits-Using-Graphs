@@ -194,6 +194,7 @@ class open_digraph: # for open directed graph
         self.inputs = inputs
         self.outputs = outputs
         self.nodes = {node.id:node for node in nodes} 
+        self.assert_is_well_formed()
 
 
     @classmethod
@@ -323,7 +324,7 @@ class open_digraph: # for open directed graph
         for i in self.inputs:
             if i not in self.nodes.keys():
                 return False          
-            if self.get_node_by_id(i).get_children() != {}:
+            if self.get_node_by_id(i).get_parents() != {}:
                 return False
             children = [self.get_node_by_id(i).get_children().values()]
             if len(children) !=1 or children[0] != 1:
@@ -332,7 +333,7 @@ class open_digraph: # for open directed graph
         for o in self.outputs:
             if o not in self.nodes.keys():
                 return False          
-            if self.get_node_by_id(i).get_parents() != {}:
+            if self.get_node_by_id(i).get_children() != {}:
                 return False
             parents = [self.get_node_by_id(i).get_parents().values()]
             if len(parents) !=1 or parents[0] != 1:
@@ -343,14 +344,14 @@ class open_digraph: # for open directed graph
             if key != node.get_id():
                 return False
 
-            parents = self.get_node_by_ids(node.get_parents().keys())
+            parents = self.get_nodes_by_ids(node.get_parents().keys())
             for p in parents:
                 if p.get_children()[key] != node.get_parents()[p.get_id()]:
                     return False
             
-            children = self.get_node_by_ids(node.get_children().keys())
+            children = self.get_nodes_by_ids(node.get_children().keys())
             for c in children:
-                if p.get_parents()[key] != node.get_children()[c.get_id()]:
+                if c.get_parents()[key] != node.get_children()[c.get_id()]:
                     return False
         return True
     
@@ -532,7 +533,7 @@ class open_digraph: # for open directed graph
         m = -1
         for node in self.nodes.values():
             cid = node.get_id() 
-            elif cid > m:
+            if cid > m:
                 m = cid
         return cid
 
@@ -545,14 +546,18 @@ class open_digraph: # for open directed graph
 class bool_circ(open_digraph):
     def __init__(self, g):
         super().__init__(g.get_inputs_ids(), g.get_outputs_ids(), g.get_id_node_map())
+        self.is_well_formed()
     
     def is_well_formed(self):
-        if super().is_acyclic() :
-            node_dict= self.get_id_node_map()
-            for i in node_dict:
-                if(node_dict[i].get_label()==''):
-                    if node_dict[i].indegree()!=1 : return False
-        return True
+        super.assert_is_well_formed()
+        if super().is_acyclic():
+            for key,node in self.nodes:
+                if (node.get_label() == "" or node.get_label() == "1" or node.get_label() == "0") and node.indegree > 1 : 
+                        return False
+                elif node.get_label() != "" and node.outdegree() > 1 :
+                        return False
+            return True
+        return False
     
 
 n0 = [node(0, 'a', {}, {}) , node(1, 'b', {}, {})]
