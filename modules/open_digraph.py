@@ -164,8 +164,23 @@ class node:
         
     def __repr__(self):
         return repr(self.__str__)
-
-
+    
+    def indegree(self):
+        acc = 0
+        p = self.get_parents()
+        for i in p:
+            acc += p[i]
+        return acc
+    
+    def outdegree(self):
+        acc = 0
+        p = self.get_children()
+        for i in p:
+            acc += p[i]
+        return acc
+    
+    def degree(self):
+        return self.indegree()+self.outdegree()
 
 class open_digraph: # for open directed graph
     
@@ -395,6 +410,7 @@ class open_digraph: # for open directed graph
                     mat[i][j] = children_ids[node_j.get_id()]      
         return mat
 
+
     def save_as_dot_file(self, path, verbose = True):
         assert path[-4:] == ".dot" , "Not the right extension"
         s = "digraph G {\n"
@@ -473,6 +489,52 @@ class open_digraph: # for open directed graph
                         nodes_dict[child] = child_id
                     g.add_edge(nodes_dict[parent],nodes_dict[child])
         return g
+
+
+    
+    def is_acyclic(self):
+        visited = set()
+        stack = set()
+
+        def dfs(node):
+            if node in stack:
+                return False
+            if node in visited:
+                return True
+
+            visited.add(node)
+            stack.add(node)
+
+            children = node.get_children()
+            for child_id in children:
+                if not dfs(children[child_id]):
+                    return False  # Cycle detected
+
+            stack.remove(node)
+            return True
+
+        for id in self.nodes:
+            if self.nodes[id] not in visited:
+                if not dfs(self.nodes[id]):
+                    return False  # Cycle detected
+
+        return True  # No cycle found
+
+
+
+
+class bool_circ(open_digraph):
+    def __init__(self, g):
+        super().__init__(g.get_inputs_ids(), g.get_outputs_ids(), g.get_id_node_map())
+    
+    def is_well_formed(self):
+        if super().is_acyclic() :
+            node_dict= self.get_id_node_map()
+            for i in node_dict:
+                if(node_dict[i].get_label()==''):
+                    if node_dict[i].indegree()!=1 : return False
+        return True
+    
 
 n0 = [node(0, 'a', {}, {}) , node(1, 'b', {}, {})]
 inp= [] 
