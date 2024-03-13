@@ -128,6 +128,9 @@ class node:
     
     def set_children(self , children):
         self.children = children
+
+    def set_parents(self, parents):
+        self.parents = parents
     
     
     #Adding and removing
@@ -372,7 +375,8 @@ class open_digraph: # for open directed graph
     
     
     def copy(self):
-        return open_digraph(self.inputs, self.outputs , self.nodes.values())
+        new_nodes =[node.copy() for node in self.nodes.values()]
+        return open_digraph(self.inputs, self.outputs , new_nodes)
 
     def __str__(self):
         s =  f"*********Graph*********\nInputs : {self.inputs}\nOutputs : {self.outputs}\nNodes :\n "
@@ -467,9 +471,9 @@ class open_digraph: # for open directed graph
                         if pair[0] == "label":
                             lab = pair[1]
                         elif pair[0] == "input":
-                            inp = True;
+                            inp = True
                         elif  pair[0] == "output":
-                            out = True;
+                            out = True
                         assert not (inp and out) , "The node is both an input and output node"
                         nid = g.add_node(label= lab)
                         if inp:
@@ -506,7 +510,7 @@ class open_digraph: # for open directed graph
 
             children = node.get_children()
             for child_id in children:
-                if not dfs(children[child_id]):
+                if not dfs(self.nodes[child_id]):
                     return False  # Cycle detected
 
             stack.remove(node)
@@ -527,7 +531,7 @@ class open_digraph: # for open directed graph
                 m = cid
             elif cid < m:
                 m = cid
-        return cid
+        return m
     
     def max_id(self):
         m = -1
@@ -535,24 +539,61 @@ class open_digraph: # for open directed graph
             cid = node.get_id() 
             if cid > m:
                 m = cid
-        return cid
+        return m
 
     def shift_indices(self,n):
-        for node in self.nodes.values():
-            cid = node.get_id() 
-            node.set_id(cid+n)
+        def shift_keys(dictionary, m):
+            shifted_dict = {}
+            for key, value in dictionary.items():
+                new_key = key + m
+                shifted_dict[new_key] = value
+            return shifted_dict
+        
+        if n != 0:
+            for node in self.nodes.values():
+                cid = node.get_id() 
+                node.set_id(cid+n)
+                node.set_children(shift_keys(node.get_children(),n))
+                node.set_parents(shift_keys(node.get_parents(),n))
+            for i in self.inputs:
+                i+=n
+            for j in self.outputs:
+                j+= n
+    
+    def iparallel(self, g):
+        maxId1 = self.max_id()
+        print(maxId1)
+        minId2 = g.min_id()
+        print(minId2)
+        m = g.copy()
+        m.shift_indices(maxId1-minId2+1)
+        for key,nnode in m.get_id_node_map().items():
+            print(key,nnode)
+            self.nodes[key+maxId1-minId2+1]= nnode.copy()
+        for j in g.get_inputs_ids():
+            self.add_input_id(j)
+        for i in g.get_outputs_ids():
+            self.add_output_id(i)
+        
+    def icompose(self, f):
+        assert f.get_outputs == self.get_inputs() , "error, domains don't match"
+        return self.copy()
+        
+
+
 
 
 class bool_circ(open_digraph):
     def __init__(self, g):
-        super().__init__(g.get_inputs_ids(), g.get_outputs_ids(), g.get_id_node_map())
-        self.is_well_formed()
+        super().__init__(g.get_inputs_ids(), g.get_outputs_ids(), [])
+        self.nodes = g.get_id_node_map()
+        #self.is_well_formed()
     
     def is_well_formed(self):
-        super.assert_is_well_formed()
+        #super().assert_is_well_formed()
         if super().is_acyclic():
-            for key,node in self.nodes:
-                if (node.get_label() == "" or node.get_label() == "1" or node.get_label() == "0") and node.indegree > 1 : 
+            for key,node in self.nodes.items():
+                if (node.get_label() == "" or node.get_label() == "1" or node.get_label() == "0") and node.indegree() > 1 : 
                         return False
                 elif node.get_label() != "" and node.outdegree() > 1 :
                         return False
@@ -560,18 +601,28 @@ class bool_circ(open_digraph):
         return False
     
 
-n0 = [node(0, 'a', {}, {}) , node(1, 'b', {}, {})]
-inp= [] 
+n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
+inp= []
 outputs = []
-g = open_digraph(inp , outputs , n0)
-g.add_node('c', {1:1}, {0:2})
-print_m(g.adj_mat())
-print_m(random_symetric_int_matrix(5,9,True))
-print_m(random_oriented_int_matrix(5,9))
-print_m(random_dag_int_matrix(5,9))
+op = open_digraph(inp,outputs, n0)
+g = bool_circ(op)
+g.add_node('|', {1:1}, {0:1})
+# print_m(g.adj_mat())
+# print_m(random_symetric_int_matrix(5,9,True))
+# print_m(random_oriented_int_matrix(5,9))
+# print_m(random_dag_int_matrix(5,9))
 rand_mat = random_dag_int_matrix(5,5,False)
 m = graph_from_adjacency_matrix(rand_mat)
-print(m)
-print_m(rand_mat)
-test_g = open_digraph.from_dot_file("test.dot")
-test_g.display_graph()
+#print(m)
+#m.shift_indices(5)
+# print(m)
+# print_m(rand_mat)
+# print(g.is_well_formed())
+# empt = open_digraph([],[],{})
+#empt.iparallel(g)
+# print(empt)
+# print(g)
+g.iparallel(g.copy())
+print(g)
+#test_g = open_digraph.from_dot_file("modules/test.dot")
+#test_g.display_graph()
