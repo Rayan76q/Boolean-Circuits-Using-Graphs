@@ -329,16 +329,16 @@ class open_digraph: # for open directed graph
                 return False          
             if self.get_node_by_id(i).get_parents() != {}:
                 return False
-            children = [self.get_node_by_id(i).get_children().values()]
+            children = list(self.get_node_by_id(i).get_children().values())
             if len(children) !=1 or children[0] != 1:
                 return False
             
         for o in self.outputs:
             if o not in self.nodes.keys():
                 return False          
-            if self.get_node_by_id(i).get_children() != {}:
+            if self.get_node_by_id(o).get_children() != {}:
                 return False
-            parents = [self.get_node_by_id(i).get_parents().values()]
+            parents = list(self.get_node_by_id(o).get_parents().values())
             if len(parents) !=1 or parents[0] != 1:
                 return False
             
@@ -555,29 +555,69 @@ class open_digraph: # for open directed graph
                 node.set_id(cid+n)
                 node.set_children(shift_keys(node.get_children(),n))
                 node.set_parents(shift_keys(node.get_parents(),n))
-            for i in self.inputs:
-                i+=n
-            for j in self.outputs:
-                j+= n
-    
+            for i in range(len(self.inputs)):
+                self.inputs[i] += n
+            for i in range(len(self.outputs)):
+                self.outputs[i] += n
+        self.nodes = shift_keys(self.nodes, n)
+        
     def iparallel(self, g):
-        maxId1 = self.max_id()
-        print(maxId1)
-        minId2 = g.min_id()
-        print(minId2)
-        m = g.copy()
-        m.shift_indices(maxId1-minId2+1)
-        for key,nnode in m.get_id_node_map().items():
-            print(key,nnode)
-            self.nodes[key+maxId1-minId2+1]= nnode.copy()
+        minId1 = self.min_id()
+        maxId2 = g.max_id()
+        
+        self.shift_indices(-minId1+maxId2+1)
+        for key,nnode in g.get_id_node_map().items():
+            self.nodes[key]= nnode.copy()
         for j in g.get_inputs_ids():
             self.add_input_id(j)
         for i in g.get_outputs_ids():
             self.add_output_id(i)
-        
+     
+
+    def parallel(self, g):
+        c = self.copy()
+        c.iparallel(g)
+        return c
+
     def icompose(self, f):
-        assert f.get_outputs == self.get_inputs() , "error, domains don't match"
-        return self.copy()
+        assert len(f.get_outputs_ids()) == len(self.get_inputs_ids()) , "error, domains don't match"
+        self.iparallel(f)
+        print(self.get_inputs_ids())
+        old_input = [inp for inp in self.get_inputs_ids() if inp not in f.get_inputs_ids()] #inputs that used to belong to self after shift
+        print(old_input)
+        print(f.get_outputs_ids())
+        for k,f_out in enumerate(f.get_outputs_ids()):
+            self.get_node_by_id(f_out).set_children(self.get_node_by_id(old_input[k]).get_children())
+            self.remove_node_by_id(old_input[k])
+
+
+        for inp in self.get_inputs_ids():
+            if inp in old_input:
+                self.get_inputs_ids().remove(inp)
+
+        for out in self.get_outputs_ids():
+            if out  in f.get_outputs_ids():
+                self.get_outputs_ids().remove(out)
+
+
+    def compose(self , f):
+        c = self.copy()
+        c.icompose(f)
+        return c
+
+
+    @classmethod
+    def identity(cls , n):
+        g = cls.empty()
+        for i in range(n):
+            inp = g.add_node()
+            out = g.add_node()
+            g.add_edge(inp, out)
+            g.add_input_id(inp)
+            g.add_output_id(out)
+        return g
+
+
         
 
 
@@ -618,11 +658,27 @@ m = graph_from_adjacency_matrix(rand_mat)
 # print(m)
 # print_m(rand_mat)
 # print(g.is_well_formed())
-# empt = open_digraph([],[],{})
+empt = open_digraph([],[],{})
 #empt.iparallel(g)
 # print(empt)
 # print(g)
 g.iparallel(g.copy())
-print(g)
+#print(g)
+empt.iparallel(g)
+print(empt)
 #test_g = open_digraph.from_dot_file("modules/test.dot")
 #test_g.display_graph()
+
+n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
+inp2= [0,1]
+outputs2 = [5]
+
+n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {}),node(3, 'bb', {1:1}, {}) ]
+inp1= [0]
+outputs1 = [2,3]
+
+gtest1 = open_digraph(inp2,outputs2,n02)
+
+gtest2 = open_digraph(inp1,outputs1,n1)
+print(gtest2.compose(gtest1))
+print(open_digraph.identity(5))
