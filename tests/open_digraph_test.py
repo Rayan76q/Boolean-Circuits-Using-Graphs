@@ -142,10 +142,9 @@ class InitTest(unittest.TestCase):
         m = gtest2.compose(gtest1)
         testliste3 = m.component_list()
         #m.display_graph()
-        self.assertEqual(len(testliste3),2)
-        self.assertEqual(testliste3[0],open_digraph([],[8,9],[node(7,"ss",{},{8:1,9:1}),node(8,"zs",{7:1},{}),node(9,"bb",{7:1},{})]))
-        self.assertEqual(testliste3[1],open_digraph([0,1],[],[node(4,"5",{2:3,3:2},{5:1}),node(5,"&",{4:1},{}),
-                                                              node(2,"zs",{0:1},{4:3}),node(3,"ee",{1:1},{4:2}),node(1,"ss",{},{3:1}),node(0,"0",{},{2:1})]))
+        
+        self.assertEqual(len(testliste3),1)
+        self.assertEqual(testliste3[0],open_digraph([0,1],[8,9],[node(7,"ss",{5:1},{8:1,9:1}),node(8,"zs",{7:1},{}),node(9,"bb",{7:1},{}),node(4,"5",{2:3,3:2},{5:1}),node(5,"&",{4:1},{7:1}),node(2,"zs",{0:1},{4:3}),node(3,"ee",{1:1},{4:2}),node(1,"ss",{},{3:1}),node(0,"0",{},{2:1})]))
         self.assertEqual(len(testlist),1)
         self.assertEqual(gtest1.component_list()[0],gtest1)
         self.assertEqual(len(testliste2),2)
