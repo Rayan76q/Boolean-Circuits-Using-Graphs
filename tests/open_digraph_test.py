@@ -83,7 +83,7 @@ class InitTest(unittest.TestCase):
         op = open_digraph(inp,outputs, n0)
         g = bool_circ(op)
         g.add_node('|', {1:1}, {0:1})
-        empt = open_digraph([],[],{})
+        empt = open_digraph([],[],[])
         g_nouv = g.parallel(g)
         g.iparallel(g.copy())
         empt.iparallel(g)
@@ -102,7 +102,7 @@ class InitTest(unittest.TestCase):
         outputs1 = [2,3]
         gtest1 = open_digraph(inp2,outputs2,n02)
         gtest2 = open_digraph(inp1,outputs1,n1)
-        gtestNULL = gtest1.parallel(open_digraph([],[],{}))
+        gtestNULL = gtest1.parallel(open_digraph([],[],[]))
         gtestNULL2 = open_digraph([],[],{}).parallel(gtest2)
         gtest3 = gtest1.parallel(gtest2)
 
@@ -118,6 +118,34 @@ class InitTest(unittest.TestCase):
         g.add_node()
 
         self.assertNotEqual(g,empt)
+    
+    def test_connected_components(self):
+        #the code of list_components is so basic and so dependant on connected_components 
+        #that checking the first would be the same as checking the second
+        n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
+        n02bis = [node.copy() for node in n02]
+        inp2= [0,1]
+        outputs2 = [5]
+        n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {}),node(3, 'bb', {1:1}, {}) ]
+        inp1= [0]
+        outputs1 = [2,3]
+        gtest1 = open_digraph(inp2,outputs2,n02)
+        gtest2 = open_digraph(inp1,outputs1,n1)
+        testlist = gtest1.component_list()
+        testliste2 = gtest1.parallel(gtest2).component_list()
+        m = gtest2.compose(gtest1)
+        testliste3 = m.component_list()
+        #m.display_graph()
+        self.assertEqual(len(testliste3),2)
+        self.assertEqual(testliste3[0],open_digraph([],[8,9],[node(7,"ss",{},{8:1,9:1}),node(8,"zs",{7:1},{}),node(9,"bb",{7:1},{})]))
+        self.assertEqual(testliste3[1],open_digraph([0,1],[],[node(4,"5",{2:3,3:2},{5:1}),node(5,"&",{4:1},{}),
+                                                              node(2,"zs",{0:1},{4:3}),node(3,"ee",{1:1},{4:2}),node(1,"ss",{},{3:1}),node(0,"0",{},{2:1})]))
+        self.assertEqual(len(testlist),1)
+        self.assertEqual(gtest1.component_list()[0],gtest1)
+        self.assertEqual(len(testliste2),2)
+        gtest1.shift_indices(4)
+        self.assertEqual(testliste2[0],gtest1)
+        self.assertEqual(testliste2[1],gtest2)
 
 
 if __name__ == '__main__': # the following code is called only when
