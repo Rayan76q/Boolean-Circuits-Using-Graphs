@@ -399,6 +399,21 @@ class open_digraph: # for open directed graph
     ###Adding and removing edges/nodes
     
     def add_edge(self , src , tgt , m=1):
+        """
+            Adds an edge from a source node to a target node (directed edge) with a certain multiplicity
+            
+            Parameters:
+            -----------
+            
+            src (int) : id of the source node
+            tgt (int) : id of the target node
+            m (int) default=1 : the multiplicity of the edge
+            
+            Output:(inplace)
+            -------
+            
+            the graph with the added edge from the source node to the target node
+        """
         assert src in self.nodes.keys()
         assert tgt in self.nodes.keys()
         
@@ -409,12 +424,41 @@ class open_digraph: # for open directed graph
     
     
     def add_edges(self , edges , m_list):
+        """
+            Adds several edges with a given multiplicty for each edge
+            
+            Parameters:
+            -----------
+            
+            edges (list (int,int)) : a list of tuples containing the ids of (src, tgt) between which the edge will be added
+            m_list (list int) : the corresponding multiplicity of each edge 
+            
+            Output:(inplace)
+            -------
+            
+            the graph with the added edges 
+        """
         n = len(m_list)
         assert n == len(edges)
         for i in range(n):
             self.add_edge(edges[i][0] , edges[i][1], m=m_list[i])
     
     def add_node(self,label="",parents={},children={}):
+        """
+            Adds a node to the graph
+            
+            Parameters:
+            ----------
+            
+            Optional:
+            label (str) default = "": the label of the added node
+            parents ({(int) : (node)}) : the map of all the node's parents
+            children ({(int) : (node)}) : the map of all the node's children
+            
+            Output: (inplace)
+            -------
+            The graph with the node added to it
+        """
         p_ids = list(parents.keys())
         c_ids = list(children.keys())
         r = p_ids + c_ids
@@ -433,9 +477,22 @@ class open_digraph: # for open directed graph
         return new_ID
     
     
-    #**************A FACTORISER PLUS TARD*******************
     
     def remove_edge(self, src, tgt):
+        """
+            Removes an edge from a source node to a target node (directed edge) 
+            
+            Parameters:
+            -----------
+            
+            src (int) : id of the source node
+            tgt (int) : id of the target node
+            
+            Output:(inplace)
+            -------
+            
+            the graph with the removed edge from the source node to the target node
+        """
         s = self.get_node_by_id(src)
         t = self.get_node_by_id(tgt)
         
@@ -443,6 +500,20 @@ class open_digraph: # for open directed graph
         t.remove_parent_once(src)
     
     def remove_parallel_edges(self, src ,tgt):
+        """
+            Removes all edges from a source node to a target node (directed edges) 
+            
+            Parameters:
+            -----------
+            
+            src (int) : id of the source node
+            tgt (int) : id of the target node
+            
+            Output:(inplace)
+            -------
+            
+            the graph with the removed edges from the source node to the target node
+        """
         s = self.get_node_by_id(src)
         t = self.get_node_by_id(tgt)
         
@@ -450,6 +521,19 @@ class open_digraph: # for open directed graph
         t.remove_parent_id(src)
         
     def remove_node_by_id(self , id):
+        """
+            Removes a node from the graph given its id
+            
+            Parameters:
+            -----------
+            
+            id (int) : the id of the node to remove
+            
+            Output: (inplace)
+            -------
+            
+            The graph with the removed node and updated edges
+        """
         all_edges =  [(p,id) for p in self.get_node_by_id(id).get_parents()] + [(id,p) for p in self.get_node_by_id(id).get_children()]
         
         for pair in all_edges:
@@ -458,14 +542,53 @@ class open_digraph: # for open directed graph
         del self.nodes[id]
         
     def remove_edges(self , edges):
+        """
+            Removes a set of edges from pairs of source nodes to target nodes (directed edges) 
+            
+            Parameters:
+            -----------
+            
+            edges (list (int,int)) : a list of tuples containing the ids of (src, tgt) between which the edge will be removed
+            
+            Output:(inplace)
+            -------
+            
+            the graph with the removed edges from the source nodes to the target nodes
+        """
         for p in edges:
             self.remove_edge(p[0] , p[1])
     
     def remove_several_parallel_edges(self ,edges):
+        """
+            Removes all edges from pairs of source nodes to target nodes (directed edges) 
+            
+            Parameters:
+            -----------
+            
+            edges (list (int,int)) : a list of tuples containing the ids of (src, tgt) between which the edges will be removed
+            
+            Output:(inplace)
+            -------
+            
+            the graph with the removed edges from the source nodes to the target nodes
+        """
         for p in edges:
             self.remove_parallel_edges(p[0] , p[1])
             
     def remove_nodes_by_id(self, ids):
+        """
+            Removes nodes from the graph given their ids
+            
+            Parameters:
+            -----------
+            
+            ids (list (int)) : the ids of the nodes to remove
+            
+            Output: (inplace)
+            -------
+            
+            The graph with the removed nodes and updated edges
+        """
         for id in ids:
             self.remove_node_by_id(id)
 
@@ -476,6 +599,8 @@ class open_digraph: # for open directed graph
         """
             Checks if the graph is well formed 
         """
+        
+        #checks if all input_ids exist in the graph and if they have only one parent
         for i in self.inputs:
             if i not in self.nodes.keys():
                 return False          
@@ -484,7 +609,8 @@ class open_digraph: # for open directed graph
             children = list(self.get_node_by_id(i).get_children().values())
             if len(children) !=1 or children[0] != 1:
                 return False
-            
+        
+        #checks if all out_ids exist in the graph and if they have only one child
         for o in self.outputs:
             if o not in self.nodes.keys():
                 return False          
@@ -494,7 +620,7 @@ class open_digraph: # for open directed graph
             if len(parents) !=1 or parents[0] != 1:
                 return False
             
-
+        #checks if every child has the node in question as his parent and vice-versa
         for key , node in self.nodes.items():
             if key != node.get_id():
                 return False
@@ -515,11 +641,17 @@ class open_digraph: # for open directed graph
     
     
     def add_input_node(self , child_id):
+        """
+            Creats an input node that has the node with id child_id as child and adds it to the graph
+        """
         assert child_id in self.nodes.keys() , "Node connected to input doesn't exist."
         new_inp = self.add_node(children={child_id: 1})
         self.add_input_id(new_inp)
     
     def add_output_node(self , par_id):
+        """
+            Creats an output node that has the node with id parent_id as parent and adds it to the graph
+        """
         assert par_id in self.nodes.keys() , "Node connected to output doesn't exist."
         
         new_out = self.add_node(parents={par_id: 1})
@@ -527,6 +659,9 @@ class open_digraph: # for open directed graph
     
     
     def copy(self):
+        """
+            Returns a copy of the graph is independant in memory
+        """
         new_nodes =[node.copy() for node in self.nodes.values()]
         new_inputs = self.inputs.copy()
         new_outputs = self.outputs.copy()
@@ -541,6 +676,9 @@ class open_digraph: # for open directed graph
             return repr(self.__str__)
     
     def adjacency_matrix(self):
+        """
+            Returns the adjacency matrix associated to the graph
+        """
         mat = [[0 for _ in self.nodes] for _ in self.nodes]
         node_ids = self.nodes
         
@@ -556,6 +694,24 @@ class open_digraph: # for open directed graph
 
     @classmethod
     def random(cls,n, bound, inputs=0, outputs=0, form="free", number_generator=(lambda :random.betavariate(1,5))): 
+        """
+            Returns a graph derived from a randomly generated adjacency matrix
+            
+            Parameters:
+            -----------
+            n (int) : size of the adjacency matrix (i.e number of nodes)
+            bound (int) : max multiplicity of edges between two nodes
+            
+            Optional:
+            inputs (int) : number of input nodes in the graph
+            outputs (int) : number of output nodes in the graph
+            form (str) : string specifing constraints on the graph (acyclicity , orientation...)
+            number_generator (function): distribution function that generates a seed in [0,1] , must not use an argument
+
+            Rerturn:
+            --------
+                The graph associated to the adjacency matrix
+        """
         if form=="free":
             return graph_from_adjacency_matrix(random_int_matrix(n,bound,False), inp = inputs , out = outputs, number_generator=number_generator) 
         elif form=="DAG":
@@ -573,6 +729,21 @@ class open_digraph: # for open directed graph
         else : return [[]]
 
     def save_as_dot_file(self, path, verbose = True):
+        """
+            Saves the graph in the specified path using the .dot format
+
+            Parameters:
+            -----------
+            path (str) : the path of the file in which the graph will be saved
+            
+            
+            Optional:
+            verbose (bool) default=True : saves the ids of each node as an attribute for debugging puposes
+
+            Return:
+            -------
+                .dot file representing the graph
+        """
         assert path[-4:] == ".dot" , "Not the right extension"
         s = "digraph G {\n"
         edges = ""
@@ -597,6 +768,20 @@ class open_digraph: # for open directed graph
 
 
     def display_graph(self,verbose=False):
+        """
+            Displays the graph using the .dot format after converting it to pdf
+            Both the .dot and pdf file will be stored in the current directory
+            
+            Parameters:
+            -----------
+            
+            Optional:
+            verbose (bool) default=True : displays the ids of each node as an attribute for debugging puposes
+
+            Output:(inplace)
+            -------
+                Display of the graph's representation in pdf
+        """
         self.save_as_dot_file("display.dot",verbose = verbose)
         os.system("dot -Tpdf display.dot -o display.pdf ")
         if sys.platform.startswith('win'):
@@ -609,6 +794,18 @@ class open_digraph: # for open directed graph
 
     @classmethod
     def from_dot_file(cls , path):
+        """
+            Returns the graph associated to the .dot file located in the specified path 
+            
+            Parameters:
+            -----------
+            path (str) : the path of the file from which the graph will be read
+
+            Return:
+            -------
+                .dot file representing the graph
+            
+        """
         assert path[-4:] == ".dot" , "Not the right extension"
         f = open(path, "r")
         text  = f.read()
@@ -657,6 +854,13 @@ class open_digraph: # for open directed graph
         return g
 
     def is_acyclic(self):
+        """
+            Checks if the graph is acyclic using the Depth-First-Search algorithm
+            
+            Returns:
+            --------
+            True if the graph is acyclic, false otherwise
+        """
         visited = set()
         stack = set()
 
@@ -685,6 +889,9 @@ class open_digraph: # for open directed graph
         return True  # No cycle found
 
     def min_id(self):
+        """
+            Returns the id with the smallest value
+        """
         m = -1
         for node in self.nodes.values():
             cid = node.get_id() 
@@ -695,6 +902,9 @@ class open_digraph: # for open directed graph
         return m
     
     def max_id(self):
+        """
+            Returns the id with the biggest value
+        """
         m = -1
         for node in self.nodes.values():
             cid = node.get_id() 
@@ -703,6 +913,19 @@ class open_digraph: # for open directed graph
         return m
 
     def shift_indices(self,n):
+        """
+            Shifts the ids of all nodes in the graph by n
+            
+            Parameters:
+            -----------
+            
+            n (int) : the value with which the ids will be shifted , can be negative
+            
+            Output:(inplace)
+            -------
+            
+            The graph (self) with indices shifted by n
+        """
         def shift_keys(dictionary, m):
             shifted_dict = {}
             for key, value in dictionary.items():
@@ -723,6 +946,19 @@ class open_digraph: # for open directed graph
         self.nodes = shift_keys(self.nodes, n)
         
     def iparallel(self, g):
+        """
+            Appends the graph g in parallel to the current graph 
+            
+            Parameters:
+            -----------
+
+            g (open_digraph) : a graph that is going to be added in parallel
+            
+            Output: (inplace)
+            -------
+            
+            the current graph will now be composed of it's former structure plus the graph g next to it
+        """
         minId1 = self.min_id()
         maxId2 = g.max_id()
         
@@ -733,15 +969,42 @@ class open_digraph: # for open directed graph
             self.add_input_id(j)
         for i in g.get_outputs_ids():
             self.add_output_id(i)
-     
 
     def parallel(self, g):
+        """
+            Appends the graph g in parallel to the current graph 
+            
+            Parameters:
+            -----------
+
+            g (open_digraph) : a graph that is going to be added in parallel
+            
+            Return: 
+            -------
+            
+            A graph that will now be composed of current graph plus the graph g next to it
+        """
         c = self.copy()
         c.iparallel(g)
         return c
 
     def icompose(self, f):
-        assert len(f.get_outputs_ids()) == len(self.get_inputs_ids()) , "error, domains don't match"
+        """
+            Appends the graph f sequentially to the current graph connecting the inputs of self to the outputs of f
+            
+            Parameters:
+            -----------
+
+            f (open_digraph) : a graph to which self will be added in sequence
+            
+            Output: (inplace)
+            -------
+            
+            the current graph will now be composed of f followed by the former self in sequence
+        """
+        
+        assert len(f.get_outputs_ids()) == len(self.get_inputs_ids()) , "error, domains don't match."
+        
         self.iparallel(f)
         print(self.get_inputs_ids())
         old_input = [inp for inp in self.get_inputs_ids() if inp not in f.get_inputs_ids()] #inputs that used to belong to self after shift
@@ -762,6 +1025,19 @@ class open_digraph: # for open directed graph
 
 
     def compose(self , f):
+        """
+            Appends the graph f sequentially to the current graph connecting the inputs of self to the outputs of f
+            
+            Parameters:
+            -----------
+
+            f (open_digraph) : a graph to which self will be added in sequence
+            
+            Return: 
+            -------
+            
+            A graph that will now be composed of f followed by the former self in sequence
+        """
         c = self.copy()
         c.icompose(f)
         return c
@@ -769,6 +1045,9 @@ class open_digraph: # for open directed graph
 
     @classmethod
     def identity(cls , n):
+        """
+            Returns the identity graph for n entries (n inputs , n outputs)
+        """
         g = cls.empty()
         for i in range(n):
             inp = g.add_node()
@@ -780,7 +1059,13 @@ class open_digraph: # for open directed graph
 
 
     def connected_components(self):
-        
+        """
+            Returns the number of connected components as well as a map from each node to the connected component they belong to
+            
+            Returns:
+            --------
+            A tuple (int , dict) : the number of connecter components / a dictionary with all the nodes as ids and their respective connected component
+        """
         visited = set()
         nb = 0
         component_dict = {}
@@ -810,6 +1095,13 @@ class open_digraph: # for open directed graph
         return (nb , component_dict)
 
     def component_list(self):
+        """
+            Returns the number of connected components as well as a map from each node to the connected component they belong to
+            
+            Returns:
+            --------
+            A tuple (int , dict) : the number of connecter components / a dictionary with all the nodes as ids and their respective connected component
+        """
         nb , dict_ = self.connected_components()
         componentMat = [[] for i in range(nb)]
         for i in dict_ :
@@ -823,13 +1115,20 @@ class open_digraph: # for open directed graph
         return componentMat
 
 class bool_circ(open_digraph):
+    
+    ###Constructor
+    
     def __init__(self, g):
         super().__init__(g.get_inputs_ids(), g.get_outputs_ids(), [])
         self.nodes = g.get_id_node_map()
-        #self.is_well_formed()
+        self.is_well_formed()
+    
     
     def is_well_formed(self):
-        #super().assert_is_well_formed()
+        """
+            Checks if the boolean circuit is well-formed
+        """
+        super().assert_is_well_formed()
         if super().is_acyclic():
             for key,node in self.nodes.items():
                 if (node.get_label() == "" or node.get_label() == "1" or node.get_label() == "0") and node.indegree() > 1 : 
