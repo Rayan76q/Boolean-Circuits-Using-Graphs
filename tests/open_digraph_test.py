@@ -74,6 +74,30 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g.get_node_by_id(4).get_children() , {})
         self.assertEqual(g.get_node_by_id(4).get_parents() , {2:1})
         self.assertEqual(g.get_outputs_ids() , [4])
+    
+    def test_parallel(self):
+        n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
+        inp= []
+        outputs = []
+        op = open_digraph(inp,outputs, n0)
+        g = bool_circ(op)
+        g.add_node('|', {1:1}, {0:1})
+        empt = open_digraph([],[],{})
+        g.iparallel(g.copy())
+        empt.iparallel(g)
+        self.assetEqual(g,empt)
+        g.add_node()
+        self.assertNotEqual(g,empt)
+
+        n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
+        inp2= [0,1]
+        outputs2 = [5]
+        n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {}),node(3, 'bb', {1:1}, {}) ]
+        inp1= [0]
+        outputs1 = [2,3]
+        gtest1 = open_digraph(inp2,outputs2,n02)
+        gtest2 = open_digraph(inp1,outputs1,n1)
+
 
 if __name__ == '__main__': # the following code is called only when
     unittest.main()

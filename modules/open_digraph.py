@@ -599,24 +599,24 @@ class open_digraph: # for open directed graph
         stack = set()
 
         def dfs(node):
-            if node in stack:
+            if node.get_id() in stack:
                 return False
-            if node in visited:
+            if node.get_id() in visited:
                 return True
 
-            visited.add(node)
-            stack.add(node)
+            visited.add(node.get_id())
+            stack.add(node.get_id())
 
             children = node.get_children()
             for child_id in children:
                 if not dfs(self.nodes[child_id]):
                     return False  # Cycle detected
 
-            stack.remove(node)
+            stack.remove(node.get_id())
             return True
 
         for id in self.nodes:
-            if self.nodes[id] not in visited:
+            if id not in visited:
                 if not dfs(self.nodes[id]):
                     return False  # Cycle detected
 
@@ -725,11 +725,11 @@ class open_digraph: # for open directed graph
 
 
         def dfs(node):
-            if node in visited:
+            if node.get_id() in visited:
                 component_dict[node.get_id()] = nb 
             
             else:
-                visited.add(node)
+                visited.add(node.get_id())
                 children = node.get_children()
                 parents = node.get_parents()
                 for child_id in children:
@@ -742,7 +742,7 @@ class open_digraph: # for open directed graph
                 
         
         for node in self.nodes.values():
-            if node not in visited:
+            if node.get_id() not in visited:
                 dfs(node)
                 nb +=1
         return (nb , component_dict)
@@ -810,18 +810,25 @@ n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {
 inp2= [0,1]
 outputs2 = [5]
 
-n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {}),node(3, 'bb', {1:1}, {}) ]
+n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1,2:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {1:1}),node(3, 'bb', {1:1}, {}) ]
 inp1= [0]
-outputs1 = [2,3]
+outputs1 = [3]
 
 gtest1 = open_digraph(inp2,outputs2,n02)
 
 gtest2 = open_digraph(inp1,outputs1,n1)
 
 #test3 = open_digraph([],[],n0)
-# print(gtest2.parallel(gtest1).connected_components())
-
+print(gtest2.parallel(gtest1).connected_components())
+print(gtest2.is_acyclic())
+print(gtest2)
+n = gtest2.add_node(node(4,"a",{},{0:1}))
+gtest2.add_edge(3,n)
+#gtest2.add_edge(n,0)
+print(gtest2.is_acyclic())
+print(gtest2)
 # for g in gtest2.parallel(gtest1).component_list()[:1]:
 #     g.display_graph()
 #print(open_digraph.identity(5))
+g.add_node()
 print(g == empt)
