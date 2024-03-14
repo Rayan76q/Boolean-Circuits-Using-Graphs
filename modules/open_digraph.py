@@ -1006,12 +1006,15 @@ class open_digraph: # for open directed graph
         assert len(f.get_outputs_ids()) == len(self.get_inputs_ids()) , "error, domains don't match."
         
         self.iparallel(f)
-        print(self.get_inputs_ids())
         old_input = [inp for inp in self.get_inputs_ids() if inp not in f.get_inputs_ids()] #inputs that used to belong to self after shift
-        print(old_input)
-        print(f.get_outputs_ids())
         for k,f_out in enumerate(f.get_outputs_ids()):
-            self.get_node_by_id(f_out).set_children(self.get_node_by_id(old_input[k]).get_children())
+            child_dict = self.get_node_by_id(old_input[k]).get_children()
+            self.get_node_by_id(f_out).set_children(child_dict)
+            self.get_node_by_id(old_input[k]).set_children({})
+            for i in child_dict:
+                parents_of_child = self.get_node_by_id(i).get_parents()
+                multiplicity_of_old_parent = parents_of_child.pop(old_input[k])
+                parents_of_child[f_out]=multiplicity_of_old_parent
             self.remove_node_by_id(old_input[k])
 
 
@@ -1178,9 +1181,10 @@ class bool_circ(open_digraph):
 # gtest1 = open_digraph(inp2,outputs2,n02)
 
 # gtest2 = open_digraph(inp1,outputs1,n1)
-
+# print(gtest2.component_list()[0])
+# print(gtest2.component_list()[0] == gtest2)
 # #test3 = open_digraph([],[],n0)
-# print(gtest2.parallel(gtest1).connected_components())
+#print(gtest2.parallel(gtest1).connected_components())
 # print(gtest2.is_acyclic())
 # print(gtest2)
 # n = gtest2.add_node(node(4,"a",{},{0:1}))
