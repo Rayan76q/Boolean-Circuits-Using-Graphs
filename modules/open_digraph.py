@@ -94,7 +94,7 @@ def identity_matrix(n):
     return identity
 
 def copy_matrix(mat):
-    return [row[:] for row in matrix]
+    return [row[:] for row in mat]
 
 def degree_matrix(mat):
     """ Meant for adjacency matrices """
@@ -232,6 +232,13 @@ class node:
     def __repr__(self):
         return repr(self.__str__)
     
+    def __eq__(self,g):
+        if type(self)!=type(g):
+            return False
+        return self.id == g.get_id() and self.label == g.get_label() and self.children == g.get_children() and self.parents == g.get_parents()
+    def __ne__(self,g):
+        return not self.__eq__(g)
+    
     def indegree(self):
         acc = 0
         p = self.get_parents()
@@ -262,6 +269,27 @@ class open_digraph: # for open directed graph
         self.outputs = outputs
         self.nodes = {node.id:node for node in nodes} 
         self.assert_is_well_formed()
+
+    def __eq__(self, g):
+        if len(self.inputs) != len(g.get_inputs_ids()):
+            return False
+        if len(self.outputs) != len(g.get_outputs_ids()):
+            return False
+        for i in self.inputs:
+            if i not in g.get_inputs_ids():
+                return False
+        for j in self.outputs:
+            if j not in g.get_outputs_ids():
+                return False
+        # Check if nodes are equal
+        if len(self.nodes) != len(g.get_id_node_map()):
+            return False
+        for node in self.nodes.values():
+            if node not in g.get_nodes():
+                return False
+        return True
+    def __ne__(self,g):
+        return not self.__eq__(g)
 
 
     @classmethod
@@ -721,26 +749,16 @@ class open_digraph: # for open directed graph
 
     def component_list(self):
         nb , dict_ = self.connected_components()
-        coMat = [[] for i in range(nb)]
+        componentMat = [[] for i in range(nb)]
         for i in dict_ :
-            coMat[dict_[i]].append(self.nodes[i])
+            componentMat[dict_[i]].append(self.nodes[i])
         
         
         for i in range(nb):
             component_input = [inp for inp in self.get_inputs_ids() if dict_[inp]==i]
             component_output = [out for out in self.get_outputs_ids() if dict_[out]==i]
-            coMat[i] = open_digraph(component_input , component_output , coMat[i])
-        return coMat
-
-
-
-
-            
-
-        
-
-
-
+            componentMat[i] = open_digraph(component_input , component_output , componentMat[i])
+        return componentMat
 
 class bool_circ(open_digraph):
     def __init__(self, g):
@@ -801,10 +819,9 @@ gtest1 = open_digraph(inp2,outputs2,n02)
 gtest2 = open_digraph(inp1,outputs1,n1)
 
 #test3 = open_digraph([],[],n0)
-print(gtest2.parallel(gtest1).connected_components())
+# print(gtest2.parallel(gtest1).connected_components())
 
-for g in gtest2.parallel(gtest1).component_list()[:1]:
-    g.display_graph()
+# for g in gtest2.parallel(gtest1).component_list()[:1]:
+#     g.display_graph()
 #print(open_digraph.identity(5))
-
-
+print(g == empt)
