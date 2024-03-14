@@ -265,7 +265,7 @@ class open_digraph: # for open directed graph
 
     @classmethod
     def empty(cls):
-        return open_digraph([],[],{})
+        return open_digraph([],[],[])
 
     def get_inputs_ids(self):
         return self.inputs
@@ -439,7 +439,9 @@ class open_digraph: # for open directed graph
     
     def copy(self):
         new_nodes =[node.copy() for node in self.nodes.values()]
-        return open_digraph(self.inputs, self.outputs , new_nodes)
+        new_inputs = self.inputs.copy()
+        new_outputs = self.outputs.copy()
+        return open_digraph(new_inputs, new_outputs , new_nodes)
 
     def __str__(self):
         s =  f"*********Graph*********\nInputs : {self.inputs}\nOutputs : {self.outputs}\nNodes :\n "
@@ -680,15 +682,10 @@ class open_digraph: # for open directed graph
             g.add_output_id(out)
         return g
 
-    def count_connected_components(self)
-        adj = self.adjacency_matrix()
-        return kernel_dim(laplacian(adj))
-
 
     def connected_components(self):
         
         visited = set()
-        stack = set()
         nb = 0
         component_dict = {}
 
@@ -699,18 +696,36 @@ class open_digraph: # for open directed graph
             
             else:
                 visited.add(node)
-                stack.add(node)
                 children = node.get_children()
+                parents = node.get_parents()
                 for child_id in children:
-                    dfs(self.nodes[child_id]):
-                stack.remove(node)
-            
-        for id in self.nodes:
-            if self.nodes[id] not in visited:
-                nb +=1
-                dfs(self.nodes[id]):
+                    dfs(self.nodes[child_id])
+                    component_dict[child_id] = nb 
+                for parent_id in parents:
+                    dfs(self.nodes[parent_id])
+                    component_dict[parent_id] = nb 
+
                 
+        
+        for node in self.nodes.values():
+            if node not in visited:
+                dfs(node)
+                nb +=1
         return (nb , component_dict)
+
+    def component_list(self):
+        nb , dict_ = self.connected_components()
+        coMat = [[] for i in range(nb)]
+        for i in dict_ :
+            coMat[dict_[i]].append(self.nodes[i])
+        
+        
+        for i in range(nb):
+            component_input = [inp for inp in self.get_inputs_ids() if dict_[inp]==i]
+            component_output = [out for out in self.get_outputs_ids() if dict_[out]==i]
+            coMat[i] = open_digraph(component_input , component_output , coMat[i])
+        return coMat
+
 
 
 
@@ -763,7 +778,7 @@ empt = open_digraph([],[],{})
 g.iparallel(g.copy())
 #print(g)
 empt.iparallel(g)
-print(empt)
+#print(empt)
 #test_g = open_digraph.from_dot_file("modules/test.dot")
 #test_g.display_graph()
 
@@ -778,7 +793,13 @@ outputs1 = [2,3]
 gtest1 = open_digraph(inp2,outputs2,n02)
 
 gtest2 = open_digraph(inp1,outputs1,n1)
-print(gtest2.compose(gtest1))
-print(open_digraph.identity(5))
+
+gtest2.parallel(gtest1).display_graph()
+#test3 = open_digraph([],[],n0)
+print(gtest2.parallel(gtest1).connected_components())
+
+for g in gtest2.parallel(gtest1).component_list():
+    print(g)
+#print(open_digraph.identity(5))
 
 
