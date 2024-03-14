@@ -684,6 +684,38 @@ class open_digraph: # for open directed graph
         adj = self.adjacency_matrix()
         return kernel_dim(laplacian(adj))
 
+
+    def connected_components(self):
+        
+        visited = set()
+        stack = set()
+        nb = 0
+        component_dict = {}
+
+
+        def dfs(node):
+            if node in visited:
+                component_dict[node.get_id()] = nb 
+            
+            else:
+                visited.add(node)
+                stack.add(node)
+                children = node.get_children()
+                for child_id in children:
+                    dfs(self.nodes[child_id]):
+                stack.remove(node)
+            
+        for id in self.nodes:
+            if self.nodes[id] not in visited:
+                nb +=1
+                dfs(self.nodes[id]):
+                
+        return (nb , component_dict)
+
+
+
+            
+
         
 
 
