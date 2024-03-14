@@ -86,20 +86,19 @@ def graph_from_adjacency_matrix(mat , inp = 0 , out = 0):
         iemeNode = nodelistIDS[i]
         for j in N:
             graph.add_edge(i,j,mat[i][j])
-
+    
     ids = list(graph.get_node_ids()).copy()
-
     for i in range(inp):
         choice = random.choice(ids)
         graph.add_input_id(choice)
         ids.remove(choice)
-
+        
     for i in range(out):
         choice = random.choice(ids)
         graph.add_output_id(choice)
         ids.remove(choice)
-
     return graph
+
 
 def identity_matrix(n):
     identity = [[0] * n for i in range(n)]
@@ -265,7 +264,12 @@ class node:
     def __repr__(self):
         return repr(self.__str__)
     
-    
+    def __eq__(self,g):
+        if type(self)!=type(g):
+            return False
+        return self.id == g.get_id() and self.label == g.get_label() and self.children == g.get_children() and self.parents == g.get_parents()
+    def __ne__(self,g):
+        return not self.__eq__(g)
     
     def indegree(self):
         """
@@ -310,6 +314,27 @@ class open_digraph: # for open directed graph
         self.outputs = outputs
         self.nodes = {node.id:node for node in nodes} 
         self.assert_is_well_formed()
+
+    def __eq__(self, g):
+        if len(self.inputs) != len(g.get_inputs_ids()):
+            return False
+        if len(self.outputs) != len(g.get_outputs_ids()):
+            return False
+        for i in self.inputs:
+            if i not in g.get_inputs_ids():
+                return False
+        for j in self.outputs:
+            if j not in g.get_outputs_ids():
+                return False
+        # Check if nodes are equal
+        if len(self.nodes) != len(g.get_id_node_map()):
+            return False
+        for node in self.nodes.values():
+            if node not in g.get_nodes():
+                return False
+        return True
+    def __ne__(self,g):
+        return not self.__eq__(g)
 
 
     @classmethod
@@ -515,14 +540,6 @@ class open_digraph: # for open directed graph
     def __repr__(self):
             return repr(self.__str__)
     
-    
-    
-    def id_dictionary(self):
-        d = {}
-        for i,id_node in enumerate(self.get_node_ids()):
-            d[id_node] = i
-        return d
-    
     def adjacency_matrix(self):
         mat = [[0 for _ in self.nodes] for _ in self.nodes]
         node_ids = self.nodes
@@ -644,24 +661,24 @@ class open_digraph: # for open directed graph
         stack = set()
 
         def dfs(node):
-            if node in stack:
+            if node.get_id() in stack:
                 return False
-            if node in visited:
+            if node.get_id() in visited:
                 return True
 
-            visited.add(node)
-            stack.add(node)
+            visited.add(node.get_id())
+            stack.add(node.get_id())
 
             children = node.get_children()
             for child_id in children:
                 if not dfs(self.nodes[child_id]):
                     return False  # Cycle detected
 
-            stack.remove(node)
+            stack.remove(node.get_id())
             return True
 
         for id in self.nodes:
-            if self.nodes[id] not in visited:
+            if id not in visited:
                 if not dfs(self.nodes[id]):
                     return False  # Cycle detected
 
@@ -770,11 +787,11 @@ class open_digraph: # for open directed graph
 
 
         def dfs(node):
-            if node in visited:
+            if node.get_id() in visited:
                 component_dict[node.get_id()] = nb 
             
             else:
-                visited.add(node)
+                visited.add(node.get_id())
                 children = node.get_children()
                 parents = node.get_parents()
                 for child_id in children:
@@ -787,33 +804,23 @@ class open_digraph: # for open directed graph
                 
         
         for node in self.nodes.values():
-            if node not in visited:
+            if node.get_id() not in visited:
                 dfs(node)
                 nb +=1
         return (nb , component_dict)
 
     def component_list(self):
         nb , dict_ = self.connected_components()
-        coMat = [[] for i in range(nb)]
+        componentMat = [[] for i in range(nb)]
         for i in dict_ :
-            coMat[dict_[i]].append(self.nodes[i])
+            componentMat[dict_[i]].append(self.nodes[i])
         
         
         for i in range(nb):
             component_input = [inp for inp in self.get_inputs_ids() if dict_[inp]==i]
             component_output = [out for out in self.get_outputs_ids() if dict_[out]==i]
-            coMat[i] = open_digraph(component_input , component_output , coMat[i])
-        return coMat
-
-
-
-
-            
-
-        
-
-
-
+            componentMat[i] = open_digraph(component_input , component_output , componentMat[i])
+        return componentMat
 
 class bool_circ(open_digraph):
     def __init__(self, g):
@@ -833,51 +840,57 @@ class bool_circ(open_digraph):
         return False
     
 
-n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
-inp= []
-outputs = []
-op = open_digraph(inp,outputs, n0)
-g = bool_circ(op)
-g.add_node('|', {1:1}, {0:1})
-# print_m(g.adj_mat())
-# print_m(random_symetric_int_matrix(5,9,True))
-# print_m(random_oriented_int_matrix(5,9))
-# print_m(random_dag_int_matrix(5,9))
-rand_mat = random_dag_int_matrix(5,5,False)
-m = graph_from_adjacency_matrix(rand_mat)
-#print(m)
-#m.shift_indices(5)
-# print(m)
-# print_m(rand_mat)
-# print(g.is_well_formed())
-empt = open_digraph([],[],{})
-#empt.iparallel(g)
-# print(empt)
-# print(g)
-g.iparallel(g.copy())
-#print(g)
-empt.iparallel(g)
-#print(empt)
-#test_g = open_digraph.from_dot_file("modules/test.dot")
-#test_g.display_graph()
+# n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
+# inp= []
+# outputs = []
+# op = open_digraph(inp,outputs, n0)
+# g = bool_circ(op)
+# g.add_node('|', {1:1}, {0:1})
+# # print_m(g.adj_mat())
+# # print_m(random_symetric_int_matrix(5,9,True))
+# # print_m(random_oriented_int_matrix(5,9))
+# # print_m(random_dag_int_matrix(5,9))
+# rand_mat = random_dag_int_matrix(5,5,False)
+# m = graph_from_adjacency_matrix(rand_mat)
+# #print(m)
+# #m.shift_indices(5)
+# # print(m)
+# # print_m(rand_mat)
+# # print(g.is_well_formed())
+# empt = open_digraph([],[],{})
+# #empt.iparallel(g)
+# # print(empt)
+# # print(g)
+# g.iparallel(g.copy())
+# #print(g)
+# empt.iparallel(g)
+# #print(empt)
+# #test_g = open_digraph.from_dot_file("modules/test.dot")
+# #test_g.display_graph()
 
-n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
-inp2= [0,1]
-outputs2 = [5]
+# n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
+# inp2= [0,1]
+# outputs2 = [5]
 
-n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {}),node(3, 'bb', {1:1}, {}) ]
-inp1= [0]
-outputs1 = [2,3]
+# n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1,2:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {1:1}),node(3, 'bb', {1:1}, {}) ]
+# inp1= [0]
+# outputs1 = [3]
 
-gtest1 = open_digraph(inp2,outputs2,n02)
+# gtest1 = open_digraph(inp2,outputs2,n02)
 
-gtest2 = open_digraph(inp1,outputs1,n1)
+# gtest2 = open_digraph(inp1,outputs1,n1)
 
-#test3 = open_digraph([],[],n0)
-print(gtest2.parallel(gtest1).connected_components())
-
-for g in gtest2.parallel(gtest1).component_list()[:1]:
-    g.display_graph()
-#print(open_digraph.identity(5))
-
-
+# #test3 = open_digraph([],[],n0)
+# print(gtest2.parallel(gtest1).connected_components())
+# print(gtest2.is_acyclic())
+# print(gtest2)
+# n = gtest2.add_node(node(4,"a",{},{0:1}))
+# gtest2.add_edge(3,n)
+# #gtest2.add_edge(n,0)
+# print(gtest2.is_acyclic())
+# print(gtest2)
+# # for g in gtest2.parallel(gtest1).component_list()[:1]:
+# #     g.display_graph()
+# #print(open_digraph.identity(5))
+# g.add_node()
+# print(g == empt)
