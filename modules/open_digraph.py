@@ -778,57 +778,57 @@ class bool_circ(open_digraph):
         return False
     
 
-n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
-inp= []
-outputs = []
-op = open_digraph(inp,outputs, n0)
-g = bool_circ(op)
-g.add_node('|', {1:1}, {0:1})
-# print_m(g.adj_mat())
-# print_m(random_symetric_int_matrix(5,9,True))
-# print_m(random_oriented_int_matrix(5,9))
-# print_m(random_dag_int_matrix(5,9))
-rand_mat = random_dag_int_matrix(5,5,False)
-m = graph_from_adjacency_matrix(rand_mat)
-#print(m)
-#m.shift_indices(5)
-# print(m)
-# print_m(rand_mat)
-# print(g.is_well_formed())
-empt = open_digraph([],[],{})
-#empt.iparallel(g)
-# print(empt)
-# print(g)
-g.iparallel(g.copy())
-#print(g)
-empt.iparallel(g)
-#print(empt)
-#test_g = open_digraph.from_dot_file("modules/test.dot")
-#test_g.display_graph()
+# n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
+# inp= []
+# outputs = []
+# op = open_digraph(inp,outputs, n0)
+# g = bool_circ(op)
+# g.add_node('|', {1:1}, {0:1})
+# # print_m(g.adj_mat())
+# # print_m(random_symetric_int_matrix(5,9,True))
+# # print_m(random_oriented_int_matrix(5,9))
+# # print_m(random_dag_int_matrix(5,9))
+# rand_mat = random_dag_int_matrix(5,5,False)
+# m = graph_from_adjacency_matrix(rand_mat)
+# #print(m)
+# #m.shift_indices(5)
+# # print(m)
+# # print_m(rand_mat)
+# # print(g.is_well_formed())
+# empt = open_digraph([],[],{})
+# #empt.iparallel(g)
+# # print(empt)
+# # print(g)
+# g.iparallel(g.copy())
+# #print(g)
+# empt.iparallel(g)
+# #print(empt)
+# #test_g = open_digraph.from_dot_file("modules/test.dot")
+# #test_g.display_graph()
 
-n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
-inp2= [0,1]
-outputs2 = [5]
+# n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
+# inp2= [0,1]
+# outputs2 = [5]
 
-n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1,2:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {1:1}),node(3, 'bb', {1:1}, {}) ]
-inp1= [0]
-outputs1 = [3]
+# n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1,2:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {1:1}),node(3, 'bb', {1:1}, {}) ]
+# inp1= [0]
+# outputs1 = [3]
 
-gtest1 = open_digraph(inp2,outputs2,n02)
+# gtest1 = open_digraph(inp2,outputs2,n02)
 
-gtest2 = open_digraph(inp1,outputs1,n1)
+# gtest2 = open_digraph(inp1,outputs1,n1)
 
-#test3 = open_digraph([],[],n0)
-print(gtest2.parallel(gtest1).connected_components())
-print(gtest2.is_acyclic())
-print(gtest2)
-n = gtest2.add_node(node(4,"a",{},{0:1}))
-gtest2.add_edge(3,n)
-#gtest2.add_edge(n,0)
-print(gtest2.is_acyclic())
-print(gtest2)
-# for g in gtest2.parallel(gtest1).component_list()[:1]:
-#     g.display_graph()
-#print(open_digraph.identity(5))
-g.add_node()
-print(g == empt)
+# #test3 = open_digraph([],[],n0)
+# print(gtest2.parallel(gtest1).connected_components())
+# print(gtest2.is_acyclic())
+# print(gtest2)
+# n = gtest2.add_node(node(4,"a",{},{0:1}))
+# gtest2.add_edge(3,n)
+# #gtest2.add_edge(n,0)
+# print(gtest2.is_acyclic())
+# print(gtest2)
+# # for g in gtest2.parallel(gtest1).component_list()[:1]:
+# #     g.display_graph()
+# #print(open_digraph.identity(5))
+# g.add_node()
+# print(g == empt)
