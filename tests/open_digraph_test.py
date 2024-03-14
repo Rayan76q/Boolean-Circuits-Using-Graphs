@@ -8,6 +8,7 @@ from modules.open_digraph import *
 
 class InitTest(unittest.TestCase):
     
+    
     def test_init_node(self):
         n0 = node(0, 'i', {}, {1:1})
         self.assertEqual(n0.id, 0)
@@ -22,12 +23,17 @@ class InitTest(unittest.TestCase):
         n0 = [node(0, 'a', {}, {}) , node(1, 'b', {}, {})]
         inp= [] 
         outputs = []
-        
         g = open_digraph(inp , outputs , n0)
+        
         self.assertEqual(g.nodes[0], n0[0])
         self.assertEqual(g.inputs, inp)
         self.assertEqual(g.outputs, outputs)
         self.assertIsNot(g.copy() , g)
+    def test_add_node_edges(self):
+        n0 = [node(0, 'a', {}, {}) , node(1, 'b', {}, {})]
+        inp= [] 
+        outputs = []
+        g = open_digraph(inp , outputs , n0)
         g.add_edge(0,1)
         self.assertEqual(g.get_node_by_id(0).get_children() , {1:1})
         self.assertEqual(g.get_node_by_id(1).get_parents() , {0:1})
@@ -74,6 +80,20 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g.get_node_by_id(4).get_children() , {})
         self.assertEqual(g.get_node_by_id(4).get_parents() , {2:1})
         self.assertEqual(g.get_outputs_ids() , [4])
+
+
+    def matrix_creation(self):
+        n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
+        inp= []
+        outputs = []
+        g = open_digraph(inp,outputs, n0)
+        adj = g.adj_mat()
+        self.assertEqual(graph_from_adjacency_matrix(adj) == g)
+        # print_m(random_symetric_int_matrix(5,9,True))
+        # print_m(random_oriented_int_matrix(5,9))
+        # print_m(random_dag_int_matrix(5,9))
+        rand_mat = random_dag_int_matrix(5,5,False)
+        m = graph_from_adjacency_matrix(rand_mat)
 
 if __name__ == '__main__': # the following code is called only when
     unittest.main()
