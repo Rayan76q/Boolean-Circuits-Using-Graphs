@@ -93,11 +93,7 @@ def identity_matrix(n):
     return identity
 
 def copy_matrix(mat):
-    res = identity_matrix(len(mat))
-    for i in range(len(mat)):
-        for j in range(len(mat)):
-            res[i][j] = mat[i][j]
-    return res
+    return [row[:] for row in matrix]
 
 def degree_matrix(mat):
     """ Meant for adjacency matrices """
@@ -105,12 +101,52 @@ def degree_matrix(mat):
     for i in range(len(mat)):
         deg = 0 
         for j in range(len(mat)):
-            s += res[i][j]
+            deg += res[i][j]
         res[i][i] = deg
     return res
 
 def laplacian(mat):
     return degree_matrix(mat) - mat
+
+#Pivot de Gauss
+def swap_rows(mat, row1, row2):
+    mat[row1], mat[row2] = mat[row2], mat[row1]
+
+def scale_row(mat, row, scalar):
+    mat[row] = [scalar * element for element in mat[row]]
+
+def add_scaled_row(mat, source_row, destination_row, scalar):
+    scaled_row = [scalar * element for element in mat[source_row]]
+    mat[destination_row] = [sum(pair) for pair in zip(mat[destination_row], scaled_row)]
+
+def gauss(mat):
+    n = len(mat)
+
+    for pivot_row in range(n):
+        if mat[pivot_row][pivot_row] == 0:
+            for row_below in range(pivot_row + 1, n):
+                if mat[row_below][pivot_row] != 0:
+                    swap_rows(mat, pivot_row, row_below)
+                    break
+            else:
+                continue  
+
+        scale_row(mat, pivot_row, 1.0 / mat[pivot_row][pivot_row])
+
+        for row_below in range(pivot_row + 1, n):
+            if mat[row_below][pivot_row] != 0:
+                add_scaled_row(mat, pivot_row, row_below, -mat[row_below][pivot_row])
+
+def rank(mat):
+    copy = copy_matrix(mat)
+    gauss(copy)
+    rank = sum(1 for row in copy if any(row))
+    return rank
+
+def kernel_dim(mat):
+    return len(mat) - rank(mat)
+
+
 
 class node:
     
@@ -644,6 +680,9 @@ class open_digraph: # for open directed graph
             g.add_output_id(out)
         return g
 
+    def count_connected_components(self)
+        adj = self.adjacency_matrix()
+        return kernel_dim(laplacian(adj))
 
         
 
@@ -709,3 +748,5 @@ gtest1 = open_digraph(inp2,outputs2,n02)
 gtest2 = open_digraph(inp1,outputs1,n1)
 print(gtest2.compose(gtest1))
 print(open_digraph.identity(5))
+
+
