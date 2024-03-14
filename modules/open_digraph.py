@@ -1,5 +1,6 @@
 import random
 import os
+import sys
 
 """  Generating Random Lists and Matrices  """
 
@@ -508,6 +509,11 @@ class open_digraph: # for open directed graph
     def display_graph(self,verbose=False):
         self.save_as_dot_file("display.dot",verbose = verbose)
         os.system("dot -Tpdf display.dot -o display.pdf ")
+        if sys.platform.startswith('win'):
+            os.system("icacls display.pdf  /grant %USERNAME%:F")
+        elif sys.platform.startswith('linux'):
+            os.system("chmod 777 display.pdf")
+        
         os.system("explorer.exe display.pdf")
 
 
@@ -794,12 +800,11 @@ gtest1 = open_digraph(inp2,outputs2,n02)
 
 gtest2 = open_digraph(inp1,outputs1,n1)
 
-gtest2.parallel(gtest1).display_graph()
 #test3 = open_digraph([],[],n0)
 print(gtest2.parallel(gtest1).connected_components())
 
-for g in gtest2.parallel(gtest1).component_list():
-    print(g)
+for g in gtest2.parallel(gtest1).component_list()[:1]:
+    g.display_graph()
 #print(open_digraph.identity(5))
 
 
