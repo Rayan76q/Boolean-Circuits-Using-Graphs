@@ -7,13 +7,15 @@ import sys
 def random_int_list(n , bound):
     return [random.randint(0 , bound) for k in range(n)]
 
-def random_int_matrix(n ,bound , null_diag = True):
+def random_int_matrix(n ,bound , null_diag = True, number_generator=(lambda : random.betavariate(1,5))):
+    random.seed(number_generator)
     if not null_diag:
         return [random_int_list(n , bound) for k in range(n)]
     return [random_int_list(k , bound)+[0]+random_int_list(n-k-1 , bound) for k in range(n)]
 
 
-def random_symetric_int_matrix(n , bound , null_diag = True):
+def random_symetric_int_matrix(n , bound , null_diag = True, number_generator=(lambda : random.betavariate(1,5))):
+    random.seed(number_generator)
     mat = [[0 for j in range(n)] for i in range(n)]
     for i in range(n):
         for j in range(n):
@@ -26,7 +28,8 @@ def random_symetric_int_matrix(n , bound , null_diag = True):
     return mat
 
 
-def random_oriented_int_matrix(n , bound , null_diag = True):
+def random_oriented_int_matrix(n , bound , null_diag = True, number_generator=(lambda : random.betavariate(1,5))):
+    random.seed(number_generator)
     m = random_int_matrix(n , bound , null_diag=null_diag)
     for i in range(n):
         for j in range(n):
@@ -37,7 +40,8 @@ def random_oriented_int_matrix(n , bound , null_diag = True):
                     m[j][i] = 0
     return m
     
-def random_dag_int_matrix(n,bound,null_diag=True):
+def random_dag_int_matrix(n,bound,null_diag=True, number_generator=(lambda : random.betavariate(1,5))):
+    random.seed(number_generator)
     mat = [[0 for j in range(n)] for i in range(n)]
     if random.randint(0,1):
         for i in range(n):
@@ -57,8 +61,23 @@ def print_m(m):
         print(m[i].__str__() + ",")
     print("]")
     
+def graph_from_adjacency_matrix(mat , inp = 0 , out = 0):
+    """ 
+    Generate a graph from an adjacency matrix with the number input and output nodes.
 
-def graph_from_adjacency_matrix(mat):
+    Parameters:
+    -----------
+    mat (list list): A square representing the adjacency matrix of the graph.
+    inp (int): Number of input nodes. Default is 0.
+    out (int): Number of output nodes. Default is 0.
+    number_generator (function): A function that generates random numbers. 
+                                 Default is a function generating numbers from a beta distribution.
+
+    Returns:
+    --------
+    open.diGraph: A directed graph generated from the provided adjacency matrix,
+                       with optional input and output nodes.
+    """
     graph = open_digraph([],[],[])
     nodelistIDS= {i:node(i,"",{},{}) for i in range(len(mat[0]))}
     graph.nodes= nodelistIDS
@@ -67,25 +86,20 @@ def graph_from_adjacency_matrix(mat):
         iemeNode = nodelistIDS[i]
         for j in N:
             graph.add_edge(i,j,mat[i][j])
+
+    ids = list(graph.get_node_ids()).copy()
+
+    for i in range(inp):
+        choice = random.choice(ids)
+        graph.add_input_id(choice)
+        ids.remove(choice)
+
+    for i in range(out):
+        choice = random.choice(ids)
+        graph.add_output_id(choice)
+        ids.remove(choice)
+
     return graph
-
-def random_mat(n, bound, inputs=0, outputs=0, form="free"): 
-    if form=="free":
-        return random_int_matrix(n,bound,False) 
-    elif form=="DAG":
-        return random_dag_int_matrix(n,bound)
-    elif form=="oriented": 
-        return random_oriented_int_matrix(n,bound,False)
-    elif form=="loop-free": 
-        return random_int_matrix(n,bound)
-    elif form=="undirected":
-        return random_symetric_int_matrix(n,bound)
-    elif form=="loop-free undirected":
-        return random_symetric_int_matrix(n,bound)
-    elif form=="loop-free oriented": 
-        return random_oriented_int_matrix(n,bound)
-    else : return [[]]
-
 
 def identity_matrix(n):
     identity = [[0] * n for i in range(n)]
@@ -94,7 +108,7 @@ def identity_matrix(n):
     return identity
 
 def copy_matrix(mat):
-    return [row[:] for row in matrix]
+    return [row[:] for row in mat]
 
 def degree_matrix(mat):
     """ Meant for adjacency matrices """
@@ -151,6 +165,8 @@ def kernel_dim(mat):
 
 class node:
     
+    ###Constructor
+    
     def __init__(self , identity , label , parents , children):
         
         """
@@ -171,7 +187,7 @@ class node:
 
     
     
-    #Getters and setters
+    ### Getters and setters
     def get_id(self):
         return self.id
     
@@ -197,25 +213,42 @@ class node:
         self.parents = parents
     
     
-    #Adding and removing
+    ###Adding and removing
+    
     def add_parent_id(self, par_id , multiplicity=1):
+        """ 
+            Adds par_id to the node's parent dictionary with a given multiplicy
+        """
         if par_id in self.parents.keys():
             self.parents[par_id] += multiplicity
         else:
             self.parents[par_id] = multiplicity
     
     def add_child_id(self, child_id , multiplicity=1):
+        """ 
+            Adds child_id to the node's children dictionary with a given multiplicy
+        """
+        
         if child_id in self.children.keys():
             self.children[child_id] += multiplicity
         else:
             self.children[child_id] = multiplicity
 
+
+    #Note: if multiplicity == 0 the map to the node is removed
+    
     def remove_parent_once(self,id):
+        """ 
+            removes a parent from the node's parent dictionary (one multiplicity)
+        """
         self.parents[id] -=1
         if self.parents[id] == 0:
             del  self.parents[id]
             
     def remove_child_once(self,id):
+        """ 
+            removes a child from the node's children dictionary (one multiplicity)
+        """
         self.children[id] -=1
         if self.children[id] == 0:
             del  self.children[id]
@@ -232,7 +265,13 @@ class node:
     def __repr__(self):
         return repr(self.__str__)
     
+    
+    
     def indegree(self):
+        """
+            Returns the number on ingoing edges towards the node
+        """
+        
         acc = 0
         p = self.get_parents()
         for i in p:
@@ -240,6 +279,9 @@ class node:
         return acc
     
     def outdegree(self):
+        """
+            Returns the number on outgoing edges from the node
+        """
         acc = 0
         p = self.get_children()
         for i in p:
@@ -247,9 +289,15 @@ class node:
         return acc
     
     def degree(self):
+        """
+            returns the degree of the node
+        """
         return self.indegree()+self.outdegree()
 
 class open_digraph: # for open directed graph
+    
+    
+    ###Constructor 
     
     def __init__(self, inputs, outputs, nodes):
         
@@ -268,6 +316,8 @@ class open_digraph: # for open directed graph
     def empty(cls):
         return open_digraph([],[],[])
 
+
+    ### Getters and Setters
     def get_inputs_ids(self):
         return self.inputs
 
@@ -296,14 +346,23 @@ class open_digraph: # for open directed graph
         self.outputs = outputs
 
     def add_input_id(self , id):
+        """
+            Adds id to the list of inputs of the graph
+        """
         assert id in self.nodes.keys() , "Input Node doesn't exist in graph"
         self.inputs.append(id)
 
     def add_output_id(self , id):
+        """
+            Adds id to the list of outputs of the graph
+        """
         assert id in self.nodes.keys(), "Ouput Node doesn't exist in graph"
         self.outputs.append(id)
     
     def new_id(self):
+        """
+            Generates a new unique id usable in the graph
+        """
         id = 0
         for i in self.nodes.keys():
             if id==i :
@@ -312,7 +371,7 @@ class open_digraph: # for open directed graph
     
     
     
-    #Adding and removing edges/nodes
+    ###Adding and removing edges/nodes
     
     def add_edge(self , src , tgt , m=1):
         assert src in self.nodes.keys()
@@ -336,11 +395,11 @@ class open_digraph: # for open directed graph
         r = p_ids + c_ids
         assert ( (elem not in self.nodes.keys()) for elem in r)
         new_ID= self.new_id()
-        new_node = node(new_ID,label=label , parents={} , children={})
+        new_node = node(new_ID,label=label , parents= {} , children={})
         self.nodes[new_ID] = new_node
         
         
-        #ajout des arretes
+        #Adding edges
         p = [(par , new_ID) for par in p_ids]
         c = [(new_ID, chi) for chi in c_ids]
         total=p+c
@@ -386,8 +445,12 @@ class open_digraph: # for open directed graph
             self.remove_node_by_id(id)
 
 
+    ### integrity checks
     
     def is_well_formed(self):
+        """
+            Checks if the graph is well formed 
+        """
         for i in self.inputs:
             if i not in self.nodes.keys():
                 return False          
@@ -452,22 +515,15 @@ class open_digraph: # for open directed graph
     def __repr__(self):
             return repr(self.__str__)
     
+    
+    
+    def id_dictionary(self):
+        d = {}
+        for i,id_node in enumerate(self.get_node_ids()):
+            d[id_node] = i
+        return d
+    
     def adjacency_matrix(self):
-        mat = [[0 for _ in self.nodes] for _ in self.nodes]
-        node_ids = list(self.nodes.keys())
-        
-        for i in range(len(node_ids)):
-            node_i = self.nodes[node_ids[i]]
-            children_ids = list(node_i.get_children().keys())
-            
-            for j in range(len(node_ids)):
-                node_j = self.nodes[node_ids[j]]
-                if node_j.get_id() in children_ids:
-                    mat[i][j] = node_i.get_children()[node_j.get_id()]
-        
-        return mat
-        
-    def adj_mat(self):
         mat = [[0 for _ in self.nodes] for _ in self.nodes]
         node_ids = self.nodes
         
@@ -481,6 +537,23 @@ class open_digraph: # for open directed graph
                     mat[i][j] = children_ids[node_j.get_id()]      
         return mat
 
+    @classmethod
+    def random(cls,n, bound, inputs=0, outputs=0, form="free", number_generator=(lambda :random.betavariate(1,5))): 
+        if form=="free":
+            return graph_from_adjacency_matrix(random_int_matrix(n,bound,False), inp = inputs , out = outputs, number_generator=number_generator) 
+        elif form=="DAG":
+            return graph_from_adjacency_matrix(random_dag_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+        elif form=="oriented": 
+            return graph_from_adjacency_matrix(random_oriented_int_matrix(n,bound,False), inp = inputs , out = outputs, number_generator=number_generator)
+        elif form=="loop-free": 
+            return graph_from_adjacency_matrix(random_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+        elif form=="undirected":
+            return graph_from_adjacency_matrix(random_symetric_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+        elif form=="loop-free undirected":
+            return  graph_from_adjacency_matrix(random_symetric_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+        elif form=="loop-free oriented": 
+            return graph_from_adjacency_matrix(random_oriented_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+        else : return [[]]
 
     def save_as_dot_file(self, path, verbose = True):
         assert path[-4:] == ".dot" , "Not the right extension"
