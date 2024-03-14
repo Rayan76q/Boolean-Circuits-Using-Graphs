@@ -85,6 +85,33 @@ def random_mat(n, bound, inputs=0, outputs=0, form="free"):
         return random_oriented_int_matrix(n,bound)
     else : return [[]]
 
+
+def identity_matrix(n):
+    identity = [[0] * n for i in range(n)]
+    for i in range(n):
+        identity[i][i] = 1
+    return identity
+
+def copy_matrix(mat):
+    res = identity_matrix(len(mat))
+    for i in range(len(mat)):
+        for j in range(len(mat)):
+            res[i][j] = mat[i][j]
+    return res
+
+def degree_matrix(mat):
+    """ Meant for adjacency matrices """
+    res = copy_matrix(mat)
+    for i in range(len(mat)):
+        deg = 0 
+        for j in range(len(mat)):
+            s += res[i][j]
+        res[i][i] = deg
+    return res
+
+def laplacian(mat):
+    return degree_matrix(mat) - mat
+
 class node:
     
     def __init__(self , identity , label , parents , children):
