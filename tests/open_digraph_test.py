@@ -199,8 +199,63 @@ class InitTest(unittest.TestCase):
         m = random_dag_int_matrix(5, 10, null_diag=True)
         self.assertTrue(is_triangular_superior(m) or is_triangular_inferior(m))
     
-    
-    
+    def test_graph_from_adj_mat(self):
+        mat = [
+            [0, 1, 0],
+            [0, 3, 0],
+            [2, 0, 0]
+        ]
+        graph = graph_from_adjacency_matrix(mat)
+        
+        # Test adjacency matrix
+        expected_adj_matrix = [
+            [0, 1, 0],
+            [0, 3, 0],
+            [2, 0, 0]
+        ]
+        self.assertEqual(graph.adjacency_matrix(), expected_adj_matrix)
+
+        # Test input and output nodes
+        self.assertEqual(len(graph.get_inputs_ids()), 0)
+        self.assertEqual(len(graph.get_outputs_ids()), 0)
+
+        mat = [
+            [0, 1, 0],
+            [0, 0, 1],
+            [1, 0, 0]
+        ]
+        graph = graph_from_adjacency_matrix(mat, inp=1, out=1)
+        
+        # Test adjacency matrix
+        expected_adj_matrix = [
+            [0, 1 ,0],
+            [0, 0, 1],
+            [1, 0, 0]
+        ]
+        self.assertEqual(graph.adjacency_matrix(), expected_adj_matrix)
+
+        # Test input and output nodes
+        self.assertEqual(len(graph.get_inputs_ids()), 1)
+        self.assertEqual(len(graph.get_outputs_ids()), 1)
+
+        mat = [
+            [0, 3, 0],
+            [0, 0, 2],
+            [0, 0, 0]
+        ]
+        graph = graph_from_adjacency_matrix(mat)
+        self.assertEqual(graph.adjacency_matrix(),mat)
+
+        # Test with non-square adjacency matrix
+        invalid_mat = [
+            [0, 1],
+            [0, 0],
+            [1, 0]
+        ]
+        with self.assertRaises(AssertionError) as context:
+            graph_from_adjacency_matrix(invalid_mat)
+        # Check if the error message matches the expected message
+        self.assertEqual(str(context.exception),"matrix dimensions not n x n")
     
     def test_parallel(self):
         n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
@@ -245,6 +300,48 @@ class InitTest(unittest.TestCase):
 
         self.assertNotEqual(g,empt)
     
+    def test_compose(self):
+        n1 = [node(3, 'ee', {}, {4:1}) , node(4, '5', {3:1}, {5:1}),node(5, '&', {4:1}, {})]
+        inp1 = [3]
+        output1 =[5]
+        n2 = [node(0, '&', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {}),node(3,'ww',{1:1},{})]
+        inp2 = [0]
+        output2= [2,3]
+        gtest1 = open_digraph(inp1,output1,n1)
+        gtest2 = open_digraph(inp2,output2,n2)
+        comp = gtest2.compose(gtest1)
+        #gtest1.display_graph()
+        #gtest2.display_graph()
+        #comp.display_graph()
+        self.assertEqual(comp,open_digraph([3],[8,9],[node(3, 'ee', {}, {4:1}) , node(4, '5', {3:1}, {5:1}),node(5, '&', {4:1}, {8:1}) , node(7, 'ss', {}, {9:1}),node(8, 'zs', {5:1}, {}),node(9,'ww',{7:1},{})] ))
+
+        n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
+        n02bis = [node.copy() for node in n02]
+        inp2= [0,1]
+        outputs2 = [5]
+        n1 = [node(0, '&', {}, {1:1}) , node(1, 'ss', {0:1}, {2:1, 3:1}),node(2, 'zs', {1:1}, {}),node(3, 'bb', {1:1}, {}) ]
+        inp1= [0]
+        outputs1 = [2,3]
+        gtest1 = open_digraph(inp2,outputs2,n02)
+        gtest2 = open_digraph(inp1,outputs1,n1)
+        m = gtest2.compose(gtest1)
+        #gtest1.display_graph()
+        #gtest2.display_graph()
+        #m.display_graph()
+
+        self.assertEqual(m,open_digraph([0,1],[8,9],[node(7,"ss",{5:1},{8:1,9:1}),node(8,"zs",{7:1},{}),node(9,"bb",{7:1},{}),node(4,"5",{2:3,3:2},{5:1}),node(5,"&",{4:1},{7:1}),node(2,"zs",{0:1},{4:3}),node(3,"ee",{1:1},{4:2}),node(1,"ss",{},{3:1}),node(0,"0",{},{2:1})]))
+        with self.assertRaises(AssertionError) as context:
+            gtest2.compose(comp)
+        # Check if the error message matches the expected message
+        self.assertEqual(str(context.exception), "error, domains don't match.")
+
+        # Use assertRaises with the exception class and the callable
+        with self.assertRaises(AssertionError) as context:
+            comp.compose(m)
+        # Check if the error message matches the expected message
+        self.assertEqual(str(context.exception), "error, domains don't match.")
+
+        
     def test_connected_components(self):
         #the code of list_components is so basic and so dependant on connected_components 
         #that checking the first would be the same as checking the second

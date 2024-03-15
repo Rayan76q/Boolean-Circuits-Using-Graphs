@@ -78,12 +78,12 @@ def graph_from_adjacency_matrix(mat , inp = 0 , out = 0):
     open.diGraph: A directed graph generated from the provided adjacency matrix,
                        with optional input and output nodes.
     """
+    assert len(mat[0])==len(mat) , "matrix dimensions not n x n"
     graph = open_digraph([],[],[])
     nodelistIDS= {i:node(i,"",{},{}) for i in range(len(mat[0]))}
     graph.nodes= nodelistIDS
     N = range(len(mat[0]))
     for i in N:
-        iemeNode = nodelistIDS[i]
         for j in N:
             graph.add_edge(i,j,mat[i][j])
     
