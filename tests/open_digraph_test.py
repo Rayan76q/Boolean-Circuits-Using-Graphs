@@ -134,7 +134,7 @@ class InitTest(unittest.TestCase):
         m4 =  random_symetric_int_matrix(3, 10, null_diag=True , number_generator=1)
         self.assertTrue(m3==m4)
         
-        
+    
     def test_random_oriented_int_matrix(self):
         m = random_oriented_int_matrix(3, 10, null_diag=False , number_generator=0.5)
         self.assertEqual(len(m), 3)
@@ -151,14 +151,12 @@ class InitTest(unittest.TestCase):
         for i in range(5):
             for j in range(5):
                 self.assertTrue(0 <= m[i][j] <= 10)
-                
         
-        m = random_oriented_int_matrix(5, 10, null_diag=True , number_generator=0.5)
         for i in range(5):
             for j in range(i + 1, 5):
                 if m[i][j] != 0 and m[j][i] != 0:
                     self.assertTrue(m[i][j] == 0 or m[j][i] == 0)
-        
+    
     def test_random_DAG_int_matrix(self):
         m = random_dag_int_matrix(3, 10, null_diag=False , number_generator=0.5)
         self.assertEqual(len(m), 3)
