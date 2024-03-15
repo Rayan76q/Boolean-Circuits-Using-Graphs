@@ -82,6 +82,126 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g.get_node_by_id(4).get_parents() , {2:1})
         self.assertEqual(g.get_outputs_ids() , [4])
     
+    
+
+    def test_random_int_matrix(self):
+        m = random_int_matrix(3, 10, null_diag=False)
+        self.assertEqual(len(m), 3)
+        
+        for row in m:
+            self.assertEqual(len(row), 3)
+        
+        m2 = random_int_matrix(3, 10, null_diag=True)
+        self.assertEqual(len(m2), 3)
+        
+        for i in range(len(m2)):
+            self.assertEqual(len(m2[i]), 3)
+            self.assertEqual(m2[i][i], 0)
+        
+        for row in m2:
+            for element in row:
+                self.assertTrue(0 <= element <= 10)
+                
+        m3 =  random_int_matrix(3, 10, null_diag=True , number_generator=1)
+        m4 =  random_int_matrix(3, 10, null_diag=True , number_generator=1)
+        self.assertTrue(m3==m4)
+    
+    def test_random_symetric_int_matrix(self):
+        m = random_symetric_int_matrix(3, 10, null_diag=False)
+        self.assertEqual(len(m), 3)
+        for row in m:
+            self.assertEqual(len(row), 3)
+        
+        m = random_symetric_int_matrix(3, 10, null_diag=True)
+        self.assertEqual(len(m), 3)
+        for i in range(len(m)):
+            self.assertEqual(len(m[i]), 3)
+            self.assertEqual(m[i][i], 0)
+            
+        m = random_symetric_int_matrix(5, 10, null_diag=False)
+        for i in range(5):
+            for j in range(5):
+                self.assertTrue(0 <= m[i][j] <= 10)
+        
+        for i in range(5):
+            for j in range(i + 1, 5):
+                self.assertEqual(m[i][j], m[j][i])
+        
+        m3 =  random_symetric_int_matrix(3, 10, null_diag=True , number_generator=1)
+        m4 =  random_symetric_int_matrix(3, 10, null_diag=True , number_generator=1)
+        self.assertTrue(m3==m4)
+        
+        
+    def test_random_oriented_int_matrix(self):
+        m = random_oriented_int_matrix(3, 10, null_diag=False)
+        self.assertEqual(len(m), 3)
+        for row in m:
+            self.assertEqual(len(row), 3)
+        
+        m = random_oriented_int_matrix(3, 10, null_diag=True)
+        self.assertEqual(len(m), 3)
+        for i in range(len(m)):
+            self.assertEqual(len(m[i]), 3)
+            self.assertEqual(m[i][i], 0)
+        
+        m = random_oriented_int_matrix(5, 10, null_diag=False)
+        for i in range(5):
+            for j in range(5):
+                self.assertTrue(0 <= m[i][j] <= 10)
+                
+        
+        m = random_oriented_int_matrix(5, 10, null_diag=True)
+        for i in range(5):
+            for j in range(i + 1, 5):
+                if m[i][j] != 0 and m[j][i] != 0:
+                    self.assertTrue(m[i][j] == 0 or m[j][i] == 0)
+        
+    def test_random_DAG_int_matrix(self):
+        m = random_dag_int_matrix(3, 10, null_diag=False)
+        self.assertEqual(len(m), 3)
+        for row in m:
+            self.assertEqual(len(row), 3)
+            
+        m = random_dag_int_matrix(3, 10, null_diag=True)
+        self.assertEqual(len(m), 3)
+        for i in range(len(m)):
+            self.assertEqual(len(m[i]), 3)
+            self.assertEqual(m[i][i], 0)
+            
+        
+        m = random_dag_int_matrix(5, 10, null_diag=False)
+        for i in range(5):
+            for j in range(5):
+                self.assertTrue(0 <= m[i][j] <= 10)
+                
+    
+        m = random_dag_int_matrix(5, 10, null_diag=True)
+        for i in range(5):
+            for j in range(i + 1, 5):
+                self.assertTrue(m[i][j] == 0 or m[j][i] == 0)
+                
+        def is_triangular_superior(matrix):
+            n = len(matrix)
+            for i in range(n):
+                for j in range(i + 1, n):
+                    if matrix[i][j] != 0:
+                        return False
+            return True
+
+        def is_triangular_inferior(matrix):
+            n = len(matrix)
+            for i in range(1, n):
+                for j in range(i):
+                    if matrix[i][j] != 0:
+                        return False
+            return True
+        
+        m = random_dag_int_matrix(5, 10, null_diag=True)
+        self.assertTrue(is_triangular_superior(m) or is_triangular_inferior(m))
+    
+    
+    
+    
     def test_parallel(self):
         n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
         inp= []
@@ -111,7 +231,7 @@ class InitTest(unittest.TestCase):
         gtestNULL = gtest1.parallel(open_digraph([],[],[]))
         gtestNULL2 = open_digraph([],[],{}).parallel(gtest2)
         gtest3 = gtest1.parallel(gtest2)
-
+        
         self.assertEqual(gtest1, open_digraph(inp2,outputs2,n02))
         self.assertEqual(gtest1,gtestNULL)
 
@@ -152,20 +272,6 @@ class InitTest(unittest.TestCase):
         self.assertEqual(testliste2[0],gtest1)
         self.assertEqual(testliste2[1],gtest2)
 
-
-
-    def matrix_creation(self):
-        n0 = [node(0, '&', {}, {}) , node(1, '', {}, {})]
-        inp= []
-        outputs = []
-        g = open_digraph(inp,outputs, n0)
-        adj = g.adj_mat()
-        self.assertEqual(graph_from_adjacency_matrix(adj) == g)
-        # print_m(random_symetric_int_matrix(5,9,True))
-        # print_m(random_oriented_int_matrix(5,9))
-        # print_m(random_dag_int_matrix(5,9))
-        rand_mat = random_dag_int_matrix(5,5,False)
-        m = graph_from_adjacency_matrix(rand_mat)
 
 if __name__ == '__main__': # the following code is called only when
     unittest.main()

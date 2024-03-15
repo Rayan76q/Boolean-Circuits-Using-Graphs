@@ -2,7 +2,7 @@ import random
 import os
 import sys
 
-"""  Generating Random Lists and Matrices  """
+#  Generating Random Lists and Matrices  
 
 def random_int_list(n , bound):
     return [random.randint(0 , bound) for k in range(n)]
@@ -20,7 +20,7 @@ def random_symetric_int_matrix(n , bound , null_diag = True, number_generator=(l
     for i in range(n):
         for j in range(n):
             if i==j:
-                mat[i][j] = int(not null_diag)* random.randint( 0,bound )
+                mat[i][j] = int(not null_diag)* random.randint( 0,bound ) 
             else:
                 v = random.randint(0,bound)
                 mat[i][j] = v
@@ -275,7 +275,6 @@ class node:
         """
             Returns the number on ingoing edges towards the node
         """
-        
         acc = 0
         p = self.get_parents()
         for i in p:
@@ -468,7 +467,7 @@ class open_digraph: # for open directed graph
         self.nodes[new_ID] = new_node
         
         
-        #Adding edges
+        #Adding the edges from parents and to children
         p = [(par , new_ID) for par in p_ids]
         c = [(new_ID, chi) for chi in c_ids]
         total=p+c
@@ -817,7 +816,7 @@ class open_digraph: # for open directed graph
         elements = text.split(";")
         nodes_dict = {}  # dict from nodes names to their ids in the graph
         for e in elements:
-            if "[" in e: #declaration de noeud
+            if "[" in e: #attributs handling
                 bracketstart = e.index("[")
                 bracketend = e.index("]")
                 if bracketstart != -1:
@@ -839,7 +838,7 @@ class open_digraph: # for open directed graph
                         if out:
                             g.add_input_id(nid)
                         nodes_dict[node_name] = nid
-            elif "->" in e:
+            elif "->" in e:  # edges handling
                 chain = e.strip().split(" -> ")
                 parent = chain[0]
                 children = chain[1:]
@@ -865,7 +864,7 @@ class open_digraph: # for open directed graph
         stack = set()
 
         def dfs(node):
-            if node.get_id() in stack:
+            if node.get_id() in stack:   #i.e if the node was encounterd twice before visiting all its children 
                 return False
             if node.get_id() in visited:
                 return True
@@ -874,7 +873,7 @@ class open_digraph: # for open directed graph
             stack.add(node.get_id())
 
             children = node.get_children()
-            for child_id in children:
+            for child_id in children:   # explore children
                 if not dfs(self.nodes[child_id]):
                     return False  # Cycle detected
 
@@ -962,8 +961,8 @@ class open_digraph: # for open directed graph
         minId1 = self.min_id()
         maxId2 = g.max_id()
         
-        self.shift_indices(-minId1+maxId2+1)
-        for key,nnode in g.get_id_node_map().items():
+        self.shift_indices(-minId1+maxId2+1)   # avoiding conflicting ids with shift
+        for key,nnode in g.get_id_node_map().items():   # adding the nodes of g
             self.nodes[key]= nnode.copy()
         for j in g.get_inputs_ids():
             self.add_input_id(j)
@@ -1005,8 +1004,10 @@ class open_digraph: # for open directed graph
         
         assert len(f.get_outputs_ids()) == len(self.get_inputs_ids()) , "error, domains don't match."
         
-        self.iparallel(f)
+        self.iparallel(f) 
         old_input = [inp for inp in self.get_inputs_ids() if inp not in f.get_inputs_ids()] #inputs that used to belong to self after shift
+        
+        # merging in sequence
         for k,f_out in enumerate(f.get_outputs_ids()):
             child_dict = self.get_node_by_id(old_input[k]).get_children()
             self.get_node_by_id(f_out).set_children(child_dict)
@@ -1017,7 +1018,7 @@ class open_digraph: # for open directed graph
                 parents_of_child[f_out]=multiplicity_of_old_parent
             self.remove_node_by_id(old_input[k])
 
-
+        # updating inputs and outputs lists
         for inp in self.get_inputs_ids():
             if inp in old_input:
                 self.get_inputs_ids().remove(inp)
@@ -1075,7 +1076,7 @@ class open_digraph: # for open directed graph
 
 
         def dfs(node):
-            if node.get_id() in visited:
+            if node.get_id() in visited: # i.e if all children explored, add node to the current connected component
                 component_dict[node.get_id()] = nb 
             
             else:
@@ -1087,7 +1088,7 @@ class open_digraph: # for open directed graph
                     component_dict[child_id] = nb 
                 for parent_id in parents:
                     dfs(self.nodes[parent_id])
-                    component_dict[parent_id] = nb 
+                    component_dict[parent_id] = nb # adds child after exploring the connected component it belongs to
 
                 
         
@@ -1108,10 +1109,11 @@ class open_digraph: # for open directed graph
         nb , dict_ = self.connected_components()
         componentMat = [[] for i in range(nb)]
         for i in dict_ :
-            componentMat[dict_[i]].append(self.nodes[i])
+            componentMat[dict_[i]].append(self.nodes[i])    # one row for every connected component
         
         
         for i in range(nb):
+            # updating input and output lists for every component
             component_input = [inp for inp in self.get_inputs_ids() if dict_[inp]==i]
             component_output = [out for out in self.get_outputs_ids() if dict_[out]==i]
             componentMat[i] = open_digraph(component_input , component_output , componentMat[i])
@@ -1122,8 +1124,9 @@ class bool_circ(open_digraph):
     ###Constructor
     
     def __init__(self, g):
-        super().__init__(g.get_inputs_ids(), g.get_outputs_ids(), [])
-        self.nodes = g.get_id_node_map()
+        g.assert_is_well_formed()
+        super().__init__(g.get_inputs_ids().copy(), g.get_outputs_ids().copy(), [])
+        self.nodes = g.get_id_node_map().copy()
         self.is_well_formed()
     
     
@@ -1131,7 +1134,6 @@ class bool_circ(open_digraph):
         """
             Checks if the boolean circuit is well-formed
         """
-        super().assert_is_well_formed()
         if super().is_acyclic():
             for key,node in self.nodes.items():
                 if (node.get_label() == "" or node.get_label() == "1" or node.get_label() == "0") and node.indegree() > 1 : 
