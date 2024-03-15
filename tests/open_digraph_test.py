@@ -1,7 +1,6 @@
 import sys
 import os
 sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
-print(sys.path) # allows us to fetch files from the project root
 import unittest
 from modules.open_digraph import * 
 
