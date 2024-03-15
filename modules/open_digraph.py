@@ -4,16 +4,18 @@ import sys
 
 #  Generating Random Lists and Matrices  
 
+
+#3#
 def random_int_list(n , bound):
     return [random.randint(0 , bound) for k in range(n)]
-
+#3#
 def random_int_matrix(n ,bound , null_diag = True, number_generator=(lambda : random.betavariate(1,5))):
     random.seed(number_generator)
     if not null_diag:
         return [random_int_list(n , bound) for k in range(n)]
     return [random_int_list(k , bound)+[0]+random_int_list(n-k-1 , bound) for k in range(n)]
 
-
+#3#
 def random_symetric_int_matrix(n , bound , null_diag = True, number_generator=(lambda : random.betavariate(1,5))):
     random.seed(number_generator)
     mat = [[0 for j in range(n)] for i in range(n)]
@@ -27,7 +29,7 @@ def random_symetric_int_matrix(n , bound , null_diag = True, number_generator=(l
                 mat[j][i] = v
     return mat
 
-
+#3#
 def random_oriented_int_matrix(n , bound , null_diag = True, number_generator=(lambda : random.betavariate(1,5))):
     random.seed(number_generator)
     m = random_int_matrix(n , bound , null_diag=null_diag)
@@ -39,7 +41,8 @@ def random_oriented_int_matrix(n , bound , null_diag = True, number_generator=(l
                 else:
                     m[j][i] = 0
     return m
-    
+
+#3#
 def random_dag_int_matrix(n,bound,null_diag=True, number_generator=(lambda : random.betavariate(1,5))):
     random.seed(number_generator)
     mat = [[0 for j in range(n)] for i in range(n)]
@@ -60,7 +63,8 @@ def print_m(m):
     for i in range(len(m)):
         print(m[i].__str__() + ",")
     print("]")
-    
+
+#3#
 def graph_from_adjacency_matrix(mat , inp = 0 , out = 0):
     """ 
     Generate a graph from an adjacency matrix with the number input and output nodes.
@@ -674,6 +678,20 @@ class open_digraph: # for open directed graph
     def __repr__(self):
             return repr(self.__str__)
     
+    #3#
+    def id_map(self):
+        """
+            Returns a map from each node_id to a unique integer in [[0,n[[
+        """
+        d = {}
+        
+        for k,key in enumerate(self.nodes.keys()):
+            d[key] = k
+            
+        return d
+    
+    
+    #3#
     def adjacency_matrix(self):
         """
             Returns the adjacency matrix associated to the graph
@@ -691,6 +709,7 @@ class open_digraph: # for open directed graph
                     mat[i][j] = children_ids[node_j.get_id()]      
         return mat
 
+    #3#
     @classmethod
     def random(cls,n, bound, inputs=0, outputs=0, form="free", number_generator=(lambda :random.betavariate(1,5))): 
         """
@@ -943,7 +962,8 @@ class open_digraph: # for open directed graph
             for i in range(len(self.outputs)):
                 self.outputs[i] += n
         self.nodes = shift_keys(self.nodes, n)
-        
+    
+    #6#
     def iparallel(self, g):
         """
             Appends the graph g in parallel to the current graph 
@@ -969,6 +989,7 @@ class open_digraph: # for open directed graph
         for i in g.get_outputs_ids():
             self.add_output_id(i)
 
+    #6#
     def parallel(self, g):
         """
             Appends the graph g in parallel to the current graph 
@@ -987,6 +1008,7 @@ class open_digraph: # for open directed graph
         c.iparallel(g)
         return c
 
+    #6#
     def icompose(self, f):
         """
             Appends the graph f sequentially to the current graph connecting the inputs of self to the outputs of f
@@ -1027,7 +1049,7 @@ class open_digraph: # for open directed graph
             if out  in f.get_outputs_ids():
                 self.get_outputs_ids().remove(out)
 
-
+    #6#
     def compose(self , f):
         """
             Appends the graph f sequentially to the current graph connecting the inputs of self to the outputs of f
@@ -1046,7 +1068,7 @@ class open_digraph: # for open directed graph
         c.icompose(f)
         return c
 
-
+    #6#
     @classmethod
     def identity(cls , n):
         """
@@ -1061,7 +1083,7 @@ class open_digraph: # for open directed graph
             g.add_output_id(out)
         return g
 
-
+    #6#
     def connected_components(self):
         """
             Returns the number of connected components as well as a map from each node to the connected component they belong to
@@ -1098,6 +1120,7 @@ class open_digraph: # for open directed graph
                 nb +=1
         return (nb , component_dict)
 
+    #6#
     def component_list(self):
         """
             Returns the number of connected components as well as a map from each node to the connected component they belong to

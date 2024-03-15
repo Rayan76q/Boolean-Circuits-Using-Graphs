@@ -83,15 +83,18 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g.get_outputs_ids() , [4])
     
     
-
+    """
+    random.seed() only take int , float , None and Byte as argument in newer python versions thus choosing float values for every call to a matrix creation function
+    Giving a function as argument works for version 3.9.6 and older at least
+    """
     def test_random_int_matrix(self):
-        m = random_int_matrix(3, 10, null_diag=False)
+        m = random_int_matrix(3, 10, null_diag=False , number_generator=0.5)
         self.assertEqual(len(m), 3)
         
         for row in m:
             self.assertEqual(len(row), 3)
         
-        m2 = random_int_matrix(3, 10, null_diag=True)
+        m2 = random_int_matrix(3, 10, null_diag=True , number_generator=0.5)
         self.assertEqual(len(m2), 3)
         
         for i in range(len(m2)):
@@ -107,18 +110,18 @@ class InitTest(unittest.TestCase):
         self.assertTrue(m3==m4)
     
     def test_random_symetric_int_matrix(self):
-        m = random_symetric_int_matrix(3, 10, null_diag=False)
+        m = random_symetric_int_matrix(3, 10, null_diag=False , number_generator=0.5)
         self.assertEqual(len(m), 3)
         for row in m:
             self.assertEqual(len(row), 3)
         
-        m = random_symetric_int_matrix(3, 10, null_diag=True)
+        m = random_symetric_int_matrix(3, 10, null_diag=True , number_generator=0.5)
         self.assertEqual(len(m), 3)
         for i in range(len(m)):
             self.assertEqual(len(m[i]), 3)
             self.assertEqual(m[i][i], 0)
             
-        m = random_symetric_int_matrix(5, 10, null_diag=False)
+        m = random_symetric_int_matrix(5, 10, null_diag=False , number_generator=0.5)
         for i in range(5):
             for j in range(5):
                 self.assertTrue(0 <= m[i][j] <= 10)
@@ -133,49 +136,49 @@ class InitTest(unittest.TestCase):
         
         
     def test_random_oriented_int_matrix(self):
-        m = random_oriented_int_matrix(3, 10, null_diag=False)
+        m = random_oriented_int_matrix(3, 10, null_diag=False , number_generator=0.5)
         self.assertEqual(len(m), 3)
         for row in m:
             self.assertEqual(len(row), 3)
         
-        m = random_oriented_int_matrix(3, 10, null_diag=True)
+        m = random_oriented_int_matrix(3, 10, null_diag=True , number_generator=0.5)
         self.assertEqual(len(m), 3)
         for i in range(len(m)):
             self.assertEqual(len(m[i]), 3)
             self.assertEqual(m[i][i], 0)
         
-        m = random_oriented_int_matrix(5, 10, null_diag=False)
+        m = random_oriented_int_matrix(5, 10, null_diag=False , number_generator=0.5)
         for i in range(5):
             for j in range(5):
                 self.assertTrue(0 <= m[i][j] <= 10)
                 
         
-        m = random_oriented_int_matrix(5, 10, null_diag=True)
+        m = random_oriented_int_matrix(5, 10, null_diag=True , number_generator=0.5)
         for i in range(5):
             for j in range(i + 1, 5):
                 if m[i][j] != 0 and m[j][i] != 0:
                     self.assertTrue(m[i][j] == 0 or m[j][i] == 0)
         
     def test_random_DAG_int_matrix(self):
-        m = random_dag_int_matrix(3, 10, null_diag=False)
+        m = random_dag_int_matrix(3, 10, null_diag=False , number_generator=0.5)
         self.assertEqual(len(m), 3)
         for row in m:
             self.assertEqual(len(row), 3)
             
-        m = random_dag_int_matrix(3, 10, null_diag=True)
+        m = random_dag_int_matrix(3, 10, null_diag=True , number_generator=0.5)
         self.assertEqual(len(m), 3)
         for i in range(len(m)):
             self.assertEqual(len(m[i]), 3)
             self.assertEqual(m[i][i], 0)
             
         
-        m = random_dag_int_matrix(5, 10, null_diag=False)
+        m = random_dag_int_matrix(5, 10, null_diag=False , number_generator=0.5)
         for i in range(5):
             for j in range(5):
                 self.assertTrue(0 <= m[i][j] <= 10)
                 
     
-        m = random_dag_int_matrix(5, 10, null_diag=True)
+        m = random_dag_int_matrix(5, 10, null_diag=True , number_generator=0.5)
         for i in range(5):
             for j in range(i + 1, 5):
                 self.assertTrue(m[i][j] == 0 or m[j][i] == 0)
@@ -196,7 +199,7 @@ class InitTest(unittest.TestCase):
                         return False
             return True
         
-        m = random_dag_int_matrix(5, 10, null_diag=True)
+        m = random_dag_int_matrix(5, 10, null_diag=True , number_generator=0.5)
         self.assertTrue(is_triangular_superior(m) or is_triangular_inferior(m))
     
     def test_graph_from_adj_mat(self):
