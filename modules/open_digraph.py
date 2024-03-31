@@ -1141,7 +1141,52 @@ class open_digraph: # for open directed graph
             component_output = [out for out in self.get_outputs_ids() if dict_[out]==i]
             componentMat[i] = open_digraph(component_input , component_output , componentMat[i])
         return componentMat
+    
+    def dijkstra(self, src_node , direction = 0):
+        """
+            dijkstra's algorithm to find the shortest path from a node to any other node
 
+            Parameters:
+            -----------
+            src_node, the node source.
+            direction: an int representing direction of the search 
+                direction = 0: bidirectional graph (both directions).
+                direction = 1: search only children.
+                direction = -1: search only parents.
+
+            Returns:
+            --------
+            dict,dict {node:int}{node:node} :
+            the first indicating the length of the path to each node from the source node.
+            the seconf indicating the previous node before arriving to the wanted node.
+        """
+        Q = [src_node]
+        dist = {src_node:0}
+        prev = {}
+        while Q != []:
+            shortest = sys.maxsize
+            u = None
+            for node in Q:
+                if dist[node] <= shortest:
+                    shortest = dist[node]
+                    u = node
+            Q.remove(u)
+            if direction == 1:
+                neighbours = u.get_children()
+            elif direction == -1:
+                neighbours = u.get_parents()
+            else :
+                new_dict = u.get_children().copy()
+                neighbours = new_dict.update(u.get_parents())
+            for nei in neighbours:
+                v= self.get_node_by_id(nei)
+                if v not in dist:
+                    Q.append(v)
+                if v not in dist or dist[v]> dist[u]+1:
+                    dist[v] = dist[u]+1
+                    prev[v] = u
+        return dist,prev
+    
 class bool_circ(open_digraph):
     
     ###Constructor
