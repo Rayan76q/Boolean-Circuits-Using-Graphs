@@ -1142,7 +1142,7 @@ class open_digraph: # for open directed graph
             componentMat[i] = open_digraph(component_input , component_output , componentMat[i])
         return componentMat
     
-    def dijkstra(self, src_node , direction = 0):
+    def dijkstra(self, src_node , direction = 0,tgt = None):
         """
             dijkstra's algorithm to find the shortest path from a node to any other node
 
@@ -1170,6 +1170,8 @@ class open_digraph: # for open directed graph
                 if dist[node] <= shortest:
                     shortest = dist[node]
                     u = node
+            if u == tgt:  #Early stoppage if min dist to tgt has been calculated
+                return dest,prev
             Q.remove(u)
             if direction == 1:
                 neighbours = u.get_children()
@@ -1186,6 +1188,26 @@ class open_digraph: # for open directed graph
                     dist[v] = dist[u]+1
                     prev[v] = u
         return dist,prev
+    
+    
+    def shortest_path(self , u , v):
+        return dijkstra(self, u , direction = 0,tgt = v)[0][v]  #dist[v] with u as source node
+    
+    def distances_from_common_ancestors(self , u ,v):
+        distu , prevu = dijkstra(self, u , direction = -1)
+        distv ,prevv = dijkstra(self, v , direction = -1)
+        
+        result = {}   #Ancestors are not strict here
+        for key in distu:
+            if key in distv:
+                result[key] = (distu[key] , distv[key])
+        return result
+    
+    
+    
+    
+    
+    
     
 class bool_circ(open_digraph):
     
