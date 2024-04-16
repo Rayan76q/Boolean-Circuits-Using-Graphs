@@ -945,13 +945,6 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             componentMat[i] = open_digraph(component_input , component_output , componentMat[i])
         return componentMat
     
-
-    
-    
-    
-    
-    
-    
 class bool_circ(open_digraph):
     
     ###Constructor
@@ -975,6 +968,22 @@ class bool_circ(open_digraph):
                         return False
             return True
         return False
+    
+    def parse_parentheses(str):
+        circuit = bool_circ([],[],[node(0,'', {},{})])
+        prev = 0
+        current_node = circuit.get_node_by_id(0)
+        for i in range(1,len(str)):
+            if str[i] == '(':
+                #add node which is a parent to previous and label ''
+                ...
+            elif (str[i] == ')'):
+                #go to node's child
+                ...
+            else : current_node.set_label(str[i])
+        
+                
+            
 
 
 
