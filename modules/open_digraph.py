@@ -1,7 +1,9 @@
 import random
 import os
 import sys
-
+sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
+from modules.open_digraph_paths_distance_mx import open_digraph_paths_distance
+from modules.open_digraph_composition_mx import open_digraph_composition
 #  Generating Random Lists and Matrices  
 
 
@@ -301,7 +303,7 @@ class node:
         """
         return self.indegree()+self.outdegree()
 
-class open_digraph: # for open directed graph
+class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for open directed graph
     
     
     ###Constructor 
@@ -906,168 +908,6 @@ class open_digraph: # for open directed graph
 
         return True  # No cycle found
 
-    def min_id(self):
-        """
-            Returns the id with the smallest value
-        """
-        m = -1
-        for node in self.nodes.values():
-            cid = node.get_id() 
-            if m==-1:
-                m = cid
-            elif cid < m:
-                m = cid
-        return m
-    
-    def max_id(self):
-        """
-            Returns the id with the biggest value
-        """
-        m = -1
-        for node in self.nodes.values():
-            cid = node.get_id() 
-            if cid > m:
-                m = cid
-        return m
-
-    def shift_indices(self,n):
-        """
-            Shifts the ids of all nodes in the graph by n
-            
-            Parameters:
-            -----------
-            
-            n (int) : the value with which the ids will be shifted , can be negative
-            
-            Output:(inplace)
-            -------
-            
-            The graph (self) with indices shifted by n
-        """
-        def shift_keys(dictionary, m):
-            shifted_dict = {}
-            for key, value in dictionary.items():
-                new_key = key + m
-                shifted_dict[new_key] = value
-            return shifted_dict
-        
-        if n != 0:
-            for node in self.nodes.values():
-                cid = node.get_id() 
-                node.set_id(cid+n)
-                node.set_children(shift_keys(node.get_children(),n))
-                node.set_parents(shift_keys(node.get_parents(),n))
-            for i in range(len(self.inputs)):
-                self.inputs[i] += n
-            for i in range(len(self.outputs)):
-                self.outputs[i] += n
-        self.nodes = shift_keys(self.nodes, n)
-    
-    #6#
-    def iparallel(self, g):
-        """
-            Appends the graph g in parallel to the current graph 
-            
-            Parameters:
-            -----------
-
-            g (open_digraph) : a graph that is going to be added in parallel
-            
-            Output: (inplace)
-            -------
-            
-            the current graph will now be composed of it's former structure plus the graph g next to it
-        """
-        minId1 = self.min_id()
-        maxId2 = g.max_id()
-        
-        self.shift_indices(-minId1+maxId2+1)   # avoiding conflicting ids with shift
-        for key,nnode in g.get_id_node_map().items():   # adding the nodes of g
-            self.nodes[key]= nnode.copy()
-        for j in g.get_inputs_ids():
-            self.add_input_id(j)
-        for i in g.get_outputs_ids():
-            self.add_output_id(i)
-
-    #6#
-    def parallel(self, g):
-        """
-            Appends the graph g in parallel to the current graph 
-            
-            Parameters:
-            -----------
-
-            g (open_digraph) : a graph that is going to be added in parallel
-            
-            Return: 
-            -------
-            
-            A graph that will now be composed of current graph plus the graph g next to it
-        """
-        c = self.copy()
-        c.iparallel(g)
-        return c
-
-    #6#
-    def icompose(self, f):
-        """
-            Appends the graph f sequentially to the current graph connecting the inputs of self to the outputs of f
-            
-            Parameters:
-            -----------
-
-            f (open_digraph) : a graph to which self will be added in sequence
-            
-            Output: (inplace)
-            -------
-            
-            the current graph will now be composed of f followed by the former self in sequence
-        """
-        
-        assert len(f.get_outputs_ids()) == len(self.get_inputs_ids()) , "error, domains don't match."
-        
-        self.iparallel(f) 
-        old_input = [inp for inp in self.get_inputs_ids() if inp not in f.get_inputs_ids()] #inputs that used to belong to self after shift
-        
-        # merging in sequence
-        for k,f_out in enumerate(f.get_outputs_ids()):
-            child_dict = self.get_node_by_id(old_input[k]).get_children()
-            self.get_node_by_id(f_out).set_children(child_dict)
-            self.get_node_by_id(old_input[k]).set_children({})
-            for i in child_dict:
-                parents_of_child = self.get_node_by_id(i).get_parents()
-                multiplicity_of_old_parent = parents_of_child.pop(old_input[k])
-                parents_of_child[f_out]=multiplicity_of_old_parent
-            self.remove_node_by_id(old_input[k])
-
-        # updating inputs and outputs lists
-        for inp in self.get_inputs_ids():
-            if inp in old_input:
-                self.get_inputs_ids().remove(inp)
-
-        for out in self.get_outputs_ids():
-            if out  in f.get_outputs_ids():
-                self.get_outputs_ids().remove(out)
-
-    #6#
-    def compose(self , f):
-        """
-            Appends the graph f sequentially to the current graph connecting the inputs of self to the outputs of f
-            
-            Parameters:
-            -----------
-
-            f (open_digraph) : a graph to which self will be added in sequence
-            
-            Return: 
-            -------
-            
-            A graph that will now be composed of f followed by the former self in sequence
-        """
-        c = self.copy()
-        c.icompose(f)
-        return c
-
     #6#
     @classmethod
     def identity(cls , n):
@@ -1082,44 +922,7 @@ class open_digraph: # for open directed graph
             g.add_input_id(inp)
             g.add_output_id(out)
         return g
-
-    #6#
-    def connected_components(self):
-        """
-            Returns the number of connected components as well as a map from each node to the connected component they belong to
-            
-            Returns:
-            --------
-            A tuple (int , dict) : the number of connecter components / a dictionary with all the nodes as ids and their respective connected component
-        """
-        visited = set()
-        nb = 0
-        component_dict = {}
-
-
-        def dfs(node):
-            if node.get_id() in visited: # i.e if all children explored, add node to the current connected component
-                component_dict[node.get_id()] = nb 
-            
-            else:
-                visited.add(node.get_id())
-                children = node.get_children()
-                parents = node.get_parents()
-                for child_id in children:
-                    dfs(self.nodes[child_id])
-                    component_dict[child_id] = nb 
-                for parent_id in parents:
-                    dfs(self.nodes[parent_id])
-                    component_dict[parent_id] = nb # adds child after exploring the connected component it belongs to
-
-                
-        
-        for node in self.nodes.values():
-            if node.get_id() not in visited:
-                dfs(node)
-                nb +=1
-        return (nb , component_dict)
-
+    
     #6#
     def component_list(self):
         """
@@ -1142,67 +945,7 @@ class open_digraph: # for open directed graph
             componentMat[i] = open_digraph(component_input , component_output , componentMat[i])
         return componentMat
     
-    def dijkstra(self, src_node , direction = 0,tgt = None):
-        """
-            dijkstra's algorithm to find the shortest path from a node to any other node
 
-            Parameters:
-            -----------
-            src_node, the node source.
-            direction: an int representing direction of the search 
-                direction = 0: bidirectional graph (both directions).
-                direction = 1: search only children.
-                direction = -1: search only parents.
-
-            Returns:
-            --------
-            dict,dict {node:int}{node:node} :
-            the first indicating the length of the path to each node from the source node.
-            the seconf indicating the previous node before arriving to the wanted node.
-        """
-        Q = [src_node]
-        dist = {src_node:0}
-        prev = {}
-        while Q != []:
-            shortest = sys.maxsize
-            u = None
-            for node in Q:
-                if dist[node] <= shortest:
-                    shortest = dist[node]
-                    u = node
-            if u == tgt:  #Early stoppage if min dist to tgt has been calculated
-                return dest,prev
-            Q.remove(u)
-            if direction == 1:
-                neighbours = u.get_children()
-            elif direction == -1:
-                neighbours = u.get_parents()
-            else :
-                new_dict = u.get_children().copy()
-                neighbours = new_dict.update(u.get_parents())
-            for nei in neighbours:
-                v= self.get_node_by_id(nei)
-                if v not in dist:
-                    Q.append(v)
-                if v not in dist or dist[v]> dist[u]+1:
-                    dist[v] = dist[u]+1
-                    prev[v] = u
-        return dist,prev
-    
-    
-    def shortest_path(self , u , v):
-        return dijkstra(self, u , direction = 0,tgt = v)[0][v]  #dist[v] with u as source node
-    
-    def distances_from_common_ancestors(self , u ,v):
-        distu , prevu = dijkstra(self, u , direction = -1)
-        distv ,prevv = dijkstra(self, v , direction = -1)
-        
-        result = {}   #Ancestors are not strict here
-        for key in distu:
-            if key in distv:
-                result[key] = (distu[key] , distv[key])
-        return result
-    
     
     
     
@@ -1232,3 +975,35 @@ class bool_circ(open_digraph):
                         return False
             return True
         return False
+
+
+
+# #usual graph for testing
+# n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
+# inp2= [0,1]
+# outputs2 = [5]
+# gtest1 = open_digraph(inp2,outputs2,n02)
+# #gtest1.display_graph()
+# print(gtest1.topological_sort())
+
+# #graph of session 8
+# n03 = [node(0, '0', {}, {3:1}),node(1, '1', {}, {4:1,5:1,8:1}),node(2, '2', {}, {4:1}),
+#        node(3, '3', {0:1}, {5:1,6:1,7:1}),node(4, '4', {1:1,2:1}, {6:1}),node(5, '5', {1:1,3:1}, {7:1}),
+#        node(6, '6', {3:1,4:1}, {8:1,9:1}),node(7, '7', {3:1,5:1}, {}),node(8, '8', {1:1,6:1}, {}),
+#        node(9,'9',{6:1},{})]
+
+# gtest2 = open_digraph([],[],n03)
+# #gtest2.display_graph()
+# print(gtest2.topological_sort())
+# print(gtest2.longest_path(1,5))
+# #graph of session 8 with one cycle between 9 and 2
+# n03 = [node(0, '0', {}, {3:1}),node(1, '1', {}, {4:1,5:1,8:1}),node(2, '2', {9:1}, {4:1}),
+#        node(3, '3', {0:1}, {5:1,6:1,7:1}),node(4, '4', {1:1,2:1}, {6:1}),node(5, '5', {1:1,3:1}, {7:1}),
+#        node(6, '6', {3:1,4:1}, {8:1,9:1}),node(7, '7', {3:1,5:1}, {}),node(8, '8', {1:1,6:1}, {}),
+#        node(9,'9',{6:1},{2:1})]
+# gtest3 = open_digraph([],[],n03)
+# print(gtest3.topological_sort())
+
+# #graph that is auto cyclic
+# gtest3 = open_digraph([],[],[node(0,'0',{0:1},{0:1})])
+# print(gtest3.topological_sort())
