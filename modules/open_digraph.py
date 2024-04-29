@@ -969,19 +969,28 @@ class bool_circ(open_digraph):
             return True
         return False
     
-    def parse_parentheses(str):
-        circuit = bool_circ([],[],[node(0,'', {},{})])
-        prev = 0
-        current_node = circuit.get_node_by_id(0)
-        for i in range(1,len(str)):
-            if str[i] == '(':
-                #add node which is a parent to previous and label ''
-                ...
-            elif (str[i] == ')'):
-                #go to node's child
-                ...
-            else : current_node.set_label(str[i])
+    @classmethod
+    def parse_parentheses(cls,s):
+        g = open_digraph([],[0],[node(0,'', {1:1},{}),node(1,'', {},{0:1})])
+        circuit = bool_circ(g)
+        current_node = circuit.get_node_by_id(1)
+        s2 = "";
+        for char in s:
+            if char == "(":
+                current_node.set_label(s2)
+                parent_node = circuit.add_node();
+                circuit.add_edge(parent_node,current_node.get_id())
+                current_node = circuit.get_node_by_id(parent_node)
+                s2 = ""
+            elif char == ")":
+                current_node.set_label(s2)
+                current_node = circuit.get_node_by_id(list(current_node.get_children().keys())[0])
+                s2 = ""
+            else:
+                s2 += char
         
+        return circuit
+
                 
             
 
@@ -1014,5 +1023,10 @@ class bool_circ(open_digraph):
 # print(gtest3.topological_sort())
 
 # #graph that is auto cyclic
-# gtest3 = open_digraph([],[],[node(0,'0',{0:1},{0:1})])
+# gtest3 = open_digraph([],[],[node(0
+# ,'0',{0:1},{0:1})])
 # print(gtest3.topological_sort())
+
+
+g = bool_circ.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))")
+g.display_graph()
