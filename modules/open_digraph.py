@@ -773,7 +773,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
                 s += f"id = {iden}"
             if iden in self.inputs:
                 s+= f",input={True} ,output={False} "
-            elif iden in self.inputs:
+            elif iden in self.outputs:
                 s+= f",input={False},output={True}"
             else:
                 s+= f",input={False},output={False}"
@@ -945,6 +945,27 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             componentMat[i] = open_digraph(component_input , component_output , componentMat[i])
         return componentMat
     
+    
+    def merge_nodes(self,node_id, other_id):
+        """
+            Merges two nodes into one, the node that is left becomes parent of both input nodes' children and gets the label of node_id
+            
+            Parameters:
+            -----------
+            node_id (int): the id in self of the node that will remain
+            other_id (int): the id of the node that will be merged
+        """
+        if node_id != other_id:
+            node = self.get_node_by_id(node_id)
+            other = self.get_node_by_id(other_id)
+            for p,mult in other.get_parents().items():
+                if p != node_id:                 #avoids reflexive edges if node is parent of other
+                    self.add_edge(p,node_id,m=mult)
+            for c,mult in other.get_children().items():
+                if c != node_id:                 #avoids reflexive edges if node is child of other
+                    self.add_edge(node_id,c,m=mult)
+            self.remove_node_by_id(other_id)
+    
 class bool_circ(open_digraph):
     
     ###Constructor
@@ -970,26 +991,55 @@ class bool_circ(open_digraph):
         return False
     
     @classmethod
-    def parse_parentheses(cls,s):
-        g = open_digraph([],[0],[node(0,'', {1:1},{}),node(1,'', {},{0:1})])
-        circuit = bool_circ(g)
-        current_node = circuit.get_node_by_id(1)
-        s2 = "";
-        for char in s:
-            if char == "(":
-                current_node.set_label(s2)
-                parent_node = circuit.add_node();
-                circuit.add_edge(parent_node,current_node.get_id())
-                current_node = circuit.get_node_by_id(parent_node)
-                s2 = ""
-            elif char == ")":
-                current_node.set_label(s2)
-                current_node = circuit.get_node_by_id(list(current_node.get_children().keys())[0])
-                s2 = ""
-            else:
-                s2 += char
+    def parse_parentheses(cls,*args):
+        """
+            Creates the boolean circuit that can be associated to the series of propositional formulas given
+            
+            Parameters:
+            -----------
+            *args (str): any number of string representing a propositional formula
+            
+            Returns:
+            --------
+            
+            A boolean circuit where each output is the output of one formula that is given and the list labels given to every variable
+        """
+        circuit = bool_circ(open_digraph([],[],[]))
+        variables = {}
+        for arg in args:
+            first_node = circuit.add_node()
+            circuit.add_output_node(first_node)
+            current_node = circuit.get_node_by_id(first_node)
+            s2 = "";
+            for char in arg:
+                if char == "(":
+                    label = current_node.get_label()
+                    if label == "":
+                        current_node.set_label(label+s2)
+                    parent_node = circuit.add_node();
+                    circuit.add_edge(parent_node,current_node.get_id())
+                    current_node = circuit.get_node_by_id(parent_node)
+                    s2 = ""
+                elif char == ")":
+                    current_node.set_label(current_node.get_label()+s2)
+                    if s2 != "" and s2 not in variables:
+                        variables[s2] = current_node.get_id()
+                    current_node = circuit.get_node_by_id(list(current_node.get_children().keys())[0])
+                    s2 = ""
+                else:
+                    s2 += char
         
-        return circuit
+        #Creates appropriate inputs above the copy nodes
+        for id in variables.values():
+            circuit.add_input_node(id)
+        
+        nodes_dict = circuit.get_id_node_map().copy()
+        for node_id,n in nodes_dict.items():
+            if n.get_label() in variables:
+                circuit.merge_nodes(variables[n.get_label()],node_id)
+                circuit.get_node_by_id(variables[n.get_label()]).set_label("")
+        
+        return circuit,list(variables.keys())
 
                 
             
@@ -1028,5 +1078,7 @@ class bool_circ(open_digraph):
 # print(gtest3.topological_sort())
 
 
-g = bool_circ.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))")
-g.display_graph()
+g, var = bool_circ.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))","((x0)&(~(x1)))|(x2)")
+g2 , var2 = bool_circ.parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
+print(var2)
+g2.display_graph()
