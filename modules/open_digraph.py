@@ -513,15 +513,15 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
         s = "digraph G {\n"
         edges = ""
         for iden, node in self.nodes.items():
-            s += f'v{iden} [label="{node.get_label()}"'
+            s += f'v{iden} [label="{node.get_label()}'
             if verbose:
-                s += f"id = {iden}"
+                s += f"\nid={iden}"
             if iden in self.inputs:
-                s+= f",input={True} ,output={False} "
+                s+= f' ",input={True} ,output={False} '
             elif iden in self.outputs:
-                s+= f",input={False},output={True}"
+                s+= f'",input={False},output={True}'
             else:
-                s+= f",input={False},output={False}"
+                s+= f'",input={False},output={False}'
             s += "];\n"
             for child in node.get_children():
                 edges += f"v{iden} -> v{child};\n"

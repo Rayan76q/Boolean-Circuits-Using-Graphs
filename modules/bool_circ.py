@@ -217,6 +217,7 @@ class bool_circ(open_digraph):
         for child in children:
             copied_input = self.add_node(label=inp)
             self.add_edge(copied_input , child)
+            print(copied_input , child , "---")
             res.append(copied_input)
         return res
     
@@ -297,16 +298,18 @@ class bool_circ(open_digraph):
         outputs = list(self.get_outputs_ids())
         while outputs != []:
             node_id = calculated[0]
-            
             node = self.get_node_by_id(node_id)
+            print(calculated)
+            
             child = list(node.get_children())[0]
             
             if child in outputs:
                 self.get_node_by_id(child).set_label(node.get_label())
                 outputs.remove(child)
             else:
-                label = self.get_node_by_id(child).get_label()
                 
+                label = self.get_node_by_id(child).get_label()
+                print(child, label)
                 if label == "&":
                     self.and_gate(child,node_id)
                 elif label == "|":
@@ -328,7 +331,7 @@ class bool_circ(open_digraph):
                         calculated.append(child)
                 else:
                     calculated += res
-        
+                    print(res)
         #cleanning up the circuit
         for c in calculated:
             self.remove_node_by_id(c)
@@ -349,10 +352,13 @@ class bool_circ(open_digraph):
 
 g = bool_circ.adder(1)
 print(g)
+registre = bool_circ.create_registre(3,size=6)
+g.icompose(registre)
+g.display_graph(verbose=True)
+g.evaluate()
 #g = bool_circ.create_registre(7,size=2)
-#g.display_graph()
-g = bool_circ.adder(2)
 g.display_graph()
+
 
 #c = bool_circ.random_circ_bool(6,14,12)
 # c2 = open_digraph.random(7,form="DAG")
