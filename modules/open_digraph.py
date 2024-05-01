@@ -9,7 +9,7 @@ from modules.matrix_operations import *
 
 
 #3#
-def graph_from_adjacency_matrix(mat , inp = 0 , out = 0):
+def graph_from_adjacency_matrix(mat , inp = 0 , out = 0,number_generator = 0.5):
     """ 
     Generate a graph from an adjacency matrix with the number input and output nodes.
 
@@ -458,7 +458,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
 
     #3#
     @classmethod
-    def random(cls,n, bound=1, inputs=0, outputs=0, form="free", number_generator=(lambda :random.betavariate(1,5))): 
+    def random(cls,n, bound=1, inputs=0, outputs=0, form="free", number_generator=0.5): 
         """
             Returns a graph derived from a randomly generated adjacency matrix
             
