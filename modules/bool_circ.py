@@ -178,6 +178,8 @@ class bool_circ(open_digraph):
             adder_2,carry_in2,carry_out2 = cls.adder_helper(n-1)
             n = adder_1.iparallel(adder_2)
             adder_1.add_edge(carry_out1+n,carry_in2)
+            adder_1.get_inputs_ids().remove(carry_in2)
+            adder_1.get_outputs_ids().remove(carry_out1+n)
             return adder_1,carry_in1+n,carry_out2
     
     @classmethod
@@ -357,6 +359,9 @@ g.icompose(registre)
 g.display_graph(verbose=True)
 g.evaluate()
 #g = bool_circ.create_registre(7,size=2)
+#g.display_graph()
+g = bool_circ.adder(1)
+print(len(g.get_inputs_ids()))
 g.display_graph()
 
 
