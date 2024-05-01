@@ -88,63 +88,65 @@ class bool_circ(open_digraph):
     
     @classmethod
     def random_circ_bool(cls, n, nb_inputs,nb_outputs):
-        inputs = []
-        outputs = []
         #etape 1
-        di = open_digraph.random(n,form="DAG")
+        di = cls.random(n,form="DAG")
 
         #etape 2
-        for nodess in di.get_nodes():
+        d = list(di.get_nodes()).copy()
+        for nodess in d:
             if len(nodess.get_parents())==0:
                     inp_id = di.add_node("",{},{nodess.get_id():1})
-                    inputs.append(inp_id)
-            elif len(nodess.get_children()) == 0:
+                    di.add_input_id(inp_id)
+            if len(nodess.get_children()) == 0:
                     out_id = di.add_node("",{nodess.get_id():1},{})
-                    outputs.append(out_id)
-        
+                    di.add_output_id(out_id)
         #etape 2 bis
-        not_out_nor_inp = [id for id in di.get_node_ids() if (id not in di.get_inputs_ids() and id not in di.get_outputs_ids())]
+        not_out_nor_inp = [id for id in di.get_node_ids() if ((id not in di.get_inputs_ids()) and (id not in di.get_outputs_ids()))]
         random.shuffle(not_out_nor_inp)
-        random.shuffle(inputs)
-        random.shuffle(outputs)
-        while(len(inputs)!=nb_inputs):
-            if(len(inputs)< nb_inputs):
+        random.shuffle(di.get_inputs_ids())
+        random.shuffle(di.get_outputs_ids())
+        while(len(di.get_inputs_ids())!=nb_inputs):
+            if(len(di.get_inputs_ids())< nb_inputs):
                 id = not_out_nor_inp.pop(0)
                 new_inp_id = di.add_node("",{},{id:1})
                 not_out_nor_inp.append(id)
-                inputs.append(new_inp_id)
+                di.add_input_id(new_inp_id)
             else:
-                inp1 = inputs.pop(0)
-                inp2 = inputs.pop(0)
+                inp1 = di.get_inputs_ids().pop(0)
+                inp2 = di.get_inputs_ids().pop(0)
                 new_inp_id = di.add_node("",{},{inp1:1,inp2:1})
-                inputs.append(new_inp_id)
+                di.add_input_id(new_inp_id)
                 not_out_nor_inp.append(inp1)
                 not_out_nor_inp.append(inp2)
 
-        while(len(outputs)!=nb_outputs):
-            if(len(outputs)< nb_outputs):
-                id = not_out_nor_inp.pop(0)
-                new_out_id = di.add_node("",{id:1},{})
-                not_out_nor_inp.append(id)
-                outputs.append(new_out_id)
-            else:
-                out1 = outputs.pop(0)
-                out2 = outputs.pop(0)
-                new_out_id = di.add_node("",{out1:1,out2:1},{})
-                outputs.append(new_out_id)
-                not_out_nor_inp.append(out1)
-                not_out_nor_inp.append(out2)
+        while(len(di.get_outputs_ids())!=nb_outputs):
+                if(len(di.get_outputs_ids())< nb_outputs):
+                    id = not_out_nor_inp.pop(0)
+                    new_out_id = di.add_node("",{id:1},{})
+                    not_out_nor_inp.append(id)
+                    di.add_output_id(new_out_id)
+                else:
+                    out1 = di.get_outputs_ids().pop(0)
+                    out2 = di.get_outputs_ids().pop(0)
+                    new_out_id = di.add_node("",{out1:1,out2:1},{})
+                    di.add_output_id(new_out_id)
+                    not_out_nor_inp.append(out1)
+                    not_out_nor_inp.append(out2)
         #etape 3
+
         d = list(di.get_nodes()).copy()
-        for nodess in d:
-            if len(nodess.get_parents()) ==1 and len(nodess.get_children()) == 1:
-                nodess.set_label("~")
-            elif len(nodess.get_parents()) >1 and len(nodess.get_children()) == 1:
-                nodess.set_label(random.choice(["|","^","&"]))
-            elif len(nodess.get_parents()) >1 and len(nodess.get_children()) > 1:
-                bin_node_id = di.add_node(random.choice(["|","^","&"]),nodess.get_parents(),{})
-                cop_node_id = di.add_node("",{},nodess.get_children())
-                di.add_edge(bin_node_id,cop_node_id)
+        for nnodes in d:
+            if len(nnodes.get_parents()) ==1 and len(nnodes.get_children()) == 1:
+                nnodes.set_label("~")
+            elif len(nnodes.get_parents()) >1 and len(nnodes.get_children()) == 1:
+                nnodes.set_label(random.choice(["|","^","&"]))
+            elif len(nnodes.get_parents()) >1 and len(nnodes.get_children()) > 1:
+                bin_node_id = di.add_node(random.choice(["|","^","&"]),{},{})
+                #cop_node_id = di.add_node("",{},{})
+                for i in list(nnodes.get_parents().keys()).copy():
+                    di.add_edge(i,bin_node_id)
+                    di.remove_edge(i,nnodes.get_id())
+                di.add_edge(bin_node_id,nnodes.get_id())
 
         circuit = cls(di)
         assert circuit.is_well_formed()
@@ -168,6 +170,8 @@ class bool_circ(open_digraph):
             or1 =  circuit.add_node("|",{and1:1,and2:1},{})
             carry_out =  circuit.add_node("",{or1:1},{})
             out2 =  circuit.add_node("",{nor2:1},{})
+            circuit.set_inputs([inp1,inp2,carry_in])
+            circuit.set_outputs([carry_out,out2])
             return circuit,carry_in,carry_out
         else:
             adder_1,carry_in1,carry_out1 = cls.adder_helper(n-1)
@@ -347,3 +351,9 @@ g = bool_circ.adder(1)
 print(g)
 #g = bool_circ.create_registre(7,size=2)
 #g.display_graph()
+g = bool_circ.adder(2)
+g.display_graph()
+
+#c = bool_circ.random_circ_bool(6,14,12)
+# c2 = open_digraph.random(7,form="DAG")
+#c.display_graph()
