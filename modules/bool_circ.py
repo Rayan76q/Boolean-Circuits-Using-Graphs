@@ -178,16 +178,8 @@ class bool_circ(open_digraph):
             adder_2,carry_in2,carry_out2 = cls.adder_helper(n-1)
             n = adder_1.iparallel(adder_2)
             adder_1.add_edge(carry_out1+n,carry_in2)
-            index = 0
-            for i in  adder_1.get_inputs_ids():
-                if i == carry_in2:
-                    adder_1.get_inputs_ids().pop(index)
-                index+=1
-            index = 0
-            for i in  adder_1.get_outputs_ids():
-                if i == carry_out1+n:
-                    adder_1.get_outputs_ids().pop(index)
-                index+=1
+            adder_1.get_inputs_ids().remove(carry_in2)
+            adder_1.get_outputs_ids().remove(carry_out1+n)
             return adder_1,carry_in1+n,carry_out2
     
     @classmethod
