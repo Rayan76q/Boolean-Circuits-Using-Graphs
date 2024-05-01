@@ -170,6 +170,8 @@ class bool_circ(open_digraph):
             or1 =  circuit.add_node("|",{and1:1,and2:1},{})
             carry_out =  circuit.add_node("",{or1:1},{})
             out2 =  circuit.add_node("",{nor2:1},{})
+            circuit.set_inputs([inp1,inp2,carry_in])
+            circuit.set_outputs([carry_out,out2])
             return circuit,carry_in,carry_out
         else:
             adder_1,carry_in1,carry_out1 = cls.adder_helper(n-1)
@@ -195,9 +197,9 @@ class bool_circ(open_digraph):
 #g2 , var2 = bool_circ.parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
 #print(var2)
 #g.display_graph()
-# g = bool_circ.adder(1)
-# g.display_graph()
+g = bool_circ.adder(2)
+g.display_graph()
 
-c = bool_circ.random_circ_bool(6,14,12)
+#c = bool_circ.random_circ_bool(6,14,12)
 # c2 = open_digraph.random(7,form="DAG")
-c.display_graph()
+#c.display_graph()
