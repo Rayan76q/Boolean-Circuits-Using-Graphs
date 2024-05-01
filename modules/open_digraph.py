@@ -605,7 +605,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             Checks if the graph is well formed 
         """
         
-        #checks if all input_ids exist in the graph and if they have only one parent
+        #checks if all input_ids exist in the graph and if they have only one child
         for i in self.inputs:
             if i not in self.nodes.keys():
                 return False          
@@ -615,7 +615,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             if len(children) !=1 or children[0] != 1:
                 return False
         
-        #checks if all out_ids exist in the graph and if they have only one child
+        #checks if all out_ids exist in the graph and if they have only one parent
         for o in self.outputs:
             if o not in self.nodes.keys():
                 return False          
@@ -713,7 +713,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
 
     #3#
     @classmethod
-    def random(cls,n, bound, inputs=0, outputs=0, form="free", number_generator=(lambda :random.betavariate(1,5))): 
+    def random(cls,n, bound=1, inputs=0, outputs=0, form="free", number_generator=(lambda :random.betavariate(1,5))): 
         """
             Returns a graph derived from a randomly generated adjacency matrix
             
@@ -1010,13 +1010,13 @@ class bool_circ(open_digraph):
             first_node = circuit.add_node()
             circuit.add_output_node(first_node)
             current_node = circuit.get_node_by_id(first_node)
-            s2 = "";
+            s2 = ""
             for char in arg:
                 if char == "(":
                     label = current_node.get_label()
                     if label == "":
                         current_node.set_label(label+s2)
-                    parent_node = circuit.add_node();
+                    parent_node = circuit.add_node()
                     circuit.add_edge(parent_node,current_node.get_id())
                     current_node = circuit.get_node_by_id(parent_node)
                     s2 = ""
@@ -1040,6 +1040,100 @@ class bool_circ(open_digraph):
                 circuit.get_node_by_id(variables[n.get_label()]).set_label("")
         
         return circuit,list(variables.keys())
+    
+    def random_circ_bool( n, nb_inputs,nb_outputs):
+        inputs = []
+        outputs = []
+        #etape 1
+        di = open_digraph.random(n,"DAG")
+
+        #etape 2
+        for nodess in di.get_nodes():
+            if len(nodess.get_parents())==0:
+                    inp_id = di.add_node("",{},{nodess.get_id():1})
+                    inputs.append(inp_id)
+            elif len(nodess.get_children()) == 0:
+                    out_id = di.add_node("",{nodess.get_id():1},{})
+                    outputs.append(out_id)
+        
+        #etape 2 bis
+        not_out_nor_inp = [id for id in di.get_node_ids()]-di.get_inputs_ids()-di.get_outputs_ids()
+        random.shuffle(not_out_nor_inp)
+        random.shuffle(inputs)
+        random.shuffle(outputs)
+        while(len(inputs)!=nb_inputs):
+            if(len(inputs)< nb_inputs):
+                id = not_out_nor_inp.pop(0)
+                new_inp_id = id.add_node("",{},{id:1})
+                not_out_nor_inp.append(id)
+                inputs.append(new_inp_id)
+            else:
+                inp1 = inputs.pop(0)
+                inp2 = inputs.pop(0)
+                new_inp_id = id.add_node("",{},{inp1:1,inp2:1})
+                inputs.append(new_inp_id)
+                not_out_nor_inp.append(inp1)
+                not_out_nor_inp.append(inp2)
+
+        while(len(outputs)!=nb_outputs):
+            if(len(outputs)< nb_outputs):
+                id = not_out_nor_inp.pop(0)
+                new_out_id = id.add_node("",{id:1},{})
+                not_out_nor_inp.append(id)
+                outputs.append(new_out_id)
+            else:
+                out1 = outputs.pop(0)
+                out2 = outputs.pop(0)
+                new_out_id = id.add_node("",{out1:1,out2:1},{})
+                outputs.append(new_out_id)
+                not_out_nor_inp.append(out1)
+                not_out_nor_inp.append(out2)
+        #etape 3
+        for nodess in di.get_nodes():
+            if len(nodess.get_parents()) ==1 and len(nodess.get_children()) == 1:
+                nodess.set_label("~")
+            elif len(nodess.get_parents()) >1 and len(nodess.get_children()) == 1:
+                nodess.set_label(random.choice(["|","^","&"]))
+            elif len(nodess.get_parents()) >1 and len(nodess.get_children()) > 1:
+                bin_node_id = di.add_node(random.choice(["|","^","&"]),nodess.get_parents(),{})
+                cop_node_id = di.add_node("",{},nodess.get_children())
+                di.add_edge(bin_node_id,cop_node_id)
+
+        return bool_circ(di)
+    
+    def adder_helper(n):
+        if n == 0:
+            circuit = bool_circ(open_digraph([],[],[]))
+            inp1 = circuit.add_node("",{},{})
+            inp2 = circuit.add_node("",{},{})
+            carry_in = circuit.add_node("",{},{})
+            cop1 =  circuit.add_node("",{inp1:1},{})
+            cop2 =  circuit.add_node("",{inp2:1},{})
+            and1 = circuit.add_node("&",{cop1:1,cop2:1},{})
+            nor1 = circuit.add_node("^",{cop1:1,cop2:1},{})
+            cop3 = circuit.add_node("",{nor1:1},{})
+            cop4 = circuit.add_node("",{carry_in:1},{})
+            and2 = circuit.add_node("&",{cop3:1,cop4:1},{})
+            nor2 = circuit.add_node("^",{cop3:1,cop4:1},{})
+            or1 =  circuit.add_node("|",{and1:1,and2:1},{})
+            carry_out =  circuit.add_node("",{or1:1},{})
+            out2 =  circuit.add_node("",{nor2:1},{})
+            return circuit,carry_in,carry_out
+        else:
+            adder_1,carry_in1,carry_out1 = bool_circ.adder_helper(n-1)
+            adder_2,carry_in2,carry_out2 = bool_circ.adder_helper(n-1)
+            n = adder_1.iparallel(adder_2)
+            adder_1.add_edge(carry_out1+n,carry_in2)
+            return adder_1,carry_in1+n,carry_out2
+    
+    def adder(n):
+        add,cin,cout = bool_circ.adder_helper(n)
+        return add
+
+    def half_adder(n):
+        add,cin,cout = bool_circ.adder_helper(n)
+        add.get_node_by_id(cin).set_label("0")
+        return add
 
                 
             
@@ -1078,7 +1172,10 @@ class bool_circ(open_digraph):
 # print(gtest3.topological_sort())
 
 
-g, var = bool_circ.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))","((x0)&(~(x1)))|(x2)")
-g2 , var2 = bool_circ.parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
-print(var2)
-g2.display_graph()
+#g, var = bool_circ.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))","((x0)&(~(x1)))|(x2)")
+#g2 , var2 = bool_circ.parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
+#print(var2)
+#g2.display_graph()
+
+g = bool_circ.random_circ_bool(5,2,1)
+g.display_graph()

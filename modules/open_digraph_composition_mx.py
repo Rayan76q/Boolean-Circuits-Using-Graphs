@@ -81,6 +81,8 @@ class open_digraph_composition:
             self.add_input_id(j)
         for i in g.get_outputs_ids():
             self.add_output_id(i)
+        #return the the int that shifted the indices to use it elsewhere like in adder functions
+        return -minId1+maxId2+1
 
     #6#
     def parallel(self, g):
