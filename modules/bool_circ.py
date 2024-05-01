@@ -79,7 +79,8 @@ class bool_circ(open_digraph):
         
         return circuit,list(variables.keys())
     
-    def random_circ_bool( n, nb_inputs,nb_outputs):
+    @classmethod
+    def random_circ_bool(cls, n, nb_inputs,nb_outputs):
         inputs = []
         outputs = []
         #etape 1
@@ -137,11 +138,12 @@ class bool_circ(open_digraph):
                 cop_node_id = di.add_node("",{},nodess.get_children())
                 di.add_edge(bin_node_id,cop_node_id)
 
-        return bool_circ(di)
+        return cls(di)
     
-    def adder_helper(n):
+    @classmethod
+    def adder_helper(cls,n):
         if n == 0:
-            circuit = bool_circ(open_digraph([],[],[]))
+            circuit = cls(open_digraph([],[],[]))
             inp1 = circuit.add_node("",{},{})
             inp2 = circuit.add_node("",{},{})
             carry_in = circuit.add_node("",{},{})
@@ -158,18 +160,20 @@ class bool_circ(open_digraph):
             out2 =  circuit.add_node("",{nor2:1},{})
             return circuit,carry_in,carry_out
         else:
-            adder_1,carry_in1,carry_out1 = bool_circ.adder_helper(n-1)
-            adder_2,carry_in2,carry_out2 = bool_circ.adder_helper(n-1)
+            adder_1,carry_in1,carry_out1 = cls.adder_helper(n-1)
+            adder_2,carry_in2,carry_out2 = cls.adder_helper(n-1)
             n = adder_1.iparallel(adder_2)
             adder_1.add_edge(carry_out1+n,carry_in2)
             return adder_1,carry_in1+n,carry_out2
     
-    def adder(n):
-        add,cin,cout = bool_circ.adder_helper(n)
+    @classmethod
+    def adder(cls,n):
+        add,cin,cout = cls.adder_helper(n)
         return add
 
-    def half_adder(n):
-        add,cin,cout = bool_circ.adder_helper(n)
+    @classmethod
+    def half_adder(cls,n):
+        add,cin,cout = cls.adder_helper(n)
         add.get_node_by_id(cin).set_label("0")
         return add
 
