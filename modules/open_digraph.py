@@ -139,9 +139,8 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             Generates a new unique id usable in the graph
         """
         id = 0
-        for i in self.nodes.keys():
-            if id==i :
-                id+=1
+        while id in self.get_node_ids():
+            id+=1
         return id
     
     

@@ -12,7 +12,7 @@ class bool_circ(open_digraph):
         g.assert_is_well_formed()
         super().__init__(g.get_inputs_ids().copy(), g.get_outputs_ids().copy(), [])
         self.nodes = g.get_id_node_map().copy()
-        self.is_well_formed()
+        assert self.is_well_formed()
     
     
     def is_well_formed(self):
@@ -48,7 +48,7 @@ class bool_circ(open_digraph):
             
             A boolean circuit where each output is the output of one formula that is given and the list labels given to every variable
         """
-        circuit = bool_circ(open_digraph([],[],[]))
+        circuit = bool_circ(open_digraph.empty())
         variables = {}
         for arg in args:
             first_node = circuit.add_node()
@@ -187,14 +187,163 @@ class bool_circ(open_digraph):
         add.get_node_by_id(cin).set_label("0")
         return add
     
+    @classmethod
+    def create_registre(cls,acc ,size=8):
+        bin_string = bin(acc)[2:]
+        if len(bin_string) < size:
+            bin_string = (size-len(bin_string))*"0" + bin_string   #padding
+        else:
+            bin_string = bin_string[-1:-size-1:-1]   #buffer overflow
+        registre = bool_circ(open_digraph.empty())
+        for i in range(size):
+            node_inp = registre.add_node(label=bin_string[i])
+            registre.add_input_id(node_inp)
+            registre.add_output_node(node_inp)
+        assert registre.is_well_formed()
+        return registre
     
+    
+    def copy_gate(self,copy_node_id, input_node_id):
+        inp = self.get_node_by_id(input_node_id).get_label()
+        assert inp == "1" or inp == "0"
+        children = list(self.get_node_by_id(copy_node_id).get_children())
+        self.remove_node_by_id(copy_node_id)
+        self.remove_node_by_id(input_node_id)
+        res = []
+        for child in children:
+            copied_input = self.add_node(label=inp)
+            self.add_edge(copied_input , child)
+            res.append(copied_input)
+        return res
+    
+    def not_gate(self, not_node_id,input_node_id):
+        inp = self.get_node_by_id(input_node_id).get_label()
+        assert inp == "1" or inp == "0"
+        not_node = self.get_node_by_id(not_node_id)
+        if inp == "1":
+            not_node.set_label("0")
+        else:
+            not_node.set_label("1")
+        
+        self.remove_node_by_id(input_node_id)
+        return [not_node_id]
+            
+    def and_gate(self, and_node_id,input_node_id):
+        inp = self.get_node_by_id(input_node_id).get_label()
+        assert inp == "1" or inp == "0"
+        
+        inp_node = self.get_node_by_id(input_node_id)
+        and_node = self.get_node_by_id(and_node_id)
+        if inp == "0":
+            and_node.set_label("0")
+            parents = list(and_node.get_parents()).copy()
+            for p in parents:
+                self.remove_parallel_edges(p,and_node_id)
+        self.remove_node_by_id(input_node_id)
+    
+    def or_gate(self, or_node_id,input_node_id):
+        inp = self.get_node_by_id(input_node_id).get_label()
+        assert inp == "1" or inp == "0"
+        
+        inp_node = self.get_node_by_id(input_node_id)
+        or_node = self.get_node_by_id(or_node_id)
+        if inp == "1":
+            or_node.set_label("1")
+            parents = list(or_node.get_parents()).copy()
+            for p in parents:
+                self.remove_parallel_edges(p,or_node_id)
+        self.remove_node_by_id(input_node_id)
+    
+    
+    def xor_gate(self, xor_node_id,input_node_id):
+        inp = self.get_node_by_id(input_node_id).get_label()
+        assert inp == "1" or inp == "0"
+        
+        xor_node = self.get_node_by_id(xor_node_id)
+        if inp == "1":
+            xor_node.set_label("~")
+            
+            parents = list(xor_node.get_parents()).copy()
+            
+            new_xor = self.add_node(label="~")
+            self.add_edge(new_xor,xor_node)
+            for p in parents:
+                self.remove_parallel_edges(p,xor_node)
+                self.add_edge(p,new_xor)
+        self.remove_node_by_id(input_node_id)
+        
+    def neutral_element(self, binary_gate):
+        node = self.get_node_by_id(binary_gate)
+        label = node.get_label()
+        if label == "|" or label == "^":
+            node.set_label("0")
+        elif label == "&":
+            node.set_label("1")
+        
+
+    def evaluate(self):
+        inputs = [self.get_node_by_id(inp_id).get_label() for inp_id in self.get_inputs_ids()] #maybe useful to return at the end
+        
+        #taking care of neutral gates at the beginning which dont result of transformations
+        for node in self.get_nodes():
+            if (node.get_label() == "|" or node.get_label() == "~" or node.get_label() == "^" or node.get_label() == "&") and len(node.get_parents())==0 :
+                self.neutral_element(node.get_id())
+        
+        calculated = list(self.get_inputs_ids())
+        outputs = list(self.get_outputs_ids())
+        while outputs != []:
+            node_id = calculated[0]
+            
+            node = self.get_node_by_id(node_id)
+            child = list(node.get_children())[0]
+            
+            if child in outputs:
+                self.get_node_by_id(child).set_label(node.get_label())
+                outputs.remove(child)
+            else:
+                label = self.get_node_by_id(child).get_label()
+                
+                if label == "&":
+                    self.and_gate(child,node_id)
+                elif label == "|":
+                    self.or_gate(child,node_id)
+                elif label == "^":
+                    self.xor_gate(child,node_id)
+                elif label == "~":
+                    res = self.not_gate(child,node_id)
+                elif label == "":
+                    res = self.copy_gate(child,node_id)
+                
+                calculated.remove(node_id)
+            
+                if label != "" and label != "~" :
+                    if (self.get_node_by_id(child).get_label() == "0" or self.get_node_by_id(child).get_label() == "1"): #binary gate was succesfully evaluated
+                        calculated.append(child)
+                    elif (self.get_node_by_id(child).get_label() in "|^&" and len(self.get_node_by_id(child).get_parents())==0): #the gate became neutral after transformations
+                        self.neutral_element(child)
+                        calculated.append(child)
+                else:
+                    calculated += res
+        
+        #cleanning up the circuit
+        for c in calculated:
+            self.remove_node_by_id(c)
+
 
 #g, var = bool_circ.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))","((x0)&(~(x1)))|(x2)")
-#g2 , var2 = bool_circ.parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
-#print(var2)
-#g.display_graph()
-# g = bool_circ.adder(1)
-# g.display_graph()
 
-c = bool_circ.random_circ_bool(5,2 ,1)
-c.display_graph()
+# g2 , var2 = bool_circ.parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
+# #print(var2)
+# registre = bool_circ.create_registre(7,size=3)
+
+# g2.icompose(registre)
+
+# g2.evaluate()
+
+# g2.display_graph()
+
+
+g = bool_circ.adder(1)
+print(g)
+#g = bool_circ.create_registre(7,size=2)
+#g.display_graph()

@@ -118,10 +118,10 @@ class open_digraph_composition:
             
             the current graph will now be composed of f followed by the former self in sequence
         """
-        
         assert len(f.get_outputs_ids()) == len(self.get_inputs_ids()) , "error, domains don't match."
         
         self.iparallel(f) 
+        
         old_input = [inp for inp in self.get_inputs_ids() if inp not in f.get_inputs_ids()] #inputs that used to belong to self after shift
         
         # merging in sequence
@@ -134,14 +134,17 @@ class open_digraph_composition:
                 multiplicity_of_old_parent = parents_of_child.pop(old_input[k])
                 parents_of_child[f_out]=multiplicity_of_old_parent
             self.remove_node_by_id(old_input[k])
-
+        
+        
         # updating inputs and outputs lists
-        for inp in self.get_inputs_ids():
-            if inp in old_input:
+        inps = list(self.get_inputs_ids()).copy()
+        for inp in inps:
+            if inp not in f.get_inputs_ids():
                 self.get_inputs_ids().remove(inp)
-
-        for out in self.get_outputs_ids():
-            if out  in f.get_outputs_ids():
+                
+        outs = list(self.get_outputs_ids()).copy()
+        for out in outs:
+            if out in f.get_outputs_ids():
                 self.get_outputs_ids().remove(out)
 
     #6#
