@@ -38,7 +38,7 @@ def random_oriented_int_matrix(n , bound , null_diag = True, number_generator=(l
     return m
 
 #3#
-def random_dag_int_matrix(n,bound,null_diag=True, number_generator=(lambda : random.betavariate(1,5))):
+def random_dag_int_matrix(n,bound,null_diag=True, number_generator=2.5):
     random.seed(number_generator)
     mat = [[0 for j in range(n)] for i in range(n)]
     if random.randint(0,1):

@@ -33,7 +33,8 @@ def graph_from_adjacency_matrix(mat , inp = 0 , out = 0,number_generator = 0.5):
     N = range(len(mat[0]))
     for i in N:
         for j in N:
-            graph.add_edge(i,j,mat[i][j])
+            if mat[i][j]!=0:
+                graph.add_edge(i,j,mat[i][j])
     
     ids = list(graph.get_node_ids()).copy()
     for i in range(inp):
