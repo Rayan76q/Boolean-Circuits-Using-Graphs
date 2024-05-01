@@ -3,6 +3,7 @@ import os
 sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
 import unittest
 from modules.open_digraph import * 
+from modules.bool_circ import *
 
 
 
