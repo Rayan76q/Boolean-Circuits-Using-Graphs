@@ -27,7 +27,7 @@ class bool_circ(open_digraph):
                     return False
                 elif (node.get_label() == "&" or node.get_label() == "^" or node.get_label() == "|" or node.get_label() == "1" or node.get_label() == "0") and node.outdegree() > 1:
                     return False
-                elif node.get_label() == "~" and node.outdegree() != 1 and node.outdegree()!= 1:
+                elif node.get_label() == "~" and (node.outdegree() != 1 or node.indegree()!= 1):
                     return False
                 
                 
@@ -354,7 +354,13 @@ class bool_circ(open_digraph):
         for out in self.get_outputs_ids():
             res+= self.get_node_by_id(out).get_label()
         return int(res , 2)
-
+    
+    @classmethod
+    def encodeur_4bits(cls):
+        g , _ = bool_circ.parse_parentheses("((x0)^(x1)^(x2)^(x3))","((x0)^(x2)^(x3))","(x0)","((x1)^(x2)^(x3))","(x1)","(x2)","(x3)")
+        return g
+    
+    
 
 
 def convert_to_binary_string(acc , size=8):
@@ -383,12 +389,12 @@ def add(a,b, size=8):
     for i in range(size):
         res +=   b_str[i]+a_str[i]
     res = res + "0" # adding 0 carry bit
-    registre = bool_circ.create_registre(int(res , 2),size=len(res))
-    _ , n = find_bigger_2_pow(size)
+    reg_size , n = find_bigger_2_pow(size)
     g = bool_circ.adder(n)
+    registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
     return g.evaluate()
-    
+
     
 
 #g, var = bool_circ.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))","((x0)&(~(x1)))|(x2)")
@@ -404,15 +410,15 @@ def add(a,b, size=8):
 # g2.display_graph()
 
 
-g = bool_circ.adder(1)
+# g = bool_circ.adder(1)
 
-registre = bool_circ.create_registre(8,size=5)
-g.icompose(registre)
+# registre = bool_circ.create_registre(8,size=5)
+# g.icompose(registre)
 #g.display_graph(verbose=True)
 
-
-print(add(20,20))
-
+print(add(120,23459,size=17))
+# g = bool_circ.encodeur_4bits()
+# g.display_graph()
 
 
 #g = bool_circ.create_registre(7,size=2)
