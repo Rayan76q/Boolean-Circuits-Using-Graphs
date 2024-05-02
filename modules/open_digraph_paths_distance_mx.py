@@ -140,13 +140,13 @@ class open_digraph_paths_distance:
         for i in range(u_depth,graph_depth):
             for j in range(0,len(stack[i])):
                 w = stack[i][j]
+                dist[w]= -1
                 for parent in self.get_node_by_id(w).get_parents():
-                    dist[w]= -1
                     if parent in dist.keys():
                         if dist[parent]+1> dist[w]: 
                             dist[w]= dist[parent]+1
                             prev[w]=parent
-                    if w == v: 
-                        return dist[w],prev
-        return dist[w],prev
+                if w == v: 
+                    return dist[w],prev
+        return dist[v],prev
 
