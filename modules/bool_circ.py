@@ -197,11 +197,7 @@ class bool_circ(open_digraph):
     
     @classmethod
     def create_registre(cls,acc ,size=8):
-        bin_string = bin(acc)[2:]
-        if len(bin_string) < size:
-            bin_string = (size-len(bin_string))*"0" + bin_string   #padding
-        else:
-            bin_string = bin_string[-1:-size-1:-1]   #buffer overflow
+        bin_string = convert_to_binary_string(acc,size=size)
         registre = bool_circ(open_digraph.empty())
         for i in range(size):
             node_inp = registre.add_node(label=bin_string[i])
@@ -317,8 +313,6 @@ class bool_circ(open_digraph):
         
 
     def evaluate(self):
-        inputs = [self.get_node_by_id(inp_id).get_label() for inp_id in self.get_inputs_ids()] #maybe useful to return at the end
-        
         #taking care of neutral gates at the beginning which dont result of transformations
         for node in self.get_nodes():
             if (node.get_label() == "|" or node.get_label() == "~" or node.get_label() == "^" or node.get_label() == "&") and len(node.get_parents())==0 :
@@ -327,8 +321,6 @@ class bool_circ(open_digraph):
         calculated = list(self.get_inputs_ids())
         outputs = list(self.get_outputs_ids())
         while outputs != [] and calculated != []:
-            print(outputs)
-            print(calculated)
             node_id = calculated[0]
             calculated.remove(node_id)
                 
@@ -343,7 +335,6 @@ class bool_circ(open_digraph):
 
             else:
                 label = self.get_node_by_id(child).get_label()
-                print(child, label)
                 if label == "&":
                     res = self.and_gate(child,node_id)
                 elif label == "|":
@@ -355,11 +346,50 @@ class bool_circ(open_digraph):
                 elif label == "":
                     res = self.copy_gate(child,node_id)
                 calculated += res
-                print(calculated,"-----")
         #cleanning up the circuit
         for c in calculated:
             self.remove_node_by_id(c)
 
+        res = ""
+        for out in self.get_outputs_ids():
+            res+= self.get_node_by_id(out).get_label()
+        return int(res , 2)
+
+
+
+def convert_to_binary_string(acc , size=8):
+    bin_string = bin(acc)[2:]
+    if len(bin_string) < size:
+        bin_string = (size-len(bin_string))*"0" + bin_string   #padding
+    else:
+        bin_string = bin_string[-1:-size-1:-1]  #bufferOverflow
+    return bin_string
+
+def find_bigger_2_pow(n):
+    acc = 1
+    i = 0
+    while acc < n:
+        acc *=2
+        i+=1
+    return acc,i
+
+def add(a,b, size=8):
+    """
+        b is added to a
+    """
+    a_str = convert_to_binary_string(a,size=size)
+    b_str = convert_to_binary_string(b,size=size)
+    res = ""
+    for i in range(size):
+        res +=   b_str[i]+a_str[i]
+    res = res + "0" # adding 0 carry bit
+    registre = bool_circ.create_registre(int(res , 2),size=len(res))
+    _ , n = find_bigger_2_pow(size)
+    g = bool_circ.adder(n)
+    g.icompose(registre)
+    return g.evaluate()
+    
+    
 
 #g, var = bool_circ.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))","((x0)&(~(x1)))|(x2)")
 
@@ -375,14 +405,14 @@ class bool_circ(open_digraph):
 
 
 g = bool_circ.adder(1)
-print(g)
-registre = bool_circ.create_registre(4,size=5)
-g.icompose(registre)
-g.display_graph(verbose=True)
 
-g.evaluate()
-print(g)
-g.display_graph()
+registre = bool_circ.create_registre(8,size=5)
+g.icompose(registre)
+#g.display_graph(verbose=True)
+
+
+print(add(20,20))
+
 
 
 #g = bool_circ.create_registre(7,size=2)
