@@ -360,7 +360,23 @@ class bool_circ(open_digraph):
         g , _ = bool_circ.parse_parentheses("((x0)^(x1)^(x2)^(x3))","((x0)^(x2)^(x3))","(x0)","((x1)^(x2)^(x3))","(x1)","(x2)","(x3)")
         return g
     
-    
+    @classmethod
+    def decodeur_7bits(cls):
+        xor1 = "((x0)^(x2)^(x4)^(x6))"
+        xor2 = "((x1)^(x2)^(x5)^(x6))"
+        xor3 = "((x3)^(x4)^(x5)^(x6))"
+        
+        
+        previous , _ = bool_circ.parse_parentheses(f"({xor1})",f"({xor2})","(x2)",f"({xor3})","(x4)","(x5)","(x6)")
+        
+        g , _ = bool_circ.parse_parentheses(
+            f"(((x0)&(x1)&(~(x3)))^(x2))",
+            f"(((x0)&(~(x1))&(x3))^(x4))",
+            f"(((~(x0))&(x1)&(x3))^(x5))",
+            f"(((x1)&(x2)&(x3))^(x6))"
+            )
+        g.icompose(previous)
+        return g
 
 
 def convert_to_binary_string(acc , size=8):
@@ -416,9 +432,9 @@ def add(a,b, size=8):
 # g.icompose(registre)
 #g.display_graph(verbose=True)
 
-print(add(120,23459,size=17))
-# g = bool_circ.encodeur_4bits()
-# g.display_graph()
+print(add(120,23459,size=16))
+g = bool_circ.decodeur_7bits()
+g.display_graph()
 
 
 #g = bool_circ.create_registre(7,size=2)
