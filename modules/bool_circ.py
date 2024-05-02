@@ -185,6 +185,8 @@ class bool_circ(open_digraph):
     @classmethod
     def adder(cls,n):
         add,cin,cout = cls.adder_helper(n)
+        add.get_inputs_ids().sort()
+        add.get_outputs_ids().sort()
         return add
 
     @classmethod
@@ -219,7 +221,6 @@ class bool_circ(open_digraph):
         for child in children:
             copied_input = self.add_node(label=inp)
             self.add_edge(copied_input , child)
-            print(copied_input , child , "---")
             res.append(copied_input)
         return res
     
@@ -227,57 +228,84 @@ class bool_circ(open_digraph):
         inp = self.get_node_by_id(input_node_id).get_label()
         assert inp == "1" or inp == "0"
         not_node = self.get_node_by_id(not_node_id)
+        self.remove_node_by_id(input_node_id)
         if inp == "1":
             not_node.set_label("0")
         else:
             not_node.set_label("1")
         
-        self.remove_node_by_id(input_node_id)
         return [not_node_id]
             
     def and_gate(self, and_node_id,input_node_id):
         inp = self.get_node_by_id(input_node_id).get_label()
         assert inp == "1" or inp == "0"
         
-        inp_node = self.get_node_by_id(input_node_id)
+        self.remove_node_by_id(input_node_id)
         and_node = self.get_node_by_id(and_node_id)
         if inp == "0":
             and_node.set_label("0")
             parents = list(and_node.get_parents()).copy()
             for p in parents:
                 self.remove_parallel_edges(p,and_node_id)
-        self.remove_node_by_id(input_node_id)
+                nullifier = self.add_node()
+                self.add_edge(p,nullifier)
+            return [and_node_id]
+        
+        if len(and_node.get_parents())==0:
+            self.neutral_element(and_node_id)
+            return [and_node_id]
+        return []
     
     def or_gate(self, or_node_id,input_node_id):
         inp = self.get_node_by_id(input_node_id).get_label()
         assert inp == "1" or inp == "0"
         
-        inp_node = self.get_node_by_id(input_node_id)
+        
+        self.remove_node_by_id(input_node_id)
         or_node = self.get_node_by_id(or_node_id)
         if inp == "1":
             or_node.set_label("1")
             parents = list(or_node.get_parents()).copy()
             for p in parents:
                 self.remove_parallel_edges(p,or_node_id)
-        self.remove_node_by_id(input_node_id)
-    
+                nullifier = self.add_node()
+                self.add_edge(p,nullifier)
+            return [or_node_id]
+            
+        
+        if len(or_node.get_parents())==0:
+            self.neutral_element(or_node_id)
+            return [or_node_id]
+        
+        return []
+        
     
     def xor_gate(self, xor_node_id,input_node_id):
         inp = self.get_node_by_id(input_node_id).get_label()
         assert inp == "1" or inp == "0"
         
+        self.remove_node_by_id(input_node_id)
         xor_node = self.get_node_by_id(xor_node_id)
+        new_xor = None
         if inp == "1":
             xor_node.set_label("~")
             
             parents = list(xor_node.get_parents()).copy()
             
-            new_xor = self.add_node(label="~")
-            self.add_edge(new_xor,xor_node)
+            new_xor = self.add_node(label="^")
+            self.add_edge(new_xor,xor_node_id)
             for p in parents:
-                self.remove_parallel_edges(p,xor_node)
+                self.remove_parallel_edges(p,xor_node_id)
                 self.add_edge(p,new_xor)
-        self.remove_node_by_id(input_node_id)
+        
+        
+        if len(xor_node.get_parents())==0 and xor_node.get_label()=="^":
+            self.neutral_element(xor_node_id)
+            return [xor_node_id]
+        elif new_xor != None and len(self.get_node_by_id(new_xor).get_parents())==0:
+            self.neutral_element(new_xor)
+            return [new_xor]
+        return []
         
     def neutral_element(self, binary_gate):
         node = self.get_node_by_id(binary_gate)
@@ -298,42 +326,36 @@ class bool_circ(open_digraph):
         
         calculated = list(self.get_inputs_ids())
         outputs = list(self.get_outputs_ids())
-        while outputs != []:
-            node_id = calculated[0]
-            node = self.get_node_by_id(node_id)
+        while outputs != [] and calculated != []:
+            print(outputs)
             print(calculated)
+            node_id = calculated[0]
+            calculated.remove(node_id)
+                
+            node = self.get_node_by_id(node_id)
             
             child = list(node.get_children())[0]
             
             if child in outputs:
                 self.get_node_by_id(child).set_label(node.get_label())
+                self.remove_node_by_id(node_id)
                 outputs.remove(child)
+
             else:
-                
                 label = self.get_node_by_id(child).get_label()
                 print(child, label)
                 if label == "&":
-                    self.and_gate(child,node_id)
+                    res = self.and_gate(child,node_id)
                 elif label == "|":
-                    self.or_gate(child,node_id)
+                    res = self.or_gate(child,node_id)
                 elif label == "^":
-                    self.xor_gate(child,node_id)
+                    res = self.xor_gate(child,node_id)
                 elif label == "~":
                     res = self.not_gate(child,node_id)
                 elif label == "":
                     res = self.copy_gate(child,node_id)
-                
-                calculated.remove(node_id)
-            
-                if label != "" and label != "~" :
-                    if (self.get_node_by_id(child).get_label() == "0" or self.get_node_by_id(child).get_label() == "1"): #binary gate was succesfully evaluated
-                        calculated.append(child)
-                    elif (self.get_node_by_id(child).get_label() in "|^&" and len(self.get_node_by_id(child).get_parents())==0): #the gate became neutral after transformations
-                        self.neutral_element(child)
-                        calculated.append(child)
-                else:
-                    calculated += res
-                    print(res)
+                calculated += res
+                print(calculated,"-----")
         #cleanning up the circuit
         for c in calculated:
             self.remove_node_by_id(c)
@@ -354,15 +376,17 @@ class bool_circ(open_digraph):
 
 g = bool_circ.adder(1)
 print(g)
-registre = bool_circ.create_registre(3,size=6)
+registre = bool_circ.create_registre(4,size=5)
 g.icompose(registre)
 g.display_graph(verbose=True)
+
 g.evaluate()
+print(g)
+g.display_graph()
+
+
 #g = bool_circ.create_registre(7,size=2)
 #g.display_graph()
-g = bool_circ.adder(1)
-print(len(g.get_inputs_ids()))
-g.display_graph()
 
 
 #c = bool_circ.random_circ_bool(6,14,12)
