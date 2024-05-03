@@ -188,10 +188,14 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             
             the graph with the added edges 
         """
-        n = len(m_list)
-        assert n == len(edges)
+        n = len(edges)
+        assert (m_list == [] or n == len(m_list))
         for i in range(n):
-            self.add_edge(edges[i][0] , edges[i][1], m=m_list[i])
+            if m_list == []:
+                self.add_edge(edges[i][0] , edges[i][1])
+            else:
+                self.add_edge(edges[i][0] , edges[i][1], m=m_list[i])
+                
     
     def add_node(self,label="",parents={},children={}):
         """
@@ -712,8 +716,6 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             self.remove_node_by_id(other_id)
 
 
-                
-            
 
 
 

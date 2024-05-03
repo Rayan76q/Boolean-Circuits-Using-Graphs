@@ -18,7 +18,7 @@ class node:
     
 
     def copy(self):
-        return node(self.id , self.label , self.parents , self.children)
+        return node(self.id , self.label , self.parents.copy() , self.children.copy())
 
     
     

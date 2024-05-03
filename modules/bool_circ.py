@@ -35,6 +35,10 @@ class bool_circ(open_digraph):
         return False
     
     @classmethod
+    def identity(cls,n):
+        return cls.perturbe_bit(n,[-1])
+    
+    @classmethod
     def parse_parentheses(cls,*args):
         """
             Creates the boolean circuit that can be associated to the series of propositional formulas given
@@ -314,11 +318,13 @@ class bool_circ(open_digraph):
 
     def evaluate(self):
         #taking care of neutral gates at the beginning which dont result of transformations
+        tmp = []
         for node in self.get_nodes():
             if (node.get_label() == "|" or node.get_label() == "~" or node.get_label() == "^" or node.get_label() == "&") and len(node.get_parents())==0 :
                 self.neutral_element(node.get_id())
+                tmp.append(node.get_id())
         
-        calculated = list(self.get_inputs_ids())
+        calculated = list(self.get_inputs_ids()) + tmp
         outputs = list(self.get_outputs_ids())
         while outputs != [] and calculated != []:
             node_id = calculated[0]
@@ -351,37 +357,304 @@ class bool_circ(open_digraph):
             self.remove_node_by_id(c)
 
         res = ""
-        for out in self.get_outputs_ids():
+        (self.get_outputs_ids()).sort()
+        for out in (self.get_outputs_ids()):
             res+= self.get_node_by_id(out).get_label()
         return int(res , 2)
     
     @classmethod
     def encodeur_4bits(cls):
-        g , _ = bool_circ.parse_parentheses("((x0)^(x1)^(x2)^(x3))","((x0)^(x2)^(x3))","(x0)","((x1)^(x2)^(x3))","(x1)","(x2)","(x3)")
-        return g
+        circuit = bool_circ(open_digraph.empty())
+        copies = [circuit.add_node() for i in range(4)]
+        xors = [circuit.add_node(label="^") for i in range(3)]
+        circuit.add_edges([(copies[0],xors[0]),(copies[0],xors[1]),(copies[1],xors[0]),
+                        (copies[1],xors[2]),(copies[2],xors[1]),(copies[2],xors[2]),
+                        (copies[3],xors[0]), (copies[3],xors[1]), (copies[3],xors[2])]
+                        ,[])
+        for i in range(4):
+            circuit.add_input_node(copies[i])
+        
+        circuit.add_output_node(xors[0])
+        circuit.add_output_node(xors[1])
+        circuit.add_output_node(copies[0])
+        circuit.add_output_node(xors[2])
+        
+        for i in range(1,4):
+            circuit.add_output_node(copies[i])
+        
+        return circuit
     
     @classmethod
     def decodeur_7bits(cls):
-        xor1 = "((x0)^(x2)^(x4)^(x6))"
-        xor2 = "((x1)^(x2)^(x5)^(x6))"
-        xor3 = "((x3)^(x4)^(x5)^(x6))"
+        circuit = bool_circ(open_digraph.empty())
+        copies = [circuit.add_node() for i in range(7)]
+        xors = [circuit.add_node(label="^") for i in range(7)]
+        nots = [circuit.add_node(label="~") for i in range(3)]
+        ands = [circuit.add_node(label="&") for i in range(4)]
+        circuit.add_edges([(copies[0],xors[0]),(copies[0],xors[1]),(copies[1],xors[0]),(copies[1],xors[2]),(copies[2],xors[1]),(copies[2],xors[2]), (copies[3],xors[0]), (copies[3],xors[1]), (copies[3],xors[2])]+
+                        [(xors[0],copies[4]),(xors[1],copies[5]),(xors[2],copies[6])]
+                        +[(copies[4],ands[0]),(copies[4],ands[1]),(copies[4],ands[3])]
+                        + [(copies[5],ands[0]),(copies[5],ands[2]),(copies[5],ands[3])]
+                        + [(copies[6],ands[1]),(copies[6],ands[2]),(copies[6],ands[3])]
+                        + [(copies[4],nots[2]),(copies[5],nots[1]),(copies[6],nots[0])]
+                        + [(nots[i],ands[i]) for i in range(3)]
+                        + [(copies[i],xors[i+3]) for i in range(4)]
+                        + [(ands[i],xors[i+3]) for i in range(4)],[])
+        for i in range(3,7):
+            circuit.add_output_node(xors[i])
+        circuit.add_input_node(xors[0])
+        circuit.add_input_node(xors[1])
+        circuit.add_input_node(copies[0])
+        circuit.add_input_node(xors[2])
+        for i in range(1,4):
+            circuit.add_input_node(copies[i])
         
+        return circuit
+    
+    def assoc_xor(self , parent_xor,child_xor):
+        parent_node = self.get_node_by_id(parent_xor)
+        child_node = self.get_node_by_id(child_xor)
+        assert parent_node.get_label() == "^" and child_node.get_label() == "^"
         
-        previous , _ = bool_circ.parse_parentheses(f"({xor1})",f"({xor2})","(x2)",f"({xor3})","(x4)","(x5)","(x6)")
+        parents_of_parent = list(parent_node.get_parents())
+        self.remove_node_by_id(parent_xor)
         
-        g , _ = bool_circ.parse_parentheses(
-            f"(((x0)&(x1)&(~(x3)))^(x2))",
-            f"(((x0)&(~(x1))&(x3))^(x4))",
-            f"(((~(x0))&(x1)&(x3))^(x5))",
-            f"(((x1)&(x2)&(x3))^(x6))"
-            )
-        g.icompose(previous)
-        return g
+        for p in parents_of_parent:
+            self.add_edge(p,child_xor)
+        return True
+    
+    def assoc_and(self , parent_and,child_and):
+        parent_node = self.get_node_by_id(parent_and)
+        child_node = self.get_node_by_id(child_and)
+        assert parent_node.get_label() == "&" and child_node.get_label() == "&"
+        
+        parents_of_parent = list(parent_node.get_parents())
+        self.remove_node(parent_and)
+        
+        for p in parents_of_parent:
+            self.add_edge(p,child_and)
+        return True
+            
+    def assoc_or(self , parent_or,child_or):
+        parent_node = self.get_node_by_id(parent_or)
+        child_node = self.get_node_by_id(child_or)
+        assert parent_node.get_label() == "|" and child_node.get_label() == "|"
+        
+        parents_of_parent = list(parent_node.get_parents())
+        self.remove_node(parent_or)
+        
+        for p in parents_of_parent:
+            self.add_edge(p,child_or)
+        return True
+    
+    def assoc_copy(self, parent_copy,child_copy):
+        parent_node = self.get_node_by_id(parent_copy)
+        child_node = self.get_node_by_id(child_copy)
+        assert parent_node.get_label() == "" and child_node.get_label() == ""
+        if child_copy in self.get_outputs_ids() or parent_copy in self.get_inputs_ids():
+            return False
+        
+        children_of_child = list(child_node.get_children())
+        self.remove_node_by_id(child_copy)
+        
+        for c in children_of_child:
+            self.add_edge(parent_copy , c)
+        return True
+            
+    def involution_xor(self, xor_id , copy_id):
+        xor_node = self.get_node_by_id(xor_id)
+        copy_node = self.get_node_by_id(copy_id)
+        assert xor_node.get_label() == "^" and copy_node.get_label() == ""
+        
+        nb_arretes = (copy_node.get_children())[xor_id]
+        if nb_arretes >=2:
+            if nb_arretes % 2 == 0:
+                self.remove_parallel_edges(copy_id, xor_id)
+            else:
+                self.remove_parallel_edges(copy_id, xor_id)
+                self.add_edge(copy_id,xor_id)
+            return True
+        else:
+            return False
+    
+    def effacement(self , op_id,child_id):
+        if child_id in self.get_outputs_ids():
+            return False
+        parents = list(self.get_node_by_id(op_id).get_parents())
+        self.remove_node_by_id(op_id)
+        self.remove_node_by_id(child_id)
+        
+        for p in parents:
+            nullifier = self.add_node()
+            self.add_edge(p,nullifier)
+            
+        return True
+    
+    def not_xor(self , not_id, xor_id):
+        xor_node = self.get_node_by_id(xor_id)
+        not_node = self.get_node_by_id(not_id)
+        assert xor_node.get_label() == "^" and not_node.get_label() == "~"
 
+        parent_of_not = list(not_node.get_parents())[0]
+        child_of_xor = list(xor_node.get_children())[0]
+        
+        self.remove_parallel_edges(xor_id,child_of_xor)
+        self.remove_parallel_edges(parent_of_not,not_id)
+        self.remove_parallel_edges(not_id,xor_id)
+        self.add_edge(xor_id, not_id)
+        self.add_edge(not_id , child_of_xor)
+        self.add_edge(parent_of_not,xor_id)
+        return True
+    
+    def not_copy(self,not_id,copy_id):
+        copy_node = self.get_node_by_id(copy_id)
+        not_node = self.get_node_by_id(not_id)
+        assert copy_node.get_label() == "" and not_node.get_label() == "~"
+        if copy_id in self.get_outputs_ids():
+            return False
+        
+        parent_of_not = list(not_node.get_parents())[0]
+        self.remove_node_by_id(not_id)
+        self.add_edge(parent_of_not , copy_id)
+        return True
+        
+        children_of_copy = list(self.get_node_by_id(copy_id).get_children())
+        for c in children_of_copy:
+            new_not = self.add_node(label="~")
+            self.remove_edge(copy_id,c)
+            self.add_edge(copy_id,new_not)
+            self.add_edge(new_not,c)
+        return True
+    
+    def involution_not(self, not1, not2):
+        node1 = self.get_node_by_id(not1)
+        node2 = self.get_node_by_id(not2)
+        assert node1.get_label() == "~" and node2.get_label() == "~"
+        
+        parent_of_node1 = list(node1.get_parents())[0]
+        child_of_node2 = list(node2.get_children())[0]
+        
+        self.remove_node_by_id(not1)
+        self.remove_node_by_id(not2)
+        self.add_edge(parent_of_node1,child_of_node2)
+        return True
+
+        
+        
+    
+    def transform_circuit(self):
+        
+        def transform_once(self,nodes):
+            flag = False
+            for node_id in nodes:
+                r = False
+                if node_id in self.get_inputs_ids() or node_id in self.get_outputs_ids() or node_id not in self.get_node_ids():
+                    continue
+                node = self.get_node_by_id(node_id)
+                label = node.get_label()
+                if label == "":
+                    parents = list(node.get_parents())
+                    children = list(node.get_children())
+                    
+                    if len(children) == 1:  #gets rid of unecessary copies
+                        self.remove_node_by_id(node_id)
+                        self.add_edge(parents[0],children[0])
+                        r=True
+                    else:
+                        for c in children:
+                            lab = self.get_node_by_id(c).get_label()
+                            if  lab == "" :
+                                r=self.assoc_copy(node_id,c)
+                                
+                            elif lab == "^":
+                                r=self.involution_xor(c,node_id)
+                                
+                        
+                        lab = self.get_node_by_id(parents[0]).get_label()
+                        if  lab == "" :
+                            r=self.assoc_copy(parents[0],node_id)
+                    
+                else:
+                    if (self.get_node_by_id((list(node.get_children())[0]))).get_label() == "" and len((self.get_node_by_id((list(node.get_children())[0]))).get_children()) == 0:
+                        r=self.effacement(node_id ,list(node.get_children())[0] )
+                        
+                    elif label == "&":
+                        parents = list(node.get_parents())
+                        for p in parents:
+                            lab = self.get_node_by_id(p).get_label()
+                            if  lab == "&":
+                                r=self.assoc_and(p,node_id)
+                                
+                    elif label == "|":
+                        parents = list(node.get_parents())
+                        for p in parents:
+                            lab = self.get_node_by_id(p).get_label()
+                            if  lab == "|":
+                                r = self.assoc_or(p,node_id)    
+                                
+                    elif label == "^":
+                        parents = list(node.get_parents())
+                        for p in parents:
+                            
+                            lab = self.get_node_by_id(p).get_label()
+                            if  lab == "^":
+                                r=self.assoc_xor(p,node_id)
+                                
+                            elif lab == "":
+                                r=self.involution_xor(node_id,p)
+                                
+                                
+                            elif lab == "~":
+                                r=self.not_xor(p,node_id)
+                                
+                            
+                    elif label == "~":
+                        parent = list(node.get_parents())[0]
+                        child = list(node.get_children())[0]
+                        
+                        if self.get_node_by_id(parent).get_label() == "~" :
+                            r=self.involution_not(parent,node_id)
+                            
+                        elif self.get_node_by_id(child).get_label() == "~" :
+                            r=self.involution_not(node_id,child)
+                            
+                        elif self.get_node_by_id(child).get_label() == "":
+                            r=self.not_copy(node_id,child)
+                if r:
+                    flag = True
+            return flag
+        cont = True
+        while cont:
+            nodes = list(self.get_node_ids())
+            cont = transform_once(self, nodes)
+    
+    def calculate(self):
+        self.transform_circuit()
+        return self.evaluate()
+        
+    @classmethod
+    def perturbe_bit(cls,n,list_pos):
+        """
+            introduit une erreur aux bits de positions donnée
+        """
+        circuit = bool_circ(open_digraph.empty())
+        for i in range(n):
+            inp = circuit.add_node()
+            circuit.add_input_id(inp)
+            out = circuit.add_node()
+            circuit.add_output_id(out)
+            if i in list_pos:
+                erreur = circuit.add_node(label="~")
+                circuit.add_edge(inp,erreur)
+                circuit.add_edge(erreur , out)
+            else:
+                circuit.add_edge(inp,out)
+                
+        return circuit
 
 def convert_to_binary_string(acc , size=8):
     bin_string = bin(acc)[2:]
-    if len(bin_string) < size:
+    if len(bin_string) <= size:
         bin_string = (size-len(bin_string))*"0" + bin_string   #padding
     else:
         bin_string = bin_string[-1:-size-1:-1]  #bufferOverflow
@@ -409,9 +682,43 @@ def add(a,b, size=8):
     g = bool_circ.adder(n)
     registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
-    return g.evaluate()
+    return g.calculate()
 
+
+
+def check_invarients():
+    enc = bool_circ.encodeur_4bits()
+    dec = bool_circ.decodeur_7bits()
     
+    for i in range(-1,4): #-1 -> no error is introduced
+        noise = bool_circ.perturbe_bit(7,[i]) 
+        g = bool_circ(noise.compose(enc))
+        g2 = bool_circ(dec.compose(g))
+        
+        for i in range(0,16):
+            reg = bool_circ.create_registre(i,size=4)
+            g3 = bool_circ(g2.compose(reg))
+            assert (i==g3.calculate())
+    
+    print("Hamming property verfied when introducing one error at most.")
+    
+    mistakes = 0
+    for i in range(4): 
+        for j in range(i+1,4):
+            noise = bool_circ.perturbe_bit(7,[i,j]) 
+            g = bool_circ(noise.compose(enc))
+            g2 = bool_circ(dec.compose(g))
+            for k in range(0,16):
+                reg = bool_circ.create_registre(k,size=4)
+                g3 = bool_circ(g2.compose(reg))
+                mistakes += (i!=g3.calculate())
+    print(f"Number of time that the original signal couldn't be retreived when introducing 2 errors: {mistakes} out of {6*16} attempts.")
+    
+    
+    
+
+
+
 
 #g, var = bool_circ.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))","((x0)&(~(x1)))|(x2)")
 
@@ -432,9 +739,9 @@ def add(a,b, size=8):
 # g.icompose(registre)
 #g.display_graph(verbose=True)
 
-print(add(120,23459,size=16))
-g = bool_circ.decodeur_7bits()
-g.display_graph()
+#print(add(120,23459,size=16))
+#g = bool_circ.decodeur_7bits()
+#g.display_graph()
 
 
 #g = bool_circ.create_registre(7,size=2)
@@ -444,3 +751,6 @@ g.display_graph()
 #c = bool_circ.random_circ_bool(6,14,12)
 # c2 = open_digraph.random(7,form="DAG")
 #c.display_graph()
+check_invarients()
+
+#bool_circ.decodeur_7bits().display_graph(verbose=True)
