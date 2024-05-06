@@ -516,7 +516,7 @@ class bool_circ(open_digraph):
         parent_of_not = list(not_node.get_parents())[0]
         self.remove_node_by_id(not_id)
         self.add_edge(parent_of_not , copy_id)
-        return True
+        
         
         children_of_copy = list(self.get_node_by_id(copy_id).get_children())
         for c in children_of_copy:
@@ -651,6 +651,54 @@ class bool_circ(open_digraph):
                 circuit.add_edge(inp,out)
                 
         return circuit
+    
+    
+    @classmethod
+    def CL_4bit(cls):
+        return bool_circ.parse_parentheses("(g3)^((p3)&(g2))^((p3)&(p2)&(g1))^((p3)&(p2)&(p1)&(g0))^((p3)&(p2)&(p1)&(p0)&(c0))",
+                                       "(g2)^((p2)&(g1))^((p2)&(p1)&(g0))^((p2)&(p1)&(p0)&(c0))","(g1)^((p1)&(g0))^((p1)&(p0)&(c0))"
+                                       ,"(g0)^((p0)&(c0))")[0]
+    
+    
+    @classmethod 
+    def CLA_4bit(cls):
+        circuit = bool_circ.CL_4bit()
+        copies  = [circuit.add_node() for i in range(13)]
+        ands = [circuit.add_node(label = "&") for i in range(4)]
+        xors = [circuit.add_node(label = "^") for i in range(8)]
+        
+        #links for gi pi
+        circuit.add_edges(
+            [(copies[i],xors[i]) for i in range(4)] + [(copies[i+4],xors[i]) for i in range(4)] +
+            [(copies[i],ands[i]) for i in range(4)] + [(copies[i+4],ands[i]) for i in range(4)] +
+            [(xors[i],copies[9+i]) for i in range(4)],[]
+        )
+        for i in range(0,4):
+            circuit.add_edge(copies[9+i],circuit.get_inputs_ids()[2*i+1])
+            circuit.add_edge(ands[i],circuit.get_inputs_ids()[2*i+2])
+            
+        circuit.add_edge(copies[8] , circuit.get_inputs_ids()[0])
+        
+        for i in range(0,3):
+            circuit.add_edge(copies[9+i],xors[4+i])
+        circuit.add_edge(copies[8], xors[4])
+        
+        for i in range(len(circuit.get_outputs_ids())-1):
+            circuit.add_edge(list(circuit.get_outputs_ids())[i] , xors[5+i])
+        
+        c_n1 = list(circuit.get_outputs_ids())[-1]
+        circuit.set_outputs([])
+        circuit.set_inputs([])
+        
+        for i in range(4):
+            circuit.add_output_node(xors[4+i])
+        circuit.add_output_node(c_n1)
+        circuit.add_input_node(copies[8])
+        for i in range(8):
+            circuit.add_input_node(copies[i])
+        return circuit
+        
+        
 
 def convert_to_binary_string(acc , size=8):
     bin_string = bin(acc)[2:]
@@ -751,6 +799,9 @@ def check_invarients():
 #c = bool_circ.random_circ_bool(6,14,12)
 # c2 = open_digraph.random(7,form="DAG")
 #c.display_graph()
-check_invarients()
+#check_invarients()
 
 #bool_circ.decodeur_7bits().display_graph(verbose=True)
+
+g = bool_circ.CLA_4bit()
+g.display_graph()
