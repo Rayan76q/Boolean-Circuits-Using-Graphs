@@ -716,7 +716,7 @@ def find_bigger_2_pow(n):
         i+=1
     return acc,i
 
-def add(a,b, size=8):
+def add_registre(a,b, size=8):
     """
         b is added to a
     """
@@ -732,6 +732,12 @@ def add(a,b, size=8):
     g.icompose(registre)
     return g.calculate()
 
+def add(a,b):
+    """
+        b is added to a without needing to specify size
+    """
+    size = max(a.bit_length(),b.bit_length())
+    return add_registre(a,b,size = size)
 
 
 def check_invarients():
