@@ -890,7 +890,14 @@ def check_invarients():
 #print(g.get_outputs_ids())
 #print(g.max_id())
 #g.display_graph(verbose = True)
-print(add_naive(2304,12347))
+i = 0
+res = True
+while i <2000 and res:
+    a = random.randint(0,1234567865)
+    b = random.randint(0,1234567432)
+    i+=1
+    res = (add_CLA(a,b) == a+b)
+print(res and (i==2000) )
 # for i in range(16):
 #     for j in range(16):
 #         print( f"{i} + {j} =", add_registre(i,j,size=4) )
