@@ -746,6 +746,41 @@ def find_bigger_2_pow(n):
         i+=1
     return acc,i
 
+def add_registre_CLA(a,b, size=8):
+    """
+        b is added to a
+    """
+    a_str = convert_to_binary_string(a,size=size)
+    b_str = convert_to_binary_string(b,size=size)
+    #on doit ajouter les bits 4 par 4 coz of how create register is coded
+    quotient, remainder = divmod(size, 4)
+    res = ""
+    for i in range(quotient-1,-1,-1):
+        for c in [a_str,b_str]:
+            for j in range(3,-1,-1):
+                res += c[i*4+j]
+    for c in [a_str,b_str]:
+        for i in range(size-1,size-remainder-1,-1):
+            res+= c[i]
+    
+    #for i in range(size):  
+    #    res  +=   a_str[i] + b_str[i]
+    res = "0"+res  # adding 0 carry bit"
+    reg_size , n = find_bigger_2_pow(size)
+    g = bool_circ.CLA_adder(quotient-1)
+    registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
+    g.icompose(registre)
+    return g.evaluate()
+    
+def add_CLA(a,b):
+    """
+        b is added to a without needing to specify size by CLA method
+    """
+    size = 0
+    while size < max(a.bit_length(),b.bit_length()):
+        size +=8
+    return add_registre_CLA(a,b,size = size)
+
 def add_registre(a,b, size=8):
     """
         b is added to a
@@ -757,21 +792,18 @@ def add_registre(a,b, size=8):
     #for i in range(size):  
     #    res  +=   a_str[i] + b_str[i]
     res = "0"+res  # adding 0 carry bit"
-    print(res)
     reg_size , n = find_bigger_2_pow(size)
-    g = bool_circ.CLA_adder(1)
-    #g.display_graph(verbose=True)
+    g = bool_circ.adder(size)
     registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
-    g.display_graph(verbose=True)
     return g.evaluate()
-    
 
 def add(a,b):
     """
         b is added to a without needing to specify size
     """
     size = max(a.bit_length(),b.bit_length())
+    print(size)
     return add_registre(a,b,size = size)
 
 
@@ -852,14 +884,14 @@ def check_invarients():
 # g.display_graph(verbose="True")
 
 #print(g.evaluate())
-g = bool_circ.CLA_adder(1)
+#g = bool_circ.CLA_adder(5)
 #g.iparallel(bool_circ.CLA_adder(0))
-print(g.get_inputs_ids(),len(g.get_inputs_ids()))
+#print(len(g.get_inputs_ids()))
 
-print(g.get_outputs_ids())
-print(g.max_id())
+#print(g.get_outputs_ids())
+#print(g.max_id())
 #g.display_graph(verbose = True)
-print(add_registre(1,1,size= 8))
+print(add(2304,97))
 # for i in range(16):
 #     for j in range(16):
 #         print( f"{i} + {j} =", add_registre(i,j,size=4) )
