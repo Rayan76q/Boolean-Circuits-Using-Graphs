@@ -401,6 +401,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
         assert child_id in self.nodes.keys() , "Node connected to input doesn't exist."
         new_inp = self.add_node(children={child_id: 1})
         self.add_input_id(new_inp)
+        return new_inp
     
     def add_output_node(self , par_id):
         """
@@ -410,6 +411,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
         
         new_out = self.add_node(parents={par_id: 1})
         self.add_output_id(new_out)
+        return new_out
     
     
     def copy(self):

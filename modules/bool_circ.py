@@ -79,7 +79,9 @@ class bool_circ(open_digraph):
         
         #Creates appropriate inputs above the copy nodes
         for id in variables.values():
-            circuit.add_input_node(id)
+            inp = circuit.add_input_node(id)
+            
+        
         
         nodes_dict = circuit.get_id_node_map().copy()
         for node_id,n in nodes_dict.items():
@@ -656,15 +658,18 @@ class bool_circ(open_digraph):
     
     @classmethod
     def CL_4bit(cls):
-        return bool_circ.parse_parentheses("((g0)^((p0)&(c0)))","((g1)^((p1)&(g0))^((p1)&(p0)&(c0)))" , 
-                                           "((g2)^((p2)&(g1))^((p2)&(p1)&(g0))^((p2)&(p1)&(p0)&(c0)))",
-                                           "((g3)^((p3)&(g2))^((p3)&(p2)&(g1))^((p3)&(p2)&(p1)&(g0))^((p3)&(p2)&(p1)&(p0)&(c0)))")[0]
+        return bool_circ.parse_parentheses("((g3)^((p3)&(g2))^((p3)&(p2)&(g1))^((p3)&(p2)&(p1)&(g0))^((p3)&(p2)&(p1)&(p0)&(c0)))",
+                                        "((g2)^((p2)&(g1))^((p2)&(p1)&(g0))^((p2)&(p1)&(p0)&(c0)))",
+                                        "((g1)^((p1)&(g0))^((p1)&(p0)&(c0)))" , 
+                                        "((g0)^((p0)&(c0)))")
     
     
     @classmethod 
     def CLA_4bit(cls):
-        circuit = bool_circ.CL_4bit()
-        print(len(circuit.get_inputs_ids()))
+        circuit ,inps = bool_circ.CL_4bit()
+        dict_inputs = {inps[i]:list(circuit.get_inputs_ids())[i] for i in range(len(inps))}
+        
+        #circuit.display_graph(verbose=True)
         copies  = [circuit.add_node() for i in range(13)]
         ands = [circuit.add_node(label = "&") for i in range(4)]
         xors = [circuit.add_node(label = "^") for i in range(8)]
@@ -675,27 +680,30 @@ class bool_circ(open_digraph):
             [(copies[i],ands[i]) for i in range(4)] + [(copies[i+4],ands[i]) for i in range(4)] +
             [(xors[i],copies[9+i]) for i in range(4)],[]
         )
-        for i in range(0,4):
-            circuit.add_edge(copies[9+i],circuit.get_inputs_ids()[2*i+1])
-            circuit.add_edge(ands[i],circuit.get_inputs_ids()[2*i+2])
-            
-        circuit.add_edge(copies[8] , circuit.get_inputs_ids()[0])
         
-        for i in range(0,3):
+        
+        circuit.add_edge(copies[8] , dict_inputs["c0"])
+        for i in range(0,4):
+            circuit.add_edge(copies[9+i],dict_inputs["p"+str(i)])
+            circuit.add_edge(ands[i],dict_inputs["g"+str(i)])
+        
+        
+        for i in range(4):
             circuit.add_edge(copies[9+i],xors[4+i])
         circuit.add_edge(copies[8], xors[4])
         
-        for i in range(len(circuit.get_outputs_ids())-1):
-            circuit.add_edge(list(circuit.get_outputs_ids())[i] , xors[5+i])
+        circuit.get_outputs_ids().sort()
+        for i in range(1,len(circuit.get_outputs_ids())):
+            circuit.add_edge(list(circuit.get_outputs_ids())[i] , xors[8-i])
         
-        c_n1 = list(circuit.get_outputs_ids())[-1]
+        c_n1 = list(circuit.get_outputs_ids())[0]
         circuit.set_outputs([])
         circuit.set_inputs([])
         
         
-        for i in range(4):
-            circuit.add_output_node(xors[4+i])
         circuit.add_output_node(c_n1)
+        for i in range(3,-1,-1):
+            circuit.add_output_node(xors[4+i])
         
         circuit.add_input_node(copies[8])
         for i in range(8):
@@ -726,17 +734,17 @@ def add_registre(a,b, size=8):
     """
     a_str = convert_to_binary_string(a,size=size)
     b_str = convert_to_binary_string(b,size=size)
-    res = a_str+b_str
-    print(res)
+    res = a_str[::-1]+b_str[::-1]
+    
     #for i in range(size):  
     #    res  +=   a_str[i] + b_str[i]
     res = "0"+res  # adding 0 carry bit"
-    
     reg_size , n = find_bigger_2_pow(size)
     g = bool_circ.CLA_4bit()
+    #g.display_graph(verbose=True)
     registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
-    g.display_graph(verbose=True)
+    #g.display_graph(verbose=True)
     return g.evaluate()
     
 
@@ -818,6 +826,15 @@ def check_invarients():
 #bool_circ.decodeur_7bits().display_graph(verbose=True)
 
 
+# g = bool_circ.CL_4bit()[0]
+
+# reg = bool_circ.create_registre(int("100000000" ,2) , size=9)
+# g.icompose(reg)
+# g.display_graph(verbose="True")
+
+#print(g.evaluate())
 
 
-print(add_registre(5,2,size=4))
+for i in range(16):
+    for j in range(16):
+        print( f"{i} + {j} =", add_registre(i,j,size=4) )
