@@ -710,7 +710,25 @@ class bool_circ(open_digraph):
             circuit.add_input_node(copies[i])
         
         return circuit
-
+    
+    @classmethod
+    def CLA_helper(cls,n):
+        if (n==0):
+            g = cls.CLA_4bit()
+            return 65,g,70
+        else :
+            cout1,CLA1,cin1 = cls.CLA_helper(0)
+            cout2,CLA2,cin2 = cls.CLA_helper(n-1)
+            n = CLA1.iparallel(CLA2)
+            CLA1.add_edge(cout1+n,cin2)
+            CLA1.get_inputs_ids().remove(cin2)
+            CLA1.get_outputs_ids().remove(cout1+n)
+            return cout2,CLA1,cin1+n
+        
+    @classmethod
+    def CLA_adder(cls,n):
+        cout,cla,cin = cls.CLA_helper(n)
+        return cla
 
 def convert_to_binary_string(acc , size=8):
     bin_string = bin(acc)[2:]
@@ -739,12 +757,13 @@ def add_registre(a,b, size=8):
     #for i in range(size):  
     #    res  +=   a_str[i] + b_str[i]
     res = "0"+res  # adding 0 carry bit"
+    print(res)
     reg_size , n = find_bigger_2_pow(size)
-    g = bool_circ.CLA_4bit()
+    g = bool_circ.CLA_adder(1)
     #g.display_graph(verbose=True)
     registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
-    #g.display_graph(verbose=True)
+    g.display_graph(verbose=True)
     return g.evaluate()
     
 
@@ -833,8 +852,14 @@ def check_invarients():
 # g.display_graph(verbose="True")
 
 #print(g.evaluate())
+g = bool_circ.CLA_adder(1)
+#g.iparallel(bool_circ.CLA_adder(0))
+print(g.get_inputs_ids(),len(g.get_inputs_ids()))
 
-
-for i in range(16):
-    for j in range(16):
-        print( f"{i} + {j} =", add_registre(i,j,size=4) )
+print(g.get_outputs_ids())
+print(g.max_id())
+#g.display_graph(verbose = True)
+print(add_registre(1,1,size= 8))
+# for i in range(16):
+#     for j in range(16):
+#         print( f"{i} + {j} =", add_registre(i,j,size=4) )
