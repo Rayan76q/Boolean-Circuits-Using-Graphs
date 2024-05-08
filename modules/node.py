@@ -132,3 +132,56 @@ class node:
             returns the degree of the node
         """
         return self.indegree()+self.outdegree()
+    
+    def is_copy(self):
+        return isinstance(self,copy_node)
+    
+    def is_or(self):
+        return isinstance(self,or_node)
+    
+    def is_and(self):
+        return isinstance(self,and_node)
+    
+    def is_not(self):
+        return isinstance(self,not_node)
+    
+    def is_xor(self):
+        return isinstance(self,xor_node)
+    
+    def is_constant(self):
+        return isinstance(self,constant_node_node)
+
+
+
+
+class copy_node(node):
+    
+    def __init__(self , identity, parents , children):
+        super().__init__(identity,"",parents, children)
+
+class and_node(node):
+    
+    def __init__(self , identity, parents , children):
+        super().__init__(identity,"&",parents, children)
+
+class or_node(node):
+    
+    def __init__(self , identity, parents , children):
+        super().__init__(identity,"|",parents, children)
+
+
+class not_node(node):
+    
+    def __init__(self , identity, parents , children):
+        super().__init__(identity,"~",parents, children)
+        
+class xor_node(node):
+    
+    def __init__(self , identity, parents , children):
+        super().__init__(identity,"^",parents, children)
+        
+class constant_node(node):
+    
+    def __init__(self , identity , label , parents , children):
+        assert label == "1" or label == "0"
+        super().__init__(identity,label,parents, children)

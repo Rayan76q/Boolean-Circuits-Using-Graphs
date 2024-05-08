@@ -4,7 +4,7 @@ import sys
 sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
 from modules.open_digraph_paths_distance_mx import open_digraph_paths_distance
 from modules.open_digraph_composition_mx import open_digraph_composition
-from modules.node import node
+from modules.node import *
 from modules.matrix_operations import *
 
 
@@ -216,9 +216,9 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
         p_ids = list(parents.keys())
         c_ids = list(children.keys())
         r = p_ids + c_ids
-        assert ( (elem not in self.nodes.keys()) for elem in r)
+        assert r==[] or all(elem in self.nodes.keys() for elem in r)
         new_ID= self.new_id()
-        new_node = node(new_ID,label=label , parents= {} , children={})
+        new_node = node(new_ID,label , {} , {})
         self.nodes[new_ID] = new_node
         
         
@@ -229,7 +229,6 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
         mult = list(parents.values()) + list(children.values())
         self.add_edges(total,mult)
         return new_ID
-    
     
     
     def remove_edge(self, src, tgt):
