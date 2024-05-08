@@ -2,7 +2,7 @@ import os
 import sys
 sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
 import random
-from modules.open_digraph import *
+from modules.node import *
 from modules.bool_circ_gates_mx import bool_circ_gates_mx
 
 class bool_circ(bool_circ_gates_mx):
@@ -208,16 +208,16 @@ class bool_circ(bool_circ_gates_mx):
     @classmethod
     def random_circ_bool(cls, n, nb_inputs,nb_outputs):
         #etape 1
-        di = cls.random(n,form="DAG")
+        di = super().random(n,form="DAG")
 
         #etape 2
         d = list(di.get_nodes()).copy()
         for nodess in d:
             if len(nodess.get_parents())==0:
-                    inp_id = di.add_copy_node({},{nodess.get_id():1})
+                    inp_id = di.add_node("",{},{nodess.get_id():1})
                     di.add_input_id(inp_id)
             if len(nodess.get_children()) == 0:
-                    out_id = di.add_copy_node({nodess.get_id():1},{})
+                    out_id = di.add_node("",{nodess.get_id():1},{})
                     di.add_output_id(out_id)
         #etape 2 bis
         not_out_nor_inp = [id for id in di.get_node_ids() if ((id not in di.get_inputs_ids()) and (id not in di.get_outputs_ids()))]
@@ -227,13 +227,13 @@ class bool_circ(bool_circ_gates_mx):
         while(len(di.get_inputs_ids())!=nb_inputs):
             if(len(di.get_inputs_ids())< nb_inputs):
                 id = not_out_nor_inp.pop(0)
-                new_inp_id = di.add_copy_node({},{id:1})
+                new_inp_id = di.add_node("",{},{id:1})
                 not_out_nor_inp.append(id)
                 di.add_input_id(new_inp_id)
             else:
                 inp1 = di.get_inputs_ids().pop(0)
                 inp2 = di.get_inputs_ids().pop(0)
-                new_inp_id = di.add_copy_node({},{inp1:1,inp2:1})
+                new_inp_id = di.add_node("",{},{inp1:1,inp2:1})
                 di.add_input_id(new_inp_id)
                 not_out_nor_inp.append(inp1)
                 not_out_nor_inp.append(inp2)
@@ -241,7 +241,7 @@ class bool_circ(bool_circ_gates_mx):
         while(len(di.get_outputs_ids())!=nb_outputs):
                 if(len(di.get_outputs_ids())< nb_outputs):
                     id = not_out_nor_inp.pop(0)
-                    new_out_id = di.add_copy_node({id:1},{})
+                    new_out_id = di.add_node("",{id:1},{})
                     not_out_nor_inp.append(id)
                     di.add_output_id(new_out_id)
                 else:
@@ -412,3 +412,6 @@ class bool_circ(bool_circ_gates_mx):
         self.transform_circuit()
         return self.evaluate()
         
+
+c = bool_circ.random_circ_bool(10,5,3)
+c.display_graph()

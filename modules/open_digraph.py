@@ -442,7 +442,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
                         with optional input and output nodes.
         """
         assert len(mat[0])==len(mat) , "matrix dimensions not n x n"
-        graph = cls([],[],[])
+        graph = cls.empty()
         nodelistIDS= {i:node(i,"",{},{}) for i in range(len(mat[0]))}
         graph.nodes= nodelistIDS
         N = range(len(mat[0]))
