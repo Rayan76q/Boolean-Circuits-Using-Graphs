@@ -769,10 +769,7 @@ def add_registre_CLA(a,b, size=8):
     g = bool_circ.CLA_adder(quotient-1)
     registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
-<<<<<<< HEAD
     #g.display_graph(verbose=True)
-=======
->>>>>>> 61f7c82a6bfbd0d3effc98107c38c8f2739a42d5
     return g.evaluate()
     
 def add_CLA(a,b):
@@ -805,7 +802,6 @@ def add_naive(a,b):
         b is added to a without needing to specify size
     """
     size = max(a.bit_length(),b.bit_length())
-    print(size)
     return add_registre_naive(a,b,size = size)
 
 
@@ -893,9 +889,7 @@ def check_invarients():
 #print(g.get_outputs_ids())
 #print(g.max_id())
 #g.display_graph(verbose = True)
-<<<<<<< HEAD
 print(add_registre(0,16,size= 8))
-=======
 i = 0
 res = True
 while i <2000 and res:
@@ -904,7 +898,6 @@ while i <2000 and res:
     i+=1
     res = (add_CLA(a,b) == a+b)
 print(res and (i==2000) )
->>>>>>> 61f7c82a6bfbd0d3effc98107c38c8f2739a42d5
 # for i in range(16):
 #     for j in range(16):
 #         print( f"{i} + {j} =", add_registre(i,j,size=4) )
