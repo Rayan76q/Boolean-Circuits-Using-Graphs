@@ -59,39 +59,71 @@ class bool_circ(open_digraph):
         c = [(boolean_circ_node.get_id(), chi) for chi in c_ids]
         total=p+c
         mult = list(parents.values()) + list(children.values())
-        self.add_edges(total,mult)
+        self.add_edges(total,[])
         
     
     
-    def add_copy_node(self,parents={},children={}):
-        new_ID = self.new_id()
+    def add_copy_node(self,parents={},children={},new_ID = None):
+        if new_ID == None:
+            new_ID = self.new_id()
         self.insert_node(copy_node(new_ID ,{},{}),parents,children)
         return new_ID
     
-    def add_and_node(self,parents={},children={}):
-        new_ID = self.new_id()
+    def add_and_node(self,parents={},children={},new_ID = None):
+        if new_ID == None:
+            new_ID = self.new_id()
         self.insert_node(and_node(new_ID,{}, {}),parents,children)
         return new_ID
     
-    def add_or_node(self,parents={},children={}):
-        new_ID = self.new_id()
+    def add_or_node(self,parents={},children={},new_ID = None):
+        if new_ID == None:
+            new_ID = self.new_id()
         self.insert_node(or_node(new_ID,{},{}),parents,children)
         return new_ID
     
-    def add_not_node(self,parents={},children={}):
-        new_ID = self.new_id()
+    def add_not_node(self,parents={},children={},new_ID = None):
+        if new_ID == None:
+            new_ID = self.new_id()
         self.insert_node(not_node(new_ID,{} ,{}),parents,children)
         return new_ID
     
-    def add_xor_node(self,parents={},children={}):
-        new_ID = self.new_id()
+    def add_xor_node(self,parents={},children={},new_ID = None):
+        if new_ID == None:
+            new_ID = self.new_id()
         self.insert_node(xor_node(new_ID,{} , {}),parents,children)
         return new_ID
     
-    def add_constant_node(self,label,parents={},children={}):
-        new_ID = self.new_id()
-        self.insert_node(constant_node(new_ID,label,{},{}) ,parents , children)
+    def add_constant_node(self,inp,parents={},children={},new_ID = None):
+        if new_ID == None:
+            new_ID = self.new_id()
+        self.insert_node(constant_node(new_ID,inp,{} , {}),parents,children)
         return new_ID
+    
+    
+    def convert_node(self,node):
+        """
+        Converts node to the appropriate boolean circuit component according to its current label
+        """
+        label = node.get_label()
+        if label == "":
+            new_node = circuit_node.from_node(node)
+        elif label == "&":
+            new_node = circuit_node.from_node(node)
+        elif label == "|":
+            new_node = circuit_node.from_node(node)
+        elif label == "^":
+            new_node = circuit_node.from_node(node)
+        elif label == "~":
+            new_node = circuit_node.from_node(node)
+        elif label == "1" or label == "0":
+            new_node = circuit_node.from_node(node)
+        
+        parents = node.get_parents().copy()
+        children = node.get_children().copy()
+        self.remove_node_by_id(node.get_id())
+        self.insert_node(new_node, parents, children)
+    
+    
     
     @classmethod
     def identity(cls,n):
@@ -111,6 +143,7 @@ class bool_circ(open_digraph):
             
             A boolean circuit where each output is the output of one formula that is given and the list labels given to every variable
         """
+        
         circuit = bool_circ(open_digraph.empty())
         variables = {}
         for arg in args:
@@ -135,6 +168,8 @@ class bool_circ(open_digraph):
                     s2 = ""
                 else:
                     s2 += char
+                    
+                
         
         #Creates appropriate inputs above the copy nodes
         for id in variables.values():
@@ -147,6 +182,12 @@ class bool_circ(open_digraph):
             if n.get_label() in variables:
                 circuit.merge_nodes(variables[n.get_label()],node_id)
                 circuit.get_node_by_id(variables[n.get_label()]).set_label("")
+                
+
+        nodes = (circuit.get_id_node_map().copy()).values()
+        for node in nodes:
+            circuit.convert_node(node)  
+            
         
         assert circuit.is_well_formed() 
         return circuit,list(variables.keys())
@@ -265,7 +306,7 @@ class bool_circ(open_digraph):
         bin_string = convert_to_binary_string(acc,size=size)
         registre = bool_circ(open_digraph.empty())
         for i in range(size):
-            node_inp = registre.add_constant_node(bin_string[i])
+            node_inp = registre.add_constant_node(bin_string[i],{},{})
             registre.add_input_id(node_inp)
             registre.add_output_node(node_inp)
         assert registre.is_well_formed()
@@ -280,7 +321,7 @@ class bool_circ(open_digraph):
         self.remove_node_by_id(input_node_id)
         res = []
         for child in children:
-            copied_input = self.add_constant_node(inp)
+            copied_input = self.add_node(inp)
             self.add_edge(copied_input , child)
             res.append(copied_input)
         return res
@@ -315,6 +356,7 @@ class bool_circ(open_digraph):
         if len(and_node.get_parents())==0:
             self.neutral_element(and_node_id)
             return [and_node_id]
+
         return []
     
     def or_gate(self, or_node_id,input_node_id):
@@ -332,12 +374,11 @@ class bool_circ(open_digraph):
                 nullifier = self.add_copy_node()
                 self.add_edge(p,nullifier)
             return [or_node_id]
-            
         
         if len(or_node.get_parents())==0:
             self.neutral_element(or_node_id)
             return [or_node_id]
-        
+
         return []
         
     
@@ -359,60 +400,42 @@ class bool_circ(open_digraph):
                 self.remove_parallel_edges(p,xor_node_id)
                 self.add_edge(p,new_xor)
         
-        
         if len(xor_node.get_parents())==0 and xor_node.get_label()=="^":
             self.neutral_element(xor_node_id)
             return [xor_node_id]
         elif new_xor != None and len(self.get_node_by_id(new_xor).get_parents())==0:
             self.neutral_element(new_xor)
             return [new_xor]
+
         return []
         
     def neutral_element(self, binary_gate):
         node = self.get_node_by_id(binary_gate)
-        label = node.get_label()
-        if label == "|" or label == "^":
+        if node.is_or() or node.is_xor():
             node.set_label("0")
-        elif label == "&":
+            self.convert_node(node)
+        elif node.is_and():
             node.set_label("1")
+            self.convert_node(node)
         
 
     def evaluate(self):
-        #taking care of neutral gates at the beginning which dont result of transformations
         tmp = []
-        for node in self.get_nodes():
-            if (node.get_label() == "|" or node.get_label() == "~" or node.get_label() == "^" or node.get_label() == "&") and len(node.get_parents())==0 :
+        #taking care of neutral gates at the beginning which dont result of transformations
+        copy = (self.get_id_node_map().copy()).values()
+        for node in copy:
+            if (node.is_or() or node.is_not() or node.is_xor() or node.is_and()) and len(node.get_parents())==0 :
                 self.neutral_element(node.get_id())
                 tmp.append(node.get_id())
-        
+
         calculated = list(self.get_inputs_ids()) + tmp
         outputs = list(self.get_outputs_ids())
         while outputs != [] and calculated != []:
             node_id = calculated[0]
             calculated.remove(node_id)
-                
             node = self.get_node_by_id(node_id)
-            
-            child = list(node.get_children())[0]
-            
-            if child in outputs:
-                self.get_node_by_id(child).set_label(node.get_label())
-                self.remove_node_by_id(node_id)
-                outputs.remove(child)
-
-            else:
-                label = self.get_node_by_id(child).get_label()
-                if label == "&":
-                    res = self.and_gate(child,node_id)
-                elif label == "|":
-                    res = self.or_gate(child,node_id)
-                elif label == "^":
-                    res = self.xor_gate(child,node_id)
-                elif label == "~":
-                    res = self.not_gate(child,node_id)
-                elif label == "":
-                    res = self.copy_gate(child,node_id)
-                calculated += res
+            calculated += node.eval(self,outputs)
+        
         #cleanning up the circuit
         for c in calculated:
             self.remove_node_by_id(c)
@@ -629,7 +652,6 @@ class bool_circ(open_digraph):
     
     def calculate(self):
         self.transform_circuit()
-        self.get_outputs_ids()
         return self.evaluate()
         
     @classmethod
@@ -766,8 +788,7 @@ def add_registre_CLA(a,b, size=8):
     g = bool_circ.CLA_adder(quotient-1)
     registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
-    #g.display_graph(verbose=True)
-    return g.evaluate()
+    return g.calculate()
     
 def add_CLA(a,b):
     """
@@ -867,7 +888,7 @@ def check_invarients():
 #c = bool_circ.random_circ_bool(6,14,12)
 # c2 = open_digraph.random(7,form="DAG")
 #c.display_graph()
-#check_invarients()
+check_invarients()
 
 #bool_circ.decodeur_7bits().display_graph(verbose=True)
 
@@ -886,15 +907,23 @@ def check_invarients():
 #print(g.get_outputs_ids())
 #print(g.max_id())
 #g.display_graph(verbose = True)
+
+# for i in range(16):
+#     for j in range(16):
+#         print( f"{i} + {j} =", add_registre(i,j,size=4) )
+
+
+
+#(bool_circ.CL_4bit()[0]).display_graph()
 print(add_registre_CLA(0,16,size= 8))
 i = 0
 res = True
 while i <2000 and res:
+    print(i)
     a = random.randint(0,1234567865)
     b = random.randint(0,1234567432)
     i+=1
     res = (add_CLA(a,b)== add_naive(a,b) == a+b)
 print(res and (i==2000) )
-# for i in range(16):
-#     for j in range(16):
-#         print( f"{i} + {j} =", add_registre(i,j,size=4) )
+
+
