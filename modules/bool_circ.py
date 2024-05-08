@@ -770,7 +770,7 @@ def add_registre_CLA(a,b, size=8):
     """
     a_str = convert_to_binary_string(a,size=size)
     b_str = convert_to_binary_string(b,size=size)
-    #on doit ajouter les bits 4 par 4 coz of how create register is coded
+    #on doit ajouter les bits 4 par 4 coz of how cla is coded
     quotient, remainder = divmod(size, 4)
     res = ""
     for i in range(quotient-1,-1,-1):
@@ -780,13 +780,9 @@ def add_registre_CLA(a,b, size=8):
     for c in [a_str,b_str]:
         for i in range(size-1,size-remainder-1,-1):
             res+= c[i]
-    
-    #for i in range(size):  
-    #    res  +=   a_str[i] + b_str[i]
     res = "0"+res  # adding 0 carry bit"
-    reg_size , n = find_bigger_2_pow(size)
     g = bool_circ.CLA_adder(quotient-1)
-    registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
+    registre = bool_circ.create_registre(int(res , 2),size=(quotient)*8+1)
     g.icompose(registre)
     return g.calculate()
     
@@ -795,8 +791,8 @@ def add_CLA(a,b):
         b is added to a without needing to specify size by CLA method
     """
     size = 0
-    while size < max(a.bit_length(),b.bit_length()):
-        size +=8
+    quotient,mod = divmod(max(a.bit_length(),b.bit_length()),4)
+    size = (quotient+1) * 4
     return add_registre_CLA(a,b,size = size)
 
 def add_registre_naive(a,b, size=8):
@@ -923,7 +919,8 @@ while i <2000 and res:
     a = random.randint(0,1234567865)
     b = random.randint(0,1234567432)
     i+=1
-    res = (add_CLA(a,b)== add_naive(a,b) == a+b)
+    res = (add_CLA(a,b)== 
+        add_naive(a,b) == a+b)
 print(res and (i==2000) )
 
 
