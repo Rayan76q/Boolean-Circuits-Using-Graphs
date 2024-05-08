@@ -700,7 +700,6 @@ class bool_circ(open_digraph):
         circuit.set_outputs([])
         circuit.set_inputs([])
         
-        
         circuit.add_output_node(c_n1)
         for i in range(3,-1,-1):
             circuit.add_output_node(xors[4+i])
@@ -763,7 +762,7 @@ def add_registre(a,b, size=8):
     #g.display_graph(verbose=True)
     registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
-    g.display_graph(verbose=True)
+    #g.display_graph(verbose=True)
     return g.evaluate()
     
 
@@ -859,7 +858,7 @@ print(g.get_inputs_ids(),len(g.get_inputs_ids()))
 print(g.get_outputs_ids())
 print(g.max_id())
 #g.display_graph(verbose = True)
-print(add_registre(1,1,size= 8))
+print(add_registre(0,16,size= 8))
 # for i in range(16):
 #     for j in range(16):
 #         print( f"{i} + {j} =", add_registre(i,j,size=4) )
