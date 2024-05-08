@@ -2,7 +2,7 @@ import os
 import sys
 sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
 import random
-from modules.open_digraph import open_digraph
+from modules.open_digraph import *
 
 class bool_circ(open_digraph):
     
@@ -33,6 +33,65 @@ class bool_circ(open_digraph):
                 
             return True
         return False
+    
+    def insert_node(self, boolean_circ_node,parents,children):
+        """
+            Adds a node to the graph
+            
+            Parameters:
+            ----------
+            
+            boolean_circ_node (node) : a sub-class of node 
+            
+            Output: (inplace)
+            -------
+            The graph with the node added to it
+        """
+        p_ids = list(parents.keys())
+        c_ids = list(children.keys())
+        r = p_ids + c_ids
+        assert r==[] or all(elem in self.nodes.keys() for elem in r)
+        self.nodes[boolean_circ_node.get_id()] = boolean_circ_node
+        
+        
+        #Adding the edges from parents and to children
+        p = [(par , boolean_circ_node.get_id()) for par in p_ids]
+        c = [(boolean_circ_node.get_id(), chi) for chi in c_ids]
+        total=p+c
+        mult = list(parents.values()) + list(children.values())
+        self.add_edges(total,mult)
+        
+    
+    
+    def add_copy_node(self,parents={},children={}):
+        new_ID = self.new_id()
+        self.insert_node(copy_node(new_ID ,{},{}),parents,children)
+        return new_ID
+    
+    def add_and_node(self,parents={},children={}):
+        new_ID = self.new_id()
+        self.insert_node(and_node(new_ID,{}, {}),parents,children)
+        return new_ID
+    
+    def add_or_node(self,parents={},children={}):
+        new_ID = self.new_id()
+        self.insert_node(or_node(new_ID,{},{}),parents,children)
+        return new_ID
+    
+    def add_not_node(self,parents={},children={}):
+        new_ID = self.new_id()
+        self.insert_node(not_node(new_ID,{} ,{}),parents,children)
+        return new_ID
+    
+    def add_xor_node(self,parents={},children={}):
+        new_ID = self.new_id()
+        self.insert_node(xor_node(new_ID,{} , {}),parents,children)
+        return new_ID
+    
+    def add_constant_node(self,label,parents={},children={}):
+        new_ID = self.new_id()
+        self.insert_node(constant_node(new_ID,label,{},{}) ,parents , children)
+        return new_ID
     
     @classmethod
     def identity(cls,n):
@@ -101,10 +160,10 @@ class bool_circ(open_digraph):
         d = list(di.get_nodes()).copy()
         for nodess in d:
             if len(nodess.get_parents())==0:
-                    inp_id = di.add_node("",{},{nodess.get_id():1})
+                    inp_id = di.add_copy_node({},{nodess.get_id():1})
                     di.add_input_id(inp_id)
             if len(nodess.get_children()) == 0:
-                    out_id = di.add_node("",{nodess.get_id():1},{})
+                    out_id = di.add_copy_node({nodess.get_id():1},{})
                     di.add_output_id(out_id)
         #etape 2 bis
         not_out_nor_inp = [id for id in di.get_node_ids() if ((id not in di.get_inputs_ids()) and (id not in di.get_outputs_ids()))]
@@ -114,13 +173,13 @@ class bool_circ(open_digraph):
         while(len(di.get_inputs_ids())!=nb_inputs):
             if(len(di.get_inputs_ids())< nb_inputs):
                 id = not_out_nor_inp.pop(0)
-                new_inp_id = di.add_node("",{},{id:1})
+                new_inp_id = di.add_copy_node({},{id:1})
                 not_out_nor_inp.append(id)
                 di.add_input_id(new_inp_id)
             else:
                 inp1 = di.get_inputs_ids().pop(0)
                 inp2 = di.get_inputs_ids().pop(0)
-                new_inp_id = di.add_node("",{},{inp1:1,inp2:1})
+                new_inp_id = di.add_copy_node({},{inp1:1,inp2:1})
                 di.add_input_id(new_inp_id)
                 not_out_nor_inp.append(inp1)
                 not_out_nor_inp.append(inp2)
@@ -128,7 +187,7 @@ class bool_circ(open_digraph):
         while(len(di.get_outputs_ids())!=nb_outputs):
                 if(len(di.get_outputs_ids())< nb_outputs):
                     id = not_out_nor_inp.pop(0)
-                    new_out_id = di.add_node("",{id:1},{})
+                    new_out_id = di.add_copy_node({id:1},{})
                     not_out_nor_inp.append(id)
                     di.add_output_id(new_out_id)
                 else:
@@ -162,20 +221,20 @@ class bool_circ(open_digraph):
     def adder_helper(cls,n):
         if n == 0:
             circuit = cls(open_digraph([],[],[]))
-            inp1 = circuit.add_node("",{},{})
-            inp2 = circuit.add_node("",{},{})
-            carry_in = circuit.add_node("",{},{})
-            cop1 =  circuit.add_node("",{inp1:1},{})
-            cop2 =  circuit.add_node("",{inp2:1},{})
-            and1 = circuit.add_node("&",{cop1:1,cop2:1},{})
-            nor1 = circuit.add_node("^",{cop1:1,cop2:1},{})
-            cop3 = circuit.add_node("",{nor1:1},{})
-            cop4 = circuit.add_node("",{carry_in:1},{})
-            and2 = circuit.add_node("&",{cop3:1,cop4:1},{})
-            nor2 = circuit.add_node("^",{cop3:1,cop4:1},{})
-            or1 =  circuit.add_node("|",{and1:1,and2:1},{})
-            carry_out =  circuit.add_node("",{or1:1},{})
-            out2 =  circuit.add_node("",{nor2:1},{})
+            inp1 = circuit.add_copy_node()
+            inp2 = circuit.add_copy_node()
+            carry_in = circuit.add_copy_node()
+            cop1 =  circuit.add_copy_node({inp1:1},{})
+            cop2 =  circuit.add_copy_node({inp2:1},{})
+            and1 = circuit.add_and_node({cop1:1,cop2:1},{})
+            nor1 = circuit.add_xor_node({cop1:1,cop2:1},{})
+            cop3 = circuit.add_copy_node({nor1:1},{})
+            cop4 = circuit.add_copy_node({carry_in:1},{})
+            and2 = circuit.add_and_node({cop3:1,cop4:1},{})
+            nor2 = circuit.add_xor_node({cop3:1,cop4:1},{})
+            or1 =  circuit.add_or_node({and1:1,and2:1},{})
+            carry_out =  circuit.add_copy_node({or1:1},{})
+            out2 =  circuit.add_copy_node({nor2:1},{})
             circuit.set_inputs([inp1,inp2,carry_in])
             circuit.set_outputs([carry_out,out2])
             return circuit,carry_in,carry_out
@@ -206,7 +265,7 @@ class bool_circ(open_digraph):
         bin_string = convert_to_binary_string(acc,size=size)
         registre = bool_circ(open_digraph.empty())
         for i in range(size):
-            node_inp = registre.add_node(label=bin_string[i])
+            node_inp = registre.add_constant_node(bin_string[i])
             registre.add_input_id(node_inp)
             registre.add_output_node(node_inp)
         assert registre.is_well_formed()
@@ -221,7 +280,7 @@ class bool_circ(open_digraph):
         self.remove_node_by_id(input_node_id)
         res = []
         for child in children:
-            copied_input = self.add_node(label=inp)
+            copied_input = self.add_constant_node(inp)
             self.add_edge(copied_input , child)
             res.append(copied_input)
         return res
@@ -249,7 +308,7 @@ class bool_circ(open_digraph):
             parents = list(and_node.get_parents()).copy()
             for p in parents:
                 self.remove_parallel_edges(p,and_node_id)
-                nullifier = self.add_node()
+                nullifier = self.add_copy_node()
                 self.add_edge(p,nullifier)
             return [and_node_id]
         
@@ -270,7 +329,7 @@ class bool_circ(open_digraph):
             parents = list(or_node.get_parents()).copy()
             for p in parents:
                 self.remove_parallel_edges(p,or_node_id)
-                nullifier = self.add_node()
+                nullifier = self.add_copy_node()
                 self.add_edge(p,nullifier)
             return [or_node_id]
             
@@ -367,8 +426,8 @@ class bool_circ(open_digraph):
     @classmethod
     def encodeur_4bits(cls):
         circuit = bool_circ(open_digraph.empty())
-        copies = [circuit.add_node() for i in range(4)]
-        xors = [circuit.add_node(label="^") for i in range(3)]
+        copies = [circuit.add_copy_node() for i in range(4)]
+        xors = [circuit.add_xor_node() for i in range(3)]
         circuit.add_edges([(copies[0],xors[0]),(copies[0],xors[1]),(copies[1],xors[0]),
                         (copies[1],xors[2]),(copies[2],xors[1]),(copies[2],xors[2]),
                         (copies[3],xors[0]), (copies[3],xors[1]), (copies[3],xors[2])]
@@ -389,10 +448,10 @@ class bool_circ(open_digraph):
     @classmethod
     def decodeur_7bits(cls):
         circuit = bool_circ(open_digraph.empty())
-        copies = [circuit.add_node() for i in range(7)]
-        xors = [circuit.add_node(label="^") for i in range(7)]
-        nots = [circuit.add_node(label="~") for i in range(3)]
-        ands = [circuit.add_node(label="&") for i in range(4)]
+        copies = [circuit.add_copy_node() for i in range(7)]
+        xors = [circuit.add_xor_node() for i in range(7)]
+        nots = [circuit.add_not_node() for i in range(3)]
+        ands = [circuit.add_and_node() for i in range(4)]
         circuit.add_edges([(copies[0],xors[0]),(copies[0],xors[1]),(copies[1],xors[0]),(copies[1],xors[2]),(copies[2],xors[1]),(copies[2],xors[2]), (copies[3],xors[0]), (copies[3],xors[1]), (copies[3],xors[2])]+
                         [(xors[0],copies[4]),(xors[1],copies[5]),(xors[2],copies[6])]
                         +[(copies[4],ands[0]),(copies[4],ands[1]),(copies[4],ands[3])]
@@ -487,7 +546,7 @@ class bool_circ(open_digraph):
         self.remove_node_by_id(child_id)
         
         for p in parents:
-            nullifier = self.add_node()
+            nullifier = self.add_copy_node()
             self.add_edge(p,nullifier)
             
         return True
@@ -522,7 +581,7 @@ class bool_circ(open_digraph):
         
         children_of_copy = list(self.get_node_by_id(copy_id).get_children())
         for c in children_of_copy:
-            new_not = self.add_node(label="~")
+            new_not = self.add_not_node()
             self.remove_edge(copy_id,c)
             self.add_edge(copy_id,new_not)
             self.add_edge(new_not,c)
@@ -554,77 +613,15 @@ class bool_circ(open_digraph):
                     continue
                 node = self.get_node_by_id(node_id)
                 label = node.get_label()
-                if label == "":
-                    parents = list(node.get_parents())
-                    children = list(node.get_children())
-                    
-                    if len(children) == 1:  #gets rid of unecessary copies
-                        self.remove_node_by_id(node_id)
-                        self.add_edge(parents[0],children[0])
-                        r=True
-                    else:
-                        for c in children:
-                            lab = self.get_node_by_id(c).get_label()
-                            if  lab == "" :
-                                r=self.assoc_copy(node_id,c)
-                                
-                            elif lab == "^":
-                                r=self.involution_xor(c,node_id)
-                                
-                        
-                        lab = self.get_node_by_id(parents[0]).get_label()
-                        if  lab == "" :
-                            r=self.assoc_copy(parents[0],node_id)
-                    
-                else:
-                    if (self.get_node_by_id((list(node.get_children())[0]))).get_label() == "" and len((self.get_node_by_id((list(node.get_children())[0]))).get_children()) == 0:
+                first_child = (self.get_node_by_id((list(node.get_children())[0])))
+                if first_child.is_copy() and len(first_child.get_children()) == 0:
                         r=self.effacement(node_id ,list(node.get_children())[0] )
-                        
-                    elif label == "&":
-                        parents = list(node.get_parents())
-                        for p in parents:
-                            lab = self.get_node_by_id(p).get_label()
-                            if  lab == "&":
-                                r=self.assoc_and(p,node_id)
-                                
-                    elif label == "|":
-                        parents = list(node.get_parents())
-                        for p in parents:
-                            lab = self.get_node_by_id(p).get_label()
-                            if  lab == "|":
-                                r = self.assoc_or(p,node_id)    
-                                
-                    elif label == "^":
-                        parents = list(node.get_parents())
-                        for p in parents:
-                            
-                            lab = self.get_node_by_id(p).get_label()
-                            if  lab == "^":
-                                r=self.assoc_xor(p,node_id)
-                                
-                            elif lab == "":
-                                r=self.involution_xor(node_id,p)
-                                
-                                
-                            elif lab == "~":
-                                r=self.not_xor(p,node_id)
-                                
-                            
-                    elif label == "~":
-                        parent = list(node.get_parents())[0]
-                        child = list(node.get_children())[0]
-                        
-                        if self.get_node_by_id(parent).get_label() == "~" :
-                            r=self.involution_not(parent,node_id)
-                            
-                        elif self.get_node_by_id(child).get_label() == "~" :
-                            r=self.involution_not(node_id,child)
-                            
-                        elif self.get_node_by_id(child).get_label() == "":
-                            r=self.not_copy(node_id,child)
+                else:
+                    node.transform(self)
                 if r:
                     flag = True
             return flag
+        
         cont = True
         while cont:
             nodes = list(self.get_node_ids())
@@ -642,12 +639,12 @@ class bool_circ(open_digraph):
         """
         circuit = bool_circ(open_digraph.empty())
         for i in range(n):
-            inp = circuit.add_node()
+            inp = circuit.add_copy_node()
             circuit.add_input_id(inp)
-            out = circuit.add_node()
+            out = circuit.add_copy_node()
             circuit.add_output_id(out)
             if i in list_pos:
-                erreur = circuit.add_node(label="~")
+                erreur = circuit.add_not_node()
                 circuit.add_edge(inp,erreur)
                 circuit.add_edge(erreur , out)
             else:
@@ -670,9 +667,9 @@ class bool_circ(open_digraph):
         dict_inputs = {inps[i]:list(circuit.get_inputs_ids())[i] for i in range(len(inps))}
         
         #circuit.display_graph(verbose=True)
-        copies  = [circuit.add_node() for i in range(13)]
-        ands = [circuit.add_node(label = "&") for i in range(4)]
-        xors = [circuit.add_node(label = "^") for i in range(8)]
+        copies  = [circuit.add_copy_node() for i in range(13)]
+        ands = [circuit.add_and_node() for i in range(4)]
+        xors = [circuit.add_xor_node() for i in range(8)]
         
         #links for gi pi
         circuit.add_edges(
@@ -699,7 +696,6 @@ class bool_circ(open_digraph):
         c_n1 = list(circuit.get_outputs_ids())[0]
         circuit.set_outputs([])
         circuit.set_inputs([])
-        
         
         circuit.add_output_node(c_n1)
         for i in range(3,-1,-1):
@@ -770,6 +766,7 @@ def add_registre_CLA(a,b, size=8):
     g = bool_circ.CLA_adder(quotient-1)
     registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
+    #g.display_graph(verbose=True)
     return g.evaluate()
     
 def add_CLA(a,b):
@@ -802,7 +799,6 @@ def add_naive(a,b):
         b is added to a without needing to specify size
     """
     size = max(a.bit_length(),b.bit_length())
-    print(size)
     return add_registre_naive(a,b,size = size)
 
 
@@ -890,13 +886,14 @@ def check_invarients():
 #print(g.get_outputs_ids())
 #print(g.max_id())
 #g.display_graph(verbose = True)
+print(add_registre_CLA(0,16,size= 8))
 i = 0
 res = True
 while i <2000 and res:
     a = random.randint(0,1234567865)
     b = random.randint(0,1234567432)
     i+=1
-    res = (add_CLA(a,b) == a+b)
+    res = (add_CLA(a,b)== add_naive(a,b) == a+b)
 print(res and (i==2000) )
 # for i in range(16):
 #     for j in range(16):
