@@ -613,77 +613,15 @@ class bool_circ(open_digraph):
                     continue
                 node = self.get_node_by_id(node_id)
                 label = node.get_label()
-                if label == "":
-                    parents = list(node.get_parents())
-                    children = list(node.get_children())
-                    
-                    if len(children) == 1:  #gets rid of unecessary copies
-                        self.remove_node_by_id(node_id)
-                        self.add_edge(parents[0],children[0])
-                        r=True
-                    else:
-                        for c in children:
-                            lab = self.get_node_by_id(c).get_label()
-                            if  lab == "" :
-                                r=self.assoc_copy(node_id,c)
-                                
-                            elif lab == "^":
-                                r=self.involution_xor(c,node_id)
-                                
-                        
-                        lab = self.get_node_by_id(parents[0]).get_label()
-                        if  lab == "" :
-                            r=self.assoc_copy(parents[0],node_id)
-                    
-                else:
-                    if (self.get_node_by_id((list(node.get_children())[0]))).get_label() == "" and len((self.get_node_by_id((list(node.get_children())[0]))).get_children()) == 0:
+                first_child = (self.get_node_by_id((list(node.get_children())[0])))
+                if first_child.is_copy() and len(first_child.get_children()) == 0:
                         r=self.effacement(node_id ,list(node.get_children())[0] )
-                        
-                    elif label == "&":
-                        parents = list(node.get_parents())
-                        for p in parents:
-                            lab = self.get_node_by_id(p).get_label()
-                            if  lab == "&":
-                                r=self.assoc_and(p,node_id)
-                                
-                    elif label == "|":
-                        parents = list(node.get_parents())
-                        for p in parents:
-                            lab = self.get_node_by_id(p).get_label()
-                            if  lab == "|":
-                                r = self.assoc_or(p,node_id)    
-                                
-                    elif label == "^":
-                        parents = list(node.get_parents())
-                        for p in parents:
-                            
-                            lab = self.get_node_by_id(p).get_label()
-                            if  lab == "^":
-                                r=self.assoc_xor(p,node_id)
-                                
-                            elif lab == "":
-                                r=self.involution_xor(node_id,p)
-                                
-                                
-                            elif lab == "~":
-                                r=self.not_xor(p,node_id)
-                                
-                            
-                    elif label == "~":
-                        parent = list(node.get_parents())[0]
-                        child = list(node.get_children())[0]
-                        
-                        if self.get_node_by_id(parent).get_label() == "~" :
-                            r=self.involution_not(parent,node_id)
-                            
-                        elif self.get_node_by_id(child).get_label() == "~" :
-                            r=self.involution_not(node_id,child)
-                            
-                        elif self.get_node_by_id(child).get_label() == "":
-                            r=self.not_copy(node_id,child)
+                else:
+                    node.transform(self)
                 if r:
                     flag = True
             return flag
+        
         cont = True
         while cont:
             nodes = list(self.get_node_ids())
@@ -951,13 +889,12 @@ def check_invarients():
 print(add_registre_CLA(0,16,size= 8))
 i = 0
 res = True
-while i <100 and res:
+while i <2000 and res:
     a = random.randint(0,1234567865)
     b = random.randint(0,1234567432)
     i+=1
     res = (add_CLA(a,b)== add_naive(a,b) == a+b)
-    
-print(res and (i==100) )
+print(res and (i==2000) )
 # for i in range(16):
 #     for j in range(16):
 #         print( f"{i} + {j} =", add_registre(i,j,size=4) )
