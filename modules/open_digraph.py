@@ -8,45 +8,6 @@ from modules.node import *
 from modules.matrix_operations import *
 
 
-#3#
-def graph_from_adjacency_matrix(mat , inp = 0 , out = 0,number_generator = 0.5):
-    """ 
-    Generate a graph from an adjacency matrix with the number input and output nodes.
-
-    Parameters:
-    -----------
-    mat (list list): A square representing the adjacency matrix of the graph.
-    inp (int): Number of input nodes. Default is 0.
-    out (int): Number of output nodes. Default is 0.
-    number_generator (function): A function that generates random numbers. 
-                                 Default is a function generating numbers from a beta distribution.
-
-    Returns:
-    --------
-    open.diGraph: A directed graph generated from the provided adjacency matrix,
-                       with optional input and output nodes.
-    """
-    assert len(mat[0])==len(mat) , "matrix dimensions not n x n"
-    graph = open_digraph([],[],[])
-    nodelistIDS= {i:node(i,"",{},{}) for i in range(len(mat[0]))}
-    graph.nodes= nodelistIDS
-    N = range(len(mat[0]))
-    for i in N:
-        for j in N:
-            if mat[i][j]!=0:
-                graph.add_edge(i,j,mat[i][j])
-    
-    ids = list(graph.get_node_ids()).copy()
-    for i in range(inp):
-        choice = random.choice(ids)
-        graph.add_input_id(choice)
-        ids.remove(choice)
-        
-    for i in range(out):
-        choice = random.choice(ids)
-        graph.add_output_id(choice)
-        ids.remove(choice)
-    return graph
 
 
 class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for open directed graph
@@ -460,6 +421,47 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
                 if node_j.get_id() in children_ids:
                     mat[i][j] = children_ids[node_j.get_id()]      
         return mat
+    
+    #3#
+    @classmethod
+    def graph_from_adjacency_matrix(cls,mat , inp = 0 , out = 0,number_generator = 0.5):
+        """ 
+        Generate a graph from an adjacency matrix with the number input and output nodes.
+
+        Parameters:
+        -----------
+        mat (list list): A square representing the adjacency matrix of the graph.
+        inp (int): Number of input nodes. Default is 0.
+        out (int): Number of output nodes. Default is 0.
+        number_generator (function): A function that generates random numbers. 
+                                    Default is a function generating numbers from a beta distribution.
+
+        Returns:
+        --------
+        open.diGraph: A directed graph generated from the provided adjacency matrix,
+                        with optional input and output nodes.
+        """
+        assert len(mat[0])==len(mat) , "matrix dimensions not n x n"
+        graph = cls([],[],[])
+        nodelistIDS= {i:node(i,"",{},{}) for i in range(len(mat[0]))}
+        graph.nodes= nodelistIDS
+        N = range(len(mat[0]))
+        for i in N:
+            for j in N:
+                if mat[i][j]!=0:
+                    graph.add_edge(i,j,mat[i][j])
+        
+        ids = list(graph.get_node_ids()).copy()
+        for i in range(inp):
+            choice = random.choice(ids)
+            graph.add_input_id(choice)
+            ids.remove(choice)
+            
+        for i in range(out):
+            choice = random.choice(ids)
+            graph.add_output_id(choice)
+            ids.remove(choice)
+        return graph
 
     #3#
     @classmethod
@@ -483,19 +485,19 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
                 The graph associated to the adjacency matrix
         """
         if form=="free":
-            return graph_from_adjacency_matrix(random_int_matrix(n,bound,False), inp = inputs , out = outputs, number_generator=number_generator) 
+            return cls.graph_from_adjacency_matrix(random_int_matrix(n,bound,False), inp = inputs , out = outputs, number_generator=number_generator) 
         elif form=="DAG":
-            return graph_from_adjacency_matrix(random_dag_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+            return cls.graph_from_adjacency_matrix(random_dag_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
         elif form=="oriented": 
-            return graph_from_adjacency_matrix(random_oriented_int_matrix(n,bound,False), inp = inputs , out = outputs, number_generator=number_generator)
+            return cls.graph_from_adjacency_matrix(random_oriented_int_matrix(n,bound,False), inp = inputs , out = outputs, number_generator=number_generator)
         elif form=="loop-free": 
-            return graph_from_adjacency_matrix(random_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+            return cls.graph_from_adjacency_matrix(random_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
         elif form=="undirected":
-            return graph_from_adjacency_matrix(random_symetric_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+            return cls.graph_from_adjacency_matrix(random_symetric_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
         elif form=="loop-free undirected":
-            return  graph_from_adjacency_matrix(random_symetric_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+            return  cls.graph_from_adjacency_matrix(random_symetric_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
         elif form=="loop-free oriented": 
-            return graph_from_adjacency_matrix(random_oriented_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
+            return cls.graph_from_adjacency_matrix(random_oriented_int_matrix(n,bound), inp = inputs , out = outputs, number_generator=number_generator)
         else : return [[]]
 
     def save_as_dot_file(self, path, verbose = True):
