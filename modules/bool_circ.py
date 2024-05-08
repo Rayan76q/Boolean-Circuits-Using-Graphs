@@ -777,8 +777,8 @@ def add_CLA(a,b):
         b is added to a without needing to specify size by CLA method
     """
     size = 0
-    while size < max(a.bit_length(),b.bit_length()):
-        size +=8
+    quotient,mod = divmod(max(a.bit_length(),b.bit_length()),8)
+    size = quotient * 8 + (0 if mod == 0 else 8)
     return add_registre_CLA(a,b,size = size)
 
 def add_registre_naive(a,b, size=8):
