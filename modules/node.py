@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 class node:
     
     ###Constructor
@@ -134,49 +135,109 @@ class node:
         return self.indegree()+self.outdegree()
     
     def is_copy(self):
-        return isinstance(self,copy_node)
+        return self.label == ""
     
     def is_or(self):
-        return isinstance(self,or_node)
+        return self.label == "|"
     
     def is_and(self):
-        return isinstance(self,and_node)
+        return self.label == "&"
     
     def is_not(self):
-        return isinstance(self,not_node)
+        return self.label == "~"
     
     def is_xor(self):
-        return isinstance(self,xor_node)
+        return self.label == "^"
     
     def is_constant(self):
-        return isinstance(self,constant_node_node)
+        return self.label == 1 or self.label == 0
+    
+    
     
     def transform(self, circuit):
         if self.is_copy():
-            copy_node(self).transform(circuit)
+            circuit_node.from_node(self).transform(circuit)
         elif self.is_and():
-            and_node(self).transform(circuit)
+            circuit_node.from_node(self).transform(circuit)
         elif self.is_or():
-            or_node(self).transform(circuit)
+            circuit_node.from_node(self).transform(circuit)
         elif self.is_not():
-            not_node(self).transform(circuit)
+            circuit_node.from_node(self).transform(circuit)
         elif self.is_xor():
-            xor_node(self).transform(circuit)
+            circuit_node.from_node(self).transform(circuit)
+
+    def eval(self,circuit,outputs):
         
+        #Neutral element management
+        if (self.is_and() or self.is_or() or self.is_xor()) and len(self.parents)==0:
+            circuit.neutral_element(self.id)
+            res = [self.id]
+        
+        else:
+            
+            assert self.get_label() == "0" or self.get_label() == "1" 
+            res = []
+            node_id = self.get_id()
+            child = list(self.get_children())[0]
+            if child in circuit.get_outputs_ids():
+                circuit.get_node_by_id(child).set_label(self.get_label())
+                circuit.remove_node_by_id(node_id)
+                outputs.remove(child)
+            else:
+                
+                child_node = circuit.get_node_by_id(child)
+                if child_node.is_and():
+                    res = circuit.and_gate(child,node_id)
+                elif child_node.is_or():
+                    res = circuit.or_gate(child,node_id)
+                elif child_node.is_xor():
+                    res = circuit.xor_gate(child,node_id)
+                elif child_node.is_not():
+                    res = circuit.not_gate(child,node_id)
+                elif child_node.is_copy():
+                    res = circuit.copy_gate(child,node_id)
+        
+        return res
 
 
+class circuit_node(node):
+    @classmethod
+    def from_node(cls,node):
+        id = node.get_id()
+        label = node.get_label()
+        parents = node.get_parents()
+        children = node.get_children()
+        if label == "":
+            return copy_node(id,parents,children)
+        elif label == "&":
+            return and_node(id,parents,children)
+        elif label == "|":
+            return or_node(id,parents,children)
+        elif label == "~":
+            return not_node(id,parents,children)
+        elif label == "^":
+            return xor_node(id,parents,children)
+        elif label == "0" or label == "1":
+            return constant_node(id,label,parents,children)
+        return None
+    
 
 
-class copy_node(node):
+    @abstractmethod
+    def transform(self,circuit):
+        pass
+
+class copy_node(circuit_node):
     
     def __init__(self , identity, parents , children):
         super().__init__(identity,"",parents, children)
+    
         
     def transform(self,circuit):
         r = False
         parents = list(self.get_parents())
         children = list(self.get_children())
-                
+            
         if len(children) == 1:  #gets rid of unecessary copies
             circuit.remove_node_by_id(self.get_id())
             circuit.add_edge(parents[0],children[0])
@@ -188,16 +249,15 @@ class copy_node(node):
                     r=circuit.assoc_copy(self.get_id(),c)        
                 elif c_node.is_xor():
                     r=circuit.involution_xor(c,self.get_id())
-                parent_node = circuit.get_node_by_id(parents[0])
-                if  parent_node.is_copy() :
-                    r=circuit.assoc_copy(parents[0],self.get_id())
+                
         return r
 
-class and_node(node):
+class and_node(circuit_node):
     
     def __init__(self , identity, parents , children):
         super().__init__(identity,"&",parents, children)
         
+    
     def transform(self, circuit):
         r = False
         parents = list(self.get_parents())
@@ -208,7 +268,7 @@ class and_node(node):
                 r=circuit.assoc_and(p,self.get_id())
         return r
 
-class or_node(node):
+class or_node(circuit_node):
     
     def __init__(self , identity, parents , children):
         super().__init__(identity,"|",parents, children)
@@ -223,30 +283,32 @@ class or_node(node):
         return r 
 
 
-class not_node(node):
+class not_node(circuit_node):
     
     def __init__(self , identity, parents , children):
         super().__init__(identity,"~",parents, children)
-        
+    
     def transform(self, circuit):
         r = False
+        node_id = self.id
         parent = list(self.get_parents())[0]
         child = list(self.get_children())[0]
                         
         if circuit.get_node_by_id(parent).is_not() :
             r=circuit.involution_not(parent,self.get_id())
-        elif circuitget_node_by_id(child).is_not() :
+        elif circuit.get_node_by_id(child).is_not() :
             r=circuit.involution_not(self.get_id(),child)
                             
         elif circuit.get_node_by_id(child).is_copy():
             r=circuit.not_copy(node_id,child)
         return r
     
-class xor_node(node):
+class xor_node(circuit_node):
     
     def __init__(self , identity, parents , children):
         super().__init__(identity,"^",parents, children)
         
+    
     def transform(self, circuit):
         r = False
         parents = list(self.get_parents())
@@ -261,8 +323,10 @@ class xor_node(node):
                 r=circuit.not_xor(p,self.get_id())
         return r
         
-class constant_node(node):
+
+
+class constant_node(circuit_node):
+    def __init__(self , identity,inp, parents , children):
+        assert inp == "0" or inp == "1"
+        super().__init__(identity,inp,parents, children)
     
-    def __init__(self , identity , label , parents , children):
-        assert label == "1" or label == "0"
-        super().__init__(identity,label,parents, children)
