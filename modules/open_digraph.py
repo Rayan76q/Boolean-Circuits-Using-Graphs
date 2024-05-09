@@ -522,11 +522,12 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
         # Taking care of inputs
         s += "    {\n        rank = same;\n"
         for iden in self.get_inputs_ids():
-            node = self.get_node_by_id(iden)
-            s += f'        v{iden} [label="{node.get_label()}'
-            if verbose:
-                s+= f'\id={iden}'
-            s+='", shape=none, input=True, output=False, color=green];\n'
+            if iden in self.get_node_ids():
+                node = self.get_node_by_id(iden)
+                s += f'        v{iden} [label="{node.get_label()}'
+                if verbose:
+                    s+= f'\id={iden}'
+                s+='", shape=none, input=True, output=False, color=green];\n'
         s += "    }\n\n"
 
         # Nodes
@@ -548,11 +549,12 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
         # Outputs
         s += "\n    {\n        rank = same;\n"
         for iden in self.get_outputs_ids():
-            node = self.get_node_by_id(iden)
-            s += f'        v{iden} [label="{node.get_label()}'
-            if verbose:
-                s+= f'\nid={iden}'
-            s+='", shape=none, input=False, output=True, color=red];\n'
+            if iden in self.get_node_ids():
+                node = self.get_node_by_id(iden)
+                s += f'        v{iden} [label="{node.get_label()}'
+                if verbose:
+                    s+= f'\nid={iden}'
+                s+='", shape=none, input=False, output=True, color=red];\n'
         s += "    }\n"
 
         # Adding edges

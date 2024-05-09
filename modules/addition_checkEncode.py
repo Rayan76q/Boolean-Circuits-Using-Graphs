@@ -242,4 +242,4 @@ def print_stats():
 
 
 
-print(add_registre_naive(255, 255, size=8))
+print(add_registre_naive(210, 163, size=8))
