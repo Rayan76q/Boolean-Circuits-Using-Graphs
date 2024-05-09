@@ -268,6 +268,7 @@ class bool_circ(bool_circ_gates_mx):
                 di.add_edge(bin_node_id,nnodes.get_id())
 
         circuit = cls(di)
+        assert circuit.is_well_formed()
         return circuit
     
     @classmethod

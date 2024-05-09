@@ -516,27 +516,54 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             -------
                 .dot file representing the graph
         """
-        assert path[-4:] == ".dot" , "Not the right extension"
-        s = "digraph G {\n"
-        edges = ""
+        assert path[-4:] == ".dot", "Not the right extension"
+        s = "digraph G {\n    rankdir=TB;\n\n"
+
+        # Taking care of inputs
+        s += "    {\n        rank = same;\n"
+        for iden in self.get_inputs_ids():
+            node = self.get_node_by_id(iden)
+            s += f'        v{iden} [label="{node.get_label()}", shape=none, input=True, output=False, color=green];\n'
+        s += "    }\n\n"
+
+        # Nodes
         for iden, node in self.nodes.items():
-            s += f'v{iden} [label="{node.get_label()}'
-            if verbose:
-                s += f"\nid={iden}"
-            if iden in self.inputs:
-                s+= f' ",input={True} ,output={False} '
-            elif iden in self.outputs:
-                s+= f'",input={False},output={True}'
+            if iden in self.get_inputs_ids() or iden in self.get_outputs_ids():
+                continue
+            if node.get_label()=="":
+                s += f'    v{iden} [label="", shape=circle, width=0.2, height=0.2, fixedsize=true, input=False, output=False];\n'
             else:
-                s+= f'",input={False},output={False}'
-            s += "];\n"
+                s += f'    v{iden} [label="{node.get_label()}", input=False, output=False];\n'
+
+        # Outputs
+        s += "\n    {\n        rank = same;\n"
+        for iden in self.get_outputs_ids():
+            node = self.get_node_by_id(iden)
+            s += f'        v{iden} [label="{node.get_label()}", shape=none, input=False, output=True, color=red];\n'
+        s += "    }\n"
+
+        # Adding edges
+        for iden, node in self.get_id_node_map().items():
             for child in node.get_children():
-                edges += f"v{iden} -> v{child};\n"
-        edges += "}"
-        
-        f = open(path, "w")
-        f.write(s + edges)
-        f.close()
+                s += f"    v{iden} -> v{child}"
+                if iden in self.get_inputs_ids():
+                    s += "[color=green]"
+                elif child in self.get_outputs_ids():
+                    s += "[color=red]"
+                s += ";\n"
+            for parent in node.get_parents():
+                s += f"    v{parent} -> v{iden}"
+                if parent in self.get_inputs_ids():
+                    s += "[color=green]"
+                elif iden in self.get_outputs_ids():
+                    s += "[color=red]"
+                s += ";\n"
+
+        s += "}\n"
+
+        with open(path, "w") as f:
+            f.write(s)
+
 
 
     def display_graph(self,verbose=False):
