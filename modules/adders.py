@@ -45,7 +45,7 @@ class adders(bool_circ):
     def half_adder(cls,n):
         add,cin,cout = cls.adder_helper(n)
         add.get_node_by_id(cin).set_label("0")
-        return add
+        return add,cin
     
     @classmethod
     def CL_4bit(cls):

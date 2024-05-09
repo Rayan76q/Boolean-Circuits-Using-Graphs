@@ -4,6 +4,7 @@ sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
 from modules.adders import adders
 from modules.bool_circ import *
 import random 
+import numpy as np
 
 def find_bigger_2_pow(n):
     acc = 1
@@ -69,12 +70,16 @@ def add_registre_naive_half(a,b, size=8):
     res = ""
     for i in range(size):
         res +=   b_str[i]+a_str[i]
-    res = res +"0"
+    res = res
     res = res[::-1]
     reg_size , n = find_bigger_2_pow(size)
-    g = adders.half_adder(n)
-    registre = adders.create_registre(int(res , 2),size=2*reg_size+1)
-    g.icompose(registre)
+    g,cin = adders.half_adder(n)
+    g.get_inputs_ids().remove(cin)
+    #on enleve le bit qui contient deja un 0 des inputs pour que icompose n'y touche pas
+    registre = adders.create_registre(int(res , 2),size=2*reg_size)
+    n = g.icompose(registre)
+    g.get_inputs_ids().append(cin+n)
+    #on le rajoute car c'est un input a la fin et calculate en a besoin
     g.display_graph()
     return g.calculate()
 
@@ -231,10 +236,10 @@ def print_stats():
     var_e = ve / number_trials - moy_e**2
 
     print(f"Moyenne de Portes éliminées: {moy_n}")
-    print(f"Variance de Portes éliminées: {var_n}, écart type: {sqrt(var_n)}")
+    print(f"Variance de Portes éliminées: {var_n}, écart type: {np.sqrt(var_n)}")
     print(f"Moyenne d'arêtes éliminées: {moy_e}")
-    print(f"Variance d'arêtes éliminées: {var_e}, écart type: {sqrt(var_e)}")
+    print(f"Variance d'arêtes éliminées: {var_e}, écart type: {np.sqrt(var_e)}")
 
 
 
-print(add_registre_naive_half(127, 115, size=8))
+print(add_registre_naive(255, 255, size=8))

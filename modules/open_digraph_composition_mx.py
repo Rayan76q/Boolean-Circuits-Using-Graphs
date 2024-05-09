@@ -120,7 +120,7 @@ class open_digraph_composition:
         """
         assert len(f.get_outputs_ids()) == len(self.get_inputs_ids()) , "error, domains don't match."
         
-        self.iparallel(f) 
+        minMAx = self.iparallel(f) 
         
         old_input = [inp for inp in self.get_inputs_ids() if inp not in f.get_inputs_ids()] #inputs that used to belong to self after shift
         
@@ -146,6 +146,7 @@ class open_digraph_composition:
         for out in outs:
             if out in f.get_outputs_ids():
                 self.get_outputs_ids().remove(out)
+        return minMAx
 
     #6#
     def compose(self , f):
