@@ -114,7 +114,7 @@ class bool_circ_gates_mx(open_digraph):
     def assoc_xor(self , parent_xor,child_xor):
         parent_node = self.get_node_by_id(parent_xor)
         child_node = self.get_node_by_id(child_xor)
-        assert parent_node.get_label() == "^" and child_node.get_label() == "^"
+        assert parent_node.is_xor() and child_node.is_xor()
         
         parents_of_parent = list(parent_node.get_parents())
         self.remove_node_by_id(parent_xor)
@@ -126,10 +126,10 @@ class bool_circ_gates_mx(open_digraph):
     def assoc_and(self , parent_and,child_and):
         parent_node = self.get_node_by_id(parent_and)
         child_node = self.get_node_by_id(child_and)
-        assert parent_node.get_label() == "&" and child_node.get_label() == "&"
+        assert parent_node.is_and() and child_node.is_and()
         
         parents_of_parent = list(parent_node.get_parents())
-        self.remove_node(parent_and)
+        self.remove_node_by_id(parent_and)
         
         for p in parents_of_parent:
             self.add_edge(p,child_and)
@@ -138,10 +138,10 @@ class bool_circ_gates_mx(open_digraph):
     def assoc_or(self , parent_or,child_or):
         parent_node = self.get_node_by_id(parent_or)
         child_node = self.get_node_by_id(child_or)
-        assert parent_node.get_label() == "|" and child_node.get_label() == "|"
+        assert parent_node.is_or() and child_node.is_or()
         
         parents_of_parent = list(parent_node.get_parents())
-        self.remove_node(parent_or)
+        self.remove_node_by_id(parent_or)
         
         for p in parents_of_parent:
             self.add_edge(p,child_or)
@@ -150,7 +150,7 @@ class bool_circ_gates_mx(open_digraph):
     def assoc_copy(self, parent_copy,child_copy):
         parent_node = self.get_node_by_id(parent_copy)
         child_node = self.get_node_by_id(child_copy)
-        assert parent_node.get_label() == "" and child_node.get_label() == ""
+        assert parent_node.is_copy() and child_node.is_copy()
         if child_copy in self.get_outputs_ids() or parent_copy in self.get_inputs_ids():
             return False
         
@@ -164,8 +164,7 @@ class bool_circ_gates_mx(open_digraph):
     def involution_xor(self, xor_id , copy_id):
         xor_node = self.get_node_by_id(xor_id)
         copy_node = self.get_node_by_id(copy_id)
-        assert xor_node.get_label() == "^" and copy_node.get_label() == ""
-        
+        assert xor_node.is_xor() and copy_node.is_copy()
         nb_arretes = (copy_node.get_children())[xor_id]
         if nb_arretes >=2:
             if nb_arretes % 2 == 0:
@@ -193,7 +192,7 @@ class bool_circ_gates_mx(open_digraph):
     def not_xor(self , not_id, xor_id):
         xor_node = self.get_node_by_id(xor_id)
         not_node = self.get_node_by_id(not_id)
-        assert xor_node.get_label() == "^" and not_node.get_label() == "~"
+        assert xor_node.is_xor() and not_node.is_not()
 
         parent_of_not = list(not_node.get_parents())[0]
         child_of_xor = list(xor_node.get_children())[0]
@@ -209,7 +208,7 @@ class bool_circ_gates_mx(open_digraph):
     def not_copy(self,not_id,copy_id):
         copy_node = self.get_node_by_id(copy_id)
         not_node = self.get_node_by_id(not_id)
-        assert copy_node.get_label() == "" and not_node.get_label() == "~"
+        assert copy_node.is_copy() and not_node.is_not()
         if copy_id in self.get_outputs_ids():
             return False
         
@@ -229,7 +228,7 @@ class bool_circ_gates_mx(open_digraph):
     def involution_not(self, not1, not2):
         node1 = self.get_node_by_id(not1)
         node2 = self.get_node_by_id(not2)
-        assert node1.get_label() == "~" and node2.get_label() == "~"
+        assert node1.is_not() and node2.is_not()
         
         parent_of_node1 = list(node1.get_parents())[0]
         child_of_node2 = list(node2.get_children())[0]
@@ -238,3 +237,33 @@ class bool_circ_gates_mx(open_digraph):
         self.remove_node_by_id(not2)
         self.add_edge(parent_of_node1,child_of_node2)
         return True
+    
+    def involution_and(self, and_id , copy_id):
+        and_node = self.get_node_by_id(and_id)
+        copy_node = self.get_node_by_id(copy_id)
+        assert and_node.is_and() and copy_node.is_copy()
+        nb_arretes = (copy_node.get_children())[and_id]
+        if nb_arretes >=2:
+            if nb_arretes % 2 == 0:
+                self.remove_parallel_edges(copy_id, and_id)
+            else:
+                self.remove_parallel_edges(copy_id, and_id)
+                self.add_edge(copy_id,and_id)
+            return True
+        else:
+            return False
+        
+    def involution_or(self, or_id , copy_id):
+        or_node = self.get_node_by_id(or_id)
+        copy_node = self.get_node_by_id(copy_id)
+        assert or_node.is_or() and copy_node.is_copy()
+        nb_arretes = (copy_node.get_children())[or_id]
+        if nb_arretes >=2:
+            if nb_arretes % 2 == 0:
+                self.remove_parallel_edges(copy_id, or_id)
+            else:
+                self.remove_parallel_edges(copy_id, or_id)
+                self.add_edge(copy_id,or_id)
+            return True
+        else:
+            return False

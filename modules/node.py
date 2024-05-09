@@ -156,15 +156,15 @@ class node:
     
     def transform(self, circuit):
         if self.is_copy():
-            circuit_node.from_node(self).transform(circuit)
+            return circuit_node.from_node(self).transform(circuit)
         elif self.is_and():
-            circuit_node.from_node(self).transform(circuit)
+            return circuit_node.from_node(self).transform(circuit)
         elif self.is_or():
-            circuit_node.from_node(self).transform(circuit)
+            return circuit_node.from_node(self).transform(circuit)
         elif self.is_not():
-            circuit_node.from_node(self).transform(circuit)
+            return circuit_node.from_node(self).transform(circuit)
         elif self.is_xor():
-            circuit_node.from_node(self).transform(circuit)
+            return circuit_node.from_node(self).transform(circuit)
 
     def eval(self,circuit,outputs):
         
@@ -205,8 +205,8 @@ class circuit_node(node):
     def from_node(cls,node):
         id = node.get_id()
         label = node.get_label()
-        parents = node.get_parents()
-        children = node.get_children()
+        parents = node.get_parents().copy()
+        children = node.get_children().copy()
         if label == "":
             return copy_node(id,parents,children)
         elif label == "&":
@@ -249,7 +249,6 @@ class copy_node(circuit_node):
                     r=circuit.assoc_copy(self.get_id(),c)        
                 elif c_node.is_xor():
                     r=circuit.involution_xor(c,self.get_id())
-                
         return r
 
 class and_node(circuit_node):

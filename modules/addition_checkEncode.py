@@ -2,7 +2,8 @@ import os
 import sys
 sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
 from modules.adders import adders
-import random
+from modules.bool_circ import *
+import random 
 
 def find_bigger_2_pow(n):
     acc = 1
@@ -59,6 +60,24 @@ def add_registre_naive(a,b, size=8):
     g.icompose(registre)
     return g.calculate()
 
+def add_registre_naive_half(a,b, size=8):
+    """
+        b is added to a
+    """
+    a_str = adders.convert_to_binary_string(a,size=size)
+    b_str = adders.convert_to_binary_string(b,size=size)
+    res = ""
+    for i in range(size):
+        res +=   b_str[i]+a_str[i]
+    res = res +"0"
+    res = res[::-1]
+    reg_size , n = find_bigger_2_pow(size)
+    g = adders.half_adder(n)
+    registre = adders.create_registre(int(res , 2),size=2*reg_size+1)
+    g.icompose(registre)
+    g.display_graph()
+    return g.calculate()
+
 def add_naive(a,b):
     """
         b is added to a without needing to specify size
@@ -96,8 +115,14 @@ def check_invarients():
     print(f"Number of time that the original signal couldn't be retreived when introducing 2 errors: {mistakes} out of {6*16} attempts.")
     
     
-    
-
+def count_edges(circuit):
+    """
+    Counts the number of edges in a graph , with their multiplicity
+    """
+    s = 0
+    for node in circuit.get_nodes():
+        s += sum(list(node.get_children().values()))
+    return s
 
 
 
@@ -132,7 +157,7 @@ def check_invarients():
 #c = adders.random_circ_bool(6,14,12)
 # c2 = open_digraph.random(7,form="DAG")
 #c.display_graph()
-check_invarients()
+#check_invarients()
 
 #adders.decodeur_7bits().display_graph(verbose=True)
 
@@ -159,14 +184,57 @@ check_invarients()
 
 
 #(adders.CL_4bit()[0]).display_graph()
-print(add_registre_CLA(0,16,size= 8))
-i = 0
-res = True
-while i <2000 and res:
-    print(i)
-    a = random.randint(0,1234567865)
-    b = random.randint(0,1234567432)
-    i+=1
-    res = (add_CLA(a,b)== 
-        add_naive(a,b) == a+b)
-print(res and (i==2000) )
+# print(add_registre_CLA(0,16,size= 8))
+# i = 0
+# res = True
+# while i <2000 and res:
+#     print(i)
+#     a = random.randint(0,1234567865)
+#     b = random.randint(0,1234567432)
+#     i+=1
+#     res = (add_CLA(a,b)== 
+#         add_naive(a,b) == a+b)
+# print(res and (i==2000) )
+
+
+
+def print_stats():
+    diff_nodes = 0
+    diff_edges = 0
+    vn = 0
+    ve = 0
+    number_trials = 1000
+
+    for i in range(number_trials):
+        inputs = random.choice([8,16,32,64])
+        outputs = random.choice([8,16,32,64])
+        node_number = inputs + outputs + random.randint(32, 128)
+        circuit = bool_circ.random_circ_bool(node_number, inputs, outputs)
+        node_number = len(circuit.get_nodes())
+        edges_number = count_edges(circuit)
+        
+        circuit.transform_circuit()
+        
+        number_left_nodes = len(circuit.get_nodes())
+        edges_left = count_edges(circuit)
+        
+        diff_nodes += node_number - number_left_nodes
+        diff_edges += edges_number - edges_left
+        
+        vn += (node_number - number_left_nodes)**2
+        ve += (edges_number - edges_left)**2
+
+    moy_n = diff_nodes / number_trials
+    moy_e = diff_edges / number_trials
+
+    var_n = vn / number_trials - moy_n**2
+    var_e = ve / number_trials - moy_e**2
+
+    print(f"Moyenne de Portes éliminées: {moy_n}")
+    print(f"Variance de Portes éliminées: {var_n}, écart type: {sqrt(var_n)}")
+    print(f"Moyenne d'arêtes éliminées: {moy_e}")
+    print(f"Variance d'arêtes éliminées: {var_e}, écart type: {sqrt(var_e)}")
+
+
+
+print(add_registre_naive_half(127, 115, size=8))

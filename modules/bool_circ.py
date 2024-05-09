@@ -398,7 +398,7 @@ class bool_circ(bool_circ_gates_mx):
                 if first_child.is_copy() and len(first_child.get_children()) == 0:
                         r=self.effacement(node_id ,list(node.get_children())[0] )
                 else:
-                    node.transform(self)
+                    r = node.transform(self)
                 if r:
                     flag = True
             return flag
@@ -411,7 +411,3 @@ class bool_circ(bool_circ_gates_mx):
     def calculate(self):
         self.transform_circuit()
         return self.evaluate()
-        
-
-c = bool_circ.random_circ_bool(10,5,3)
-c.display_graph()

@@ -523,7 +523,10 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
         s += "    {\n        rank = same;\n"
         for iden in self.get_inputs_ids():
             node = self.get_node_by_id(iden)
-            s += f'        v{iden} [label="{node.get_label()}", shape=none, input=True, output=False, color=green];\n'
+            s += f'        v{iden} [label="{node.get_label()}'
+            if verbose:
+                s+= f'\id={iden}'
+            s+='", shape=none, input=True, output=False, color=green];\n'
         s += "    }\n\n"
 
         # Nodes
@@ -531,15 +534,25 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             if iden in self.get_inputs_ids() or iden in self.get_outputs_ids():
                 continue
             if node.get_label()=="":
-                s += f'    v{iden} [label="", shape=circle, width=0.2, height=0.2, fixedsize=true, input=False, output=False];\n'
+                s += f'    v{iden} [label="'
+                if verbose:
+                    s+= f'{iden}'
+                s+= f'", shape=circle, width=0.2, height=0.2, fixedsize=true, input=False, output=False];\n'
             else:
-                s += f'    v{iden} [label="{node.get_label()}", input=False, output=False];\n'
+                s += f'    v{iden} [label="{node.get_label()}'
+                if verbose:
+                    s+= f'\nid={iden}'
+                s+=f'", input=False, output=False];\n'
+                
 
         # Outputs
         s += "\n    {\n        rank = same;\n"
         for iden in self.get_outputs_ids():
             node = self.get_node_by_id(iden)
-            s += f'        v{iden} [label="{node.get_label()}", shape=none, input=False, output=True, color=red];\n'
+            s += f'        v{iden} [label="{node.get_label()}'
+            if verbose:
+                s+= f'\nid={iden}'
+            s+='", shape=none, input=False, output=True, color=red];\n'
         s += "    }\n"
 
         # Adding edges
@@ -551,13 +564,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
                 elif child in self.get_outputs_ids():
                     s += "[color=red]"
                 s += ";\n"
-            for parent in node.get_parents():
-                s += f"    v{parent} -> v{iden}"
-                if parent in self.get_inputs_ids():
-                    s += "[color=green]"
-                elif iden in self.get_outputs_ids():
-                    s += "[color=red]"
-                s += ";\n"
+            
 
         s += "}\n"
 
