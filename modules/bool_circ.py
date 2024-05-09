@@ -197,10 +197,6 @@ class bool_circ(bool_circ_gates_mx):
                 circuit.get_node_by_id(variables[n.get_label()]).set_label("")
                 
 
-        nodes = (circuit.get_id_node_map().copy()).values()
-        for node in nodes:
-            circuit.convert_node(node)  
-            
         
         assert circuit.is_well_formed() 
         return circuit,list(variables.keys())

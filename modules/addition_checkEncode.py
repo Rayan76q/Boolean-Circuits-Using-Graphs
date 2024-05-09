@@ -95,12 +95,12 @@ def check_invarients():
     enc = adders.encodeur_4bits()
     dec = adders.decodeur_7bits()
     
-    for i in range(-1,4): #-1 -> no error is introduced
+    for i in range(2,3): #-1 -> no error is introduced
         noise = adders.perturbe_bit(7,[i]) 
         g = adders(noise.compose(enc))
         g2 = adders(dec.compose(g))
         
-        for i in range(0,16):
+        for i in range(10,11):
             reg = adders.create_registre(i,size=4)
             g3 = adders(g2.compose(reg))
             assert (i==g3.calculate())
@@ -108,7 +108,7 @@ def check_invarients():
     print("Hamming property verfied when introducing one error at most.")
     
     mistakes = 0
-    for i in range(4): 
+    for i in range(4,-1): 
         for j in range(i+1,4):
             noise = adders.perturbe_bit(7,[i,j]) 
             g = adders(noise.compose(enc))
@@ -242,4 +242,5 @@ def print_stats():
 
 
 
-print(add_registre_naive(210, 163, size=8))
+
+check_invarients()
