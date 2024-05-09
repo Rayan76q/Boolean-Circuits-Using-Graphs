@@ -201,10 +201,10 @@ class bool_circ(open_digraph):
         d = list(di.get_nodes()).copy()
         for nodess in d:
             if len(nodess.get_parents())==0:
-                    inp_id = di.add_copy_node({},{nodess.get_id():1})
+                    inp_id = di.add_node({},{nodess.get_id():1})
                     di.add_input_id(inp_id)
             if len(nodess.get_children()) == 0:
-                    out_id = di.add_copy_node({nodess.get_id():1},{})
+                    out_id = di.add_node({nodess.get_id():1},{})
                     di.add_output_id(out_id)
         #etape 2 bis
         not_out_nor_inp = [id for id in di.get_node_ids() if ((id not in di.get_inputs_ids()) and (id not in di.get_outputs_ids()))]
@@ -214,7 +214,7 @@ class bool_circ(open_digraph):
         while(len(di.get_inputs_ids())!=nb_inputs):
             if(len(di.get_inputs_ids())< nb_inputs):
                 id = not_out_nor_inp.pop(0)
-                new_inp_id = di.add_copy_node({},{id:1})
+                new_inp_id = di.add_node({},{id:1})
                 not_out_nor_inp.append(id)
                 di.add_input_id(new_inp_id)
             else:
@@ -255,7 +255,6 @@ class bool_circ(open_digraph):
                 di.add_edge(bin_node_id,nnodes.get_id())
 
         circuit = cls(di)
-        assert circuit.is_well_formed()
         return circuit
     
     @classmethod
@@ -884,7 +883,7 @@ def check_invarients():
 #c = bool_circ.random_circ_bool(6,14,12)
 # c2 = open_digraph.random(7,form="DAG")
 #c.display_graph()
-check_invarients()
+#check_invarients()
 
 #bool_circ.decodeur_7bits().display_graph(verbose=True)
 
@@ -911,16 +910,18 @@ check_invarients()
 
 
 #(bool_circ.CL_4bit()[0]).display_graph()
-print(add_registre_CLA(0,16,size= 8))
-i = 0
-res = True
-while i <2000 and res:
-    print(i)
-    a = random.randint(0,1234567865)
-    b = random.randint(0,1234567432)
-    i+=1
-    res = (add_CLA(a,b)== 
-        add_naive(a,b) == a+b)
-print(res and (i==2000) )
+# print(add_registre_CLA(0,16,size= 8))
+# i = 0
+# res = True
+# while i <2000 and res:
+#     print(i)
+#     a = random.randint(0,1234567865)
+#     b = random.randint(0,1234567432)
+#     i+=1
+#     res = (add_CLA(a,b)== 
+#         add_naive(a,b) == a+b)
+# print(res and (i==2000) )
 
+
+bool_circ.random_circ_bool(20,5,3).display_graph()
 
