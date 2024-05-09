@@ -206,7 +206,7 @@ class InitTest(unittest.TestCase):
             [0, 3, 0],
             [2, 0, 0]
         ]
-        graph = graph_from_adjacency_matrix(mat)
+        graph = open_digraph.graph_from_adjacency_matrix(mat)
         
         # Test adjacency matrix
         expected_adj_matrix = [
@@ -225,7 +225,7 @@ class InitTest(unittest.TestCase):
             [0, 0, 1],
             [1, 0, 0]
         ]
-        graph = graph_from_adjacency_matrix(mat, inp=1, out=1)
+        graph = open_digraph.graph_from_adjacency_matrix(mat, inp=1, out=1)
         
         # Test adjacency matrix
         expected_adj_matrix = [
@@ -244,7 +244,7 @@ class InitTest(unittest.TestCase):
             [0, 0, 2],
             [0, 0, 0]
         ]
-        graph = graph_from_adjacency_matrix(mat)
+        graph = open_digraph.graph_from_adjacency_matrix(mat)
         self.assertEqual(graph.adjacency_matrix(),mat)
 
         # Test with non-square adjacency matrix
@@ -254,7 +254,7 @@ class InitTest(unittest.TestCase):
             [1, 0]
         ]
         with self.assertRaises(AssertionError) as context:
-            graph_from_adjacency_matrix(invalid_mat)
+            open_digraph.graph_from_adjacency_matrix(invalid_mat)
         # Check if the error message matches the expected message
         self.assertEqual(str(context.exception),"matrix dimensions not n x n")
     

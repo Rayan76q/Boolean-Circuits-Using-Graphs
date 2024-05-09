@@ -5,6 +5,8 @@ This project comprises several Python modules providing tools to work with boole
 
 ## Modules Overview and Key Functions
 
+For reference, this photo of a class diagram shows the dependencies between the files and therefore its organisation.
+
 ### `__init__.py`
 This file acts as an initializer for the package, but it does not contain any custom functions or classes.
 
