@@ -573,7 +573,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
 
 
 
-    def display_graph(self,verbose=False):
+    def display_graph(self , name ,verbose=False):
         """
             Displays the graph using the .dot format after converting it to pdf
             Both the .dot and pdf file will be stored in the current directory
@@ -588,14 +588,14 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
             -------
                 Display of the graph's representation in pdf
         """
-        self.save_as_dot_file("display.dot",verbose = verbose)
-        os.system("dot -Tpdf display.dot -o display.pdf ")
-        if sys.platform.startswith('win'):
-            os.system("icacls display.pdf  /grant %USERNAME%:F")
-        elif sys.platform.startswith('linux'):
-            os.system("chmod 777 display.pdf")
+        self.save_as_dot_file(f"{name}.dot",verbose = verbose)
+        os.system(f"dot -Tpdf {name}.dot -o {name}.pdf")
+        # if sys.platform.startswith('win'):
+        #     os.system(f"icacls {name}  /grant %USERNAME%:F")
+        # elif sys.platform.startswith('linux'):
+        #     os.system(f"chmod 777 {name}")
         
-        os.system("explorer.exe display.pdf")
+        # os.system(f"explorer.exe {name}")
 
 
     @classmethod

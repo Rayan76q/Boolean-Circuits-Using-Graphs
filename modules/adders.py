@@ -54,7 +54,6 @@ class adders(bool_circ):
                                         "((g1)^((p1)&(g0))^((p1)&(p0)&(c0)))" , 
                                         "((g0)^((p0)&(c0)))")
     
-    
     @classmethod 
     def CLA_4bit(cls):
         circuit ,inps = cls.CL_4bit()

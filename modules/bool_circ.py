@@ -368,12 +368,14 @@ class bool_circ(bool_circ_gates_mx):
 
         calculated = list(self.get_inputs_ids()) + tmp
         outputs = list(self.get_outputs_ids())
+        k = 0
         while outputs != [] and calculated != []:
             node_id = calculated[0]
             calculated.remove(node_id)
             node = self.get_node_by_id(node_id)
             calculated += node.eval(self,outputs)
-        
+            self.display_graph(f"{k}.pdf")
+            k+=1
         #cleanning up the circuit
         for c in calculated:
             self.remove_node_by_id(c)
@@ -382,6 +384,7 @@ class bool_circ(bool_circ_gates_mx):
         (self.get_outputs_ids()).sort()
         for out in (self.get_outputs_ids()):
             res+= self.get_node_by_id(out).get_label()
+        
         return int(res , 2)
     
     def transform_circuit(self):
@@ -402,11 +405,13 @@ class bool_circ(bool_circ_gates_mx):
                 if r:
                     flag = True
             return flag
-        
+        m = 0
         cont = True
         while cont:
             nodes = list(self.get_node_ids())
             cont = transform_once(self, nodes)
+            self.display_graph(f"p{m}.pdf")
+            m+=1
     
     def calculate(self):
         self.transform_circuit()

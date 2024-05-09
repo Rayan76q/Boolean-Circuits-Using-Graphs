@@ -75,7 +75,6 @@ def add_registre_naive_half(a,b, size=8):
     g = adders.half_adder(n)
     registre = adders.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
-    g.display_graph()
     return g.calculate()
 
 def add_naive(a,b):
