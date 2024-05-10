@@ -249,6 +249,20 @@ class copy_node(circuit_node):
                     r=circuit.assoc_copy(self.get_id(),c)        
                 elif c_node.is_xor():
                     r=circuit.involution_xor(c,self.get_id())
+                elif c_node.is_and():
+                    r = circuit.idempotance_and(c,self.get_id())
+                    for other_node_id in children:
+                        if other_node_id in circuit.get_node_ids():
+                            other_node = circuit.get_node_by_id(other_node_id)
+                            if other_node_id != c and other_node.is_or() and list(other_node.get_children())[0] == c_node:
+                                r = circuit.absoroption_and(self.get_id() ,list(other_node.get_children())[0],other_node_id )
+                elif c_node.is_or():
+                    for other_node_id in children:
+                        if other_node_id in circuit.get_node_ids():
+                            r = circuit.idempotance_or(c,self.get_id())
+                            other_node = circuit.get_node_by_id(other_node_id)
+                            if other_node_id != c and other_node.is_and() and list(other_node.get_children())[0] == c_node:
+                                r = circuit.absoroption_or(self.get_id() ,list(other_node.get_children())[0],other_node_id)
         return r
 
 class and_node(circuit_node):
