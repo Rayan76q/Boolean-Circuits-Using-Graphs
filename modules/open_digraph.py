@@ -575,7 +575,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
 
 
 
-    def display_graph(self , name ,verbose=False):
+    def display_graph(self , name="display" ,verbose=False):
         """
             Displays the graph using the .dot format after converting it to pdf
             Both the .dot and pdf file will be stored in the current directory
@@ -592,12 +592,12 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
         """
         self.save_as_dot_file(f"{name}.dot",verbose = verbose)
         os.system(f"dot -Tpdf {name}.dot -o {name}.pdf")
-        # if sys.platform.startswith('win'):
-        #     os.system(f"icacls {name}  /grant %USERNAME%:F")
-        # elif sys.platform.startswith('linux'):
-        #     os.system(f"chmod 777 {name}")
+        if sys.platform.startswith('win'):
+            os.system(f"icacls {name}  /grant %USERNAME%:F")
+        elif sys.platform.startswith('linux'):
+            os.system(f"chmod 777 {name}")
         
-        # os.system(f"explorer.exe {name}")
+        os.system(f"explorer.exe {name}")
 
 
     @classmethod
@@ -753,39 +753,3 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
                 if c != node_id:                 #avoids reflexive edges if node is child of other
                     self.add_edge(node_id,c,m=mult)
             self.remove_node_by_id(other_id)
-
-
-
-
-
-# #usual graph for testing
-# n02 = [node(0, '0', {}, {2:1}) , node(1, 'ss', {}, {3:1}),node(2, 'zs', {0:1}, {4:3}),node(3, 'ee', {1:1}, {4:2}) , node(4, '5', {2:3,3:2}, {5:1}),node(5, '&', {4:1}, {})]
-# inp2= [0,1]
-# outputs2 = [5]
-# gtest1 = open_digraph(inp2,outputs2,n02)
-# #gtest1.display_graph()
-# print(gtest1.topological_sort())
-
-# #graph of session 8
-# n03 = [node(0, '0', {}, {3:1}),node(1, '1', {}, {4:1,5:1,8:1}),node(2, '2', {}, {4:1}),
-#        node(3, '3', {0:1}, {5:1,6:1,7:1}),node(4, '4', {1:1,2:1}, {6:1}),node(5, '5', {1:1,3:1}, {7:1}),
-#        node(6, '6', {3:1,4:1}, {8:1,9:1}),node(7, '7', {3:1,5:1}, {}),node(8, '8', {1:1,6:1}, {}),
-#        node(9,'9',{6:1},{})]
-
-# gtest2 = open_digraph([],[],n03)
-# #gtest2.display_graph()
-# print(gtest2.topological_sort())
-# print(gtest2.longest_path(1,5))
-# #graph of session 8 with one cycle between 9 and 2
-# n03 = [node(0, '0', {}, {3:1}),node(1, '1', {}, {4:1,5:1,8:1}),node(2, '2', {9:1}, {4:1}),
-#        node(3, '3', {0:1}, {5:1,6:1,7:1}),node(4, '4', {1:1,2:1}, {6:1}),node(5, '5', {1:1,3:1}, {7:1}),
-#        node(6, '6', {3:1,4:1}, {8:1,9:1}),node(7, '7', {3:1,5:1}, {}),node(8, '8', {1:1,6:1}, {}),
-#        node(9,'9',{6:1},{2:1})]
-# gtest3 = open_digraph([],[],n03)
-# print(gtest3.topological_sort())
-
-# #graph that is auto cyclic
-# gtest3 = open_digraph([],[],[node(0
-# ,'0',{0:1},{0:1})])
-# print(gtest3.topological_sort())
-
