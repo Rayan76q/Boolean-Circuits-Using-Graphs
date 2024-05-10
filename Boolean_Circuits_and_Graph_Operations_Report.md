@@ -79,30 +79,43 @@ This module focuses on boolean circuits and contains the following functions:
 7. **`assoc_xor`**  
     Checks the associativity of XOR logical gates.
 
-8. **`assoc_and`**  
-    Checks the associativity of AND logical gates.
-
-9. **`assoc_or`**  
-    Checks the associativity of OR logical gates.
-
-10. **`assoc_copy`**  
+8. **`assoc_copy`**  
     Checks the associativity of copy logical gates.
 
-11. **`involution_xor`**  
+9. **`involution_xor`**  
     Checks the involution property of XOR logical gates.
 
-12. **`effacement`**  
+10. **`effacement`**  
     Validates the logical circuit's effacement.
 
-13. **`not_xor`**  
+11. **`not_xor`**  
     Validates if NOT and XOR logical gates satisfy specific logical constraints.
 
-14. **`not_copy`**  
+12. **`not_copy`**  
     Checks specific logical constraints involving NOT and copy logical gates.
 
-15. **`involution_not`**  
+13. **`involution_not`**  
     Validates the involution property of NOT logical gates.
 
+#### `Bonus transformations`
+
+14. **`assoc_and`**  
+    Checks the associativity of AND logical gates.
+
+15. **`assoc_or`**  
+    Checks the associativity of OR logical gates.
+
+16. **`idempotance_and`**
+        Applies the idempotence property to an AND gate.
+
+17. **`idempotance_or`**
+        Applies the idempotence property to an OR gate.
+
+18. **`absoroption_and`**
+        Resolves an AND gate by absorbing the copy and OR gates.
+
+19. **`absoroption_or`**
+        Resolves an OR gate by absorbing the copy and AND gates.
 
 ### `addition_checkEncode.py`
 

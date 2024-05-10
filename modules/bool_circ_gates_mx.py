@@ -216,6 +216,8 @@ class bool_circ_gates_mx:
 
     def assoc_and(self, parent_and, child_and):
         """
+        Bonus transformation
+
         Applies the associative property to two AND gates.
 
         Parameters:
@@ -242,6 +244,9 @@ class bool_circ_gates_mx:
             
     def assoc_or(self, parent_or, child_or):
         """
+
+        Bonus transformation
+        
         Applies the associative property to two OR gates.
 
         Parameters:
@@ -438,6 +443,8 @@ class bool_circ_gates_mx:
 
     def idempotance_and(self, and_id, copy_id):
         """
+        Bonus transformation
+        
         Applies the idempotence property to an AND gate.
 
         Parameters:
@@ -463,6 +470,8 @@ class bool_circ_gates_mx:
         
     def idempotance_or(self, or_id, copy_id):
         """
+        Bonus transformtion
+
         Applies the idempotence property to an OR gate.
 
         Parameters:
@@ -488,6 +497,8 @@ class bool_circ_gates_mx:
 
     def absoroption_and(self, copy_id, or_id, and_id):
         """
+        Bonus transformation
+
         Resolves an AND gate by absorbing the copy and OR gates.
 
         Parameters:
@@ -512,6 +523,8 @@ class bool_circ_gates_mx:
 
     def absoroption_or(self, copy_id, or_id, and_id):
         """
+        Bonus transformation
+
         Resolves an OR gate by absorbing the copy and AND gates.
 
         Parameters:
