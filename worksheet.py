@@ -71,6 +71,6 @@ def print_content(file_name, method_name=None):
                     print("Error")
 
 file_name = 'adders.py'
-method_name = "CLA_adder"
+method_name = None
 
 print_content(file_name, method_name)
