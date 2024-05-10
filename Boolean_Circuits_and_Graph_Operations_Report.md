@@ -106,6 +106,39 @@ This module focuses on boolean circuits and contains the following functions:
 
 ### `addition_checkEncode.py`
 
+The `addition_checkEncode.py` module focuses on checking the equivalence of addition circuits. The functions are described below.
+
+1. **`find_bigger_2_pow`**  
+   Finds the smallest power of 2 greater than a given number.
+
+2. **`add_registre_CLA`**  
+   Adds two numbers using a Carry-Lookahead Adder (CLA) method.
+
+3. **`add_CLA`**  
+   Adds two numbers without specifying a size using the CLA method.
+
+4. **`add_registre_naive`**  
+   Adds two numbers using a naive method.
+
+5. **`add_registre_naive_half`**  
+   Adds two numbers using a half-adder.
+
+6. **`add_naive`**  
+   Adds two numbers without specifying a size using the naive method.
+
+7. **`check_invarients`**  
+   Verifies that specific invariants are maintained.
+
+8. **`count_edges`**  
+   Counts the number of edges in a circuit.
+
+9. **`print_stats`**  
+   Prints statistical information on removed nodes and edges.
+
+10. **`shortest_path_input_output`**  
+   Finds the shortest path between an input and an output in either a half-adder or CLA adder.
+
+
 ### `matrix_operations.py`
 This module provides various matrix operations and contains the following functions:
 
@@ -289,8 +322,6 @@ This module focuses on matrix representations for graph composition operations a
 9. **`connected_components`**  
    Returns the connected components of a graph.
 
-10. **`dfs`**  
-    Performs a depth-first search on the graph.
 
 ### `open_digraph_paths_distance_mx.py`
 This module handles path and distance calculations using matrix operations and contains the following functions:
