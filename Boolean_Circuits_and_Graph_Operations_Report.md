@@ -22,31 +22,10 @@ This module focuses on boolean circuits and contains the following functions:
 3. **`insert_node`**  
    Inserts a new node into the circuit at a specified location.
 
-4. **`add_copy_node`**  
-   Adds a "copy" node to the circuit, duplicating the input signal.
-
-5. **`add_and_node`**  
-   Adds an "AND" node that outputs a logical AND of its inputs.
-
-6. **`add_or_node`**  
-   Adds an "OR" node that outputs a logical OR of its inputs.
-
-7. **`add_not_node`**  
-   Adds a "NOT" node that inverts the input signal.
-
-8. **`add_xor_node`**  
-   Adds an "XOR" node that outputs a logical XOR of its inputs.
-
-9. **`add_constant_node`**  
-   Adds a node that always outputs a constant logical value (0 or 1).
-
-10. **`identity`**  
-    Checks if two boolean circuits are identical.
-
-11. **`parse_parentheses`**  
+4. **`parse_parentheses`**  
     Parses a circuit defined with parentheses notation into a boolean circuit object.
 
-12. **`random_circ_bool`**  
+5. **`random_circ_bool`**  
     Generates a random boolean circuit with the specified number of nodes.
 
 13. **`adder_helper`**  
