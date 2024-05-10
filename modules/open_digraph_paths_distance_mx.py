@@ -121,6 +121,17 @@ class open_digraph_paths_distance:
         return (i+1)
     
     def depth_node_acyclic(self,node):
+        '''
+        this returns the depth of a node
+        
+        Parameters:
+        -----------  
+        node : the node we want to know the depth of
+
+        Returns:
+        -------
+        int depth of a node
+        '''
         assert node in self.get_nodes(), "node isn't in graph"
         stack = self.topological_sort()
         i = 0
@@ -132,6 +143,19 @@ class open_digraph_paths_distance:
         return len(self.topological_sort())
     
     def longest_path(self,u,v):
+        '''
+        this calculates the longest path between u and v if it exists and returns a dict that
+        represents the path from node u to v
+        
+        Parameters:
+        -----------  
+        u : the source node_id 
+        v : the target node_id
+
+        Returns:
+        -------
+        int distance , dict {int:int} (node_id:previous_node_id)
+        '''
         dist = {u:0}
         prev = {u:u}
         stack = self.topological_sort()

@@ -6,6 +6,17 @@ from modules.bool_circ import bool_circ
 class adders(bool_circ):
     @classmethod
     def adder_helper(cls,n):
+        '''
+            auxiliary function that helps create the adder recursively
+
+            Parameters:
+            -----------
+            n (int) : represent which level of adder wanted; Adder_n.
+            
+            Returns:
+            --------
+            a tuple of adder_n circuit (adders), carry in id (int), carry out id (int)
+        '''
         if n == 0:
             circuit = cls.empty_bool_circ()
             inp1 = circuit.add_copy_node()
@@ -36,6 +47,17 @@ class adders(bool_circ):
     
     @classmethod
     def adder(cls,n):
+        '''
+            use adder_helper to create adder_n
+
+            Parameters:
+            -----------
+            n (int) : represent which level of adder wanted; Adder_n.
+            
+            Returns:
+            --------
+            adder_n circuit (adders)
+        '''
         add,cin,cout = cls.adder_helper(n)
         add.get_inputs_ids().sort()
         add.get_outputs_ids().sort()
@@ -43,12 +65,34 @@ class adders(bool_circ):
 
     @classmethod
     def half_adder(cls,n):
+        '''
+            use adder_helper to create half_adder_n
+
+            Parameters:
+            -----------
+            n (int) : represent which level of adder wanted; Adder_n.
+            
+            Returns:
+            --------
+            half_adder_n circuit (adders)
+        '''
         add,cin,cout = cls.adder_helper(n)
         add.get_node_by_id(cin).set_label("0")
         return add,cin
     
     @classmethod
     def CL_4bit(cls):
+        '''
+            creates the circuit representing the pn gn algebraic expressions
+
+            Parameters:
+            -----------
+            None
+
+            Returns:
+            -------
+            the circuit representing the pn gn algebraic expressions
+        '''
         return cls.parse_parentheses("((g3)^((p3)&(g2))^((p3)&(p2)&(g1))^((p3)&(p2)&(p1)&(g0))^((p3)&(p2)&(p1)&(p0)&(c0)))",
                                         "((g2)^((p2)&(g1))^((p2)&(p1)&(g0))^((p2)&(p1)&(p0)&(c0)))",
                                         "((g1)^((p1)&(g0))^((p1)&(p0)&(c0)))" , 
@@ -56,6 +100,17 @@ class adders(bool_circ):
     
     @classmethod 
     def CLA_4bit(cls):
+        '''
+            creates the circuit representing a CLA 4bit adder (CLA_adder(0))
+
+            Parameters:
+            -----------
+            None
+            
+            Returns:
+            -------
+            the circuit representing the CLA 4bit adder (CLA_adder(0))
+        '''
         circuit ,inps = cls.CL_4bit()
         dict_inputs = {inps[i]:list(circuit.get_inputs_ids())[i] for i in range(len(inps))}
         
@@ -104,6 +159,17 @@ class adders(bool_circ):
     
     @classmethod
     def CLA_helper(cls,n):
+        '''
+            auxiliary function that helps create the CLA_adder recursively
+
+            Parameters:
+            -----------
+            n (int) : represent which level of adder wanted; CLA_adder_n.
+            
+            Returns:
+            --------
+            a tuple of CLA_adder_n circuit (adders), carry out id (int), carry in id (int)
+        '''
         if (n==0):
             g = cls.CLA_4bit()
             return 65,g,70
@@ -118,5 +184,16 @@ class adders(bool_circ):
         
     @classmethod
     def CLA_adder(cls,n):
+        '''
+            function that creates the CLA_adder
+
+            Parameters:
+            -----------
+            n (int) : represent which level of adder wanted; CLA_adder_n.
+            
+            Returns:
+            --------
+            CLA_adder_n circuit (adders)
+        '''
         cout,cla,cin = cls.CLA_helper(n)
         return cla

@@ -204,6 +204,21 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
     
     @classmethod
     def random_circ_bool(cls, n, nb_inputs,nb_outputs):
+        '''
+        creates a random circuit with n nodes, then adds nodes according to the 
+        number of inputs and outputs wanted.
+
+        Parameters:
+        -----------
+        n (int) : number of initial nodes
+        nb_inputs (int) : number of inputs wanted
+        nb_outputs (int) : number of outputs wanted
+
+        Returns:
+        --------
+        random boolean circuit
+        '''
+
         #etape 1
         di = super().random(n,form="DAG")
 
@@ -355,6 +370,16 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
     #################### EVALUATION OF A CIRCUIT #####################
 
     def evaluate(self):
+        """
+            Evaluate the boolean circuit to produce an output.
+
+            The evaluation starts from the input nodes and propagates to the output nodes,
+            applying logical operations based on the node labels.
+
+            Returns:
+            -------
+            int that represents the result in binary
+        """
         tmp = []
         
         #taking care of neutral gates at the beginning which dont result of transformations
