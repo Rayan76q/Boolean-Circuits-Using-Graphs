@@ -19,7 +19,9 @@ file_map = {
 
 # Function to print the contents of a file or a specific method within the file
 def print_content(file_name, method_name=None):
-    
+
+    # PS it works for everything except addition_checkEncode.py functions
+    # NOT WORKING FOR addition_checkEncode.py functions
     def find_function(module, target_function_name):
         # Get all members of the module
         members = inspect.getmembers(module)
@@ -72,5 +74,7 @@ def print_content(file_name, method_name=None):
 
 file_name = 'adders.py'
 method_name = "CLA_adder"
+
+# NOT WORKING FOR addition_checkEncode.py functions
 
 print_content(file_name, method_name)
