@@ -173,80 +173,6 @@ def count_edges(circuit):
         s += sum(list(node.get_children().values()))
     return s
 
-
-
-#g, var = adders.parse_parentheses("((x0)&((x1)&(x2)))|((x1)&(~(x2)))","((x0)&(~(x1)))|(x2)")
-
-# g2 , var2 = adders.parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
-# #print(var2)
-# registre = adders.create_registre(7,size=3)
-
-# g2.icompose(registre)
-
-# g2.evaluate()
-
-# g2.display_graph()
-
-
-# g = adders.adder(1)
-
-# registre = adders.create_registre(8,size=5)
-# g.icompose(registre)
-#g.display_graph(verbose=True)
-
-#print(add(120,23459,size=16))
-#g = adders.decodeur_7bits()
-#g.display_graph()
-
-
-#g = adders.create_registre(7,size=2)
-#g.display_graph()
-
-
-#c = adders.random_circ_bool(6,14,12)
-# c2 = open_digraph.random(7,form="DAG")
-#c.display_graph()
-#check_invarients()
-
-#adders.decodeur_7bits().display_graph(verbose=True)
-
-
-# g = adders.CL_4bit()[0]
-
-# reg = adders.create_registre(int("100000000" ,2) , size=9)
-# g.icompose(reg)
-# g.display_graph(verbose="True")
-
-#print(g.evaluate())
-#g = adders.CLA_adder(5)
-#g.iparallel(adders.CLA_adder(0))
-#print(len(g.get_inputs_ids()))
-
-#print(g.get_outputs_ids())
-#print(g.max_id())
-#g.display_graph(verbose = True)
-
-for i in range(16):
-    for j in range(16):
-        print( f"{i} + {j} =", add_registre_naive(i,j,size=4) )
-
-
-
-#(adders.CL_4bit()[0]).display_graph()
-# print(add_registre_CLA(0,16,size= 8))
-# i = 0
-# res = True
-# while i <2000 and res:
-#     print(i)
-#     a = random.randint(0,1234567865)
-#     b = random.randint(0,1234567432)
-#     i+=1
-#     res = (add_CLA(a,b)== 
-#         add_naive(a,b) == a+b)
-# print(res and (i==2000) )
-
-
-
 def print_stats():
     '''
         prints the statistics involving transformation
@@ -296,43 +222,6 @@ def print_stats():
     print(f"Variance : {var_e}, deviation : {np.sqrt(var_e)}")
 
 
-
-#check_invarients()
-
-
-# g = adders.half_adder(3)[0]
-# # g = adders.CLA_adder(2)
-# print(len(g.get_nodes()))
-# print(g.depth_acyclic())
-# print(len(g.get_inputs_ids()))
-
-############################################################################
-#
-# depth half_adder(n) = 5*2^n+1
-# number of gates half_adder(n) = 14*2^n 
-# number of outputs half_adder(n) = 1 + 2^n
-# number of inputs half_adder(n) = 2^(n+1) (+1 if counting the fixed 0)
-#
-############################################################################
-#
-# depth CLA_adder(n) = 11 + 9*n
-# number of gates CLA_adder(n) = 79*(n+1)
-# number of outputs CLA_adder(n) = 1 + 4*(n+1)
-# number of inputs CLA_adder(n) = 1 + 8*(n+1)
-#
-############################################################################
-#
-# We can clearly see the advantages of each compared to the other: with the half_adder, 
-# very large numbers can be added with a fairly small number n in a half_adder(n).
-# For example, half_adder(10) can add 1024-bit numbers together, while this would take
-# a CLA_adder(255) to do. 
-# With the CLA_adder, we can add numbers faster than with half_adder, at the cost of having more
-# nodes. For example, to add 32-bits integer, CLA_adder(7) does the job with a depth of 74 while
-# half_adder(5) does the job with a depth of 161, more than double the depth and with medium sized integers!
-#
-#
-############################################################################
-
 ## smallest of smallest paths between inputs and outputs of half_adder:
 def shortest_path_input_output(n, half_):
     '''
@@ -362,16 +251,8 @@ def shortest_path_input_output(n, half_):
                 smallest_dist = dist
                 input_id = i
                 output_id = j
-    #g.display_graph("test",verbose = True)
     return smallest_dist,input_id,output_id
 
 
-# print(shortest_path_input_output(2,False))
-# g.display_graph("test",verbose = True)
-# print(smallest_dist,input_id,output_id)
-# # # check_invarients()
-
-# print(add_registre_naive_half(162,210,size=8))
-# print(add_CLA(300,147))
-
-# print_stats()
+check_invarients()
+print_stats()

@@ -4,7 +4,7 @@ sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
 import unittest
 from modules.open_digraph import * 
 from modules.bool_circ import *
-
+from modules.addition_checkEncode import *
 
 
 class InitTest(unittest.TestCase):
@@ -370,6 +370,16 @@ class InitTest(unittest.TestCase):
         self.assertEqual(testliste2[0],gtest1)
         self.assertEqual(testliste2[1],gtest2)
 
+    def test_adders(self):
+        i = 0
+        res = True
+        while i <200 and res:
+            a = random.randint(0,1234567865)
+            b = random.randint(0,1234567432)
+            i+=1
+            res = (add_CLA(a,b)== 
+                add_naive(a,b) == a+b)
+        self.assertTrue(res and (i==200) )
 
 if __name__ == '__main__': # the following code is called only when
     unittest.main()
