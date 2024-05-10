@@ -219,10 +219,10 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
         random boolean circuit
         '''
 
-        #etape 1
+        #step 1
         di = super().random(n,form="DAG")
 
-        #etape 2
+        #step 2
         d = list(di.get_nodes()).copy()
         for nodess in d:
             if len(nodess.get_parents())==0:
@@ -231,7 +231,7 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
             if len(nodess.get_children()) == 0:
                     out_id = di.add_node("",{nodess.get_id():1},{})
                     di.add_output_id(out_id)
-        #etape 2 bis
+        #step 2 bis
         not_out_nor_inp = [id for id in di.get_node_ids() if ((id not in di.get_inputs_ids()) and (id not in di.get_outputs_ids()))]
         random.shuffle(not_out_nor_inp)
         random.shuffle(di.get_inputs_ids())
@@ -263,7 +263,7 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
                     di.add_output_id(new_out_id)
                     not_out_nor_inp.append(out1)
                     not_out_nor_inp.append(out2)
-        #etape 3
+        #step 3
 
         d = list(di.get_nodes()).copy()
         for nnodes in d:
@@ -418,14 +418,12 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
 
         calculated = list(self.get_inputs_ids()) + tmp #constant nodes queue ready to be evaluated
         outputs = list(self.get_outputs_ids()) 
-        k = 0
+        
         while outputs != [] and calculated != []:
             node_id = calculated[0]
             calculated.remove(node_id)
             node = self.get_node_by_id(node_id)
             calculated += node.eval(self,outputs)  #returns nodes that wait to be evaluated and updates queue
-            #self.display_graph(f"{k}.pdf")
-            k+=1
         
         #cleanning up the circuit
         for c in calculated:
@@ -477,13 +475,10 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
                 if r: # a transformation was made, will iterate again
                     flag = True
             return flag
-        m = 0
         
         cont = True
         while cont: 
             cont = transform_once()
-            #self.display_graph(f"p{m}.pdf")
-            m+=1
     
     def calculate(self):
         """
