@@ -4,8 +4,9 @@ sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
 import random
 from modules.node import *
 from modules.bool_circ_gates_mx import bool_circ_gates_mx
+from modules.open_digraph import open_digraph
 
-class bool_circ(bool_circ_gates_mx):
+class bool_circ(bool_circ_gates_mx,open_digraph):
     
     ###Constructor
     

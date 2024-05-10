@@ -1,9 +1,8 @@
 import os
 import sys
 sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
-from modules.open_digraph import open_digraph
 
-class bool_circ_gates_mx(open_digraph):
+class bool_circ_gates_mx():
     def copy_gate(self,copy_node_id, input_node_id):
         inp = self.get_node_by_id(input_node_id).get_label()
         assert inp == "1" or inp == "0"

@@ -279,21 +279,21 @@ print(len(g.get_inputs_ids()))
 ############################################################################
 
 ## smallest of smallest paths between inputs and outputs of half_adder:
-g = adders.half_adder(2)[0]
-smallest_dist = sys.maxsize
-input_id = -1
-output_id = -1
-for i in g.get_inputs_ids():
-    for j in g.get_outputs_ids():
-        dist = g.shortest_path(i,j)
-        if dist<smallest_dist:
-            smallest_dist = dist
-            input_id = i
-            output_id = j
+# g = adders.half_adder(2)[0]
+# smallest_dist = sys.maxsize
+# input_id = -1
+# output_id = -1
+# for i in g.get_inputs_ids():
+#     for j in g.get_outputs_ids():
+#         dist = g.shortest_path(i,j)
+#         if dist<smallest_dist:
+#             smallest_dist = dist
+#             input_id = i
+#             output_id = j
 
-# g.display_graph("anh",verbose = True)
-print(smallest_dist,input_id,output_id)
-# # check_invarients()
+# g.display_graph("test",verbose = True)
+# print(smallest_dist,input_id,output_id)
+# # # check_invarients()
 
 # print(add_registre_naive_half(162,210,size=8))
 # print(add_CLA(300,147))
