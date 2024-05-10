@@ -14,46 +14,6 @@ def find_bigger_2_pow(n):
         i+=1
     return acc,i
 
-def add_registre_CLA(a,b, size=8):
-    """
-        b is added to a using a CLA_adder
-
-        Parameters:
-        -----------
-        b (int)
-        a (int)
-        size (int): size of max(a,b)
-
-        Returns:
-        --------
-        sum of a and b
-    """
-    a_str = bool_circ.convert_to_binary_string(a,size=size)
-    b_str = bool_circ.convert_to_binary_string(b,size=size)
-    #bits must be added 4 by 4
-    quotient, remainder = divmod(size, 4)
-    res = ""
-    for i in range(quotient-1,-1,-1):
-        for c in [a_str,b_str]:
-            for j in range(3,-1,-1):
-                res += c[i*4+j]
-    for c in [a_str,b_str]:
-        for i in range(size-1,size-remainder-1,-1):
-            res+= c[i]
-    res = "0"+res  # adding 0 carry bit"
-    g = adders.CLA_adder(quotient-1)
-    registre = bool_circ.create_registre(int(res , 2),size=(quotient)*8+1)
-    g.icompose(registre)
-    return g.calculate()
-    
-def add_CLA(a,b):
-    """
-        b is added to a without needing to specify size by CLA method
-    """
-    size = 0
-    quotient,mod = divmod(max(a.bit_length(),b.bit_length()),4)
-    size = (quotient+1) * 4
-    return add_registre_CLA(a,b,size = size)
 
 def add_registre_naive(a,b, size=8):
     """
@@ -121,6 +81,47 @@ def add_naive(a,b):
     """
     size = max(a.bit_length(),b.bit_length())
     return add_registre_naive(a,b,size = size)
+
+def add_registre_CLA(a,b, size=8):
+    """
+        b is added to a using a CLA_adder
+
+        Parameters:
+        -----------
+        b (int)
+        a (int)
+        size (int): size of max(a,b)
+
+        Returns:
+        --------
+        sum of a and b
+    """
+    a_str = bool_circ.convert_to_binary_string(a,size=size)
+    b_str = bool_circ.convert_to_binary_string(b,size=size)
+    #bits must be added 4 by 4
+    quotient, remainder = divmod(size, 4)
+    res = ""
+    for i in range(quotient-1,-1,-1):
+        for c in [a_str,b_str]:
+            for j in range(3,-1,-1):
+                res += c[i*4+j]
+    for c in [a_str,b_str]:
+        for i in range(size-1,size-remainder-1,-1):
+            res+= c[i]
+    res = "0"+res  # adding 0 carry bit"
+    g = adders.CLA_adder(quotient-1)
+    registre = bool_circ.create_registre(int(res , 2),size=(quotient)*8+1)
+    g.icompose(registre)
+    return g.calculate()
+    
+def add_CLA(a,b):
+    """
+        b is added to a without needing to specify size by CLA method
+    """
+    size = 0
+    quotient,mod = divmod(max(a.bit_length(),b.bit_length()),4)
+    size = (quotient+1) * 4
+    return add_registre_CLA(a,b,size = size)
 
 
 def check_invarients():
