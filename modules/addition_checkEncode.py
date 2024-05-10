@@ -242,9 +242,60 @@ def print_stats():
 
 
 
-check_invarients()
+#check_invarients()
 
-print(add_registre_naive_half(162,210,size=8))
-print(add_CLA(300,147))
 
-print_stats()
+g = adders.half_adder(3)[0]
+# g = adders.CLA_adder(2)
+print(len(g.get_nodes()))
+print(g.depth_acyclic())
+print(len(g.get_inputs_ids()))
+
+############################################################################
+#
+# depth half_adder(n) = 5*2^n+1
+# number of gates half_adder(n) = 14*2^n 
+# number of outputs half_adder(n) = 1 + 2^n
+# number of inputs half_adder(n) = 2^(n+1) (+1 if counting the fixed 0)
+#
+############################################################################
+#
+# depth CLA_adder(n) = 11 + 9*n
+# number of gates CLA_adder(n) = 79*(n+1)
+# number of outputs CLA_adder(n) = 1 + 4*(n+1)
+# number of inputs CLA_adder(n) = 1 + 8*(n+1)
+#
+############################################################################
+#
+# We can clearly see the advantages of each compared to the other: with the half_adder, 
+# very large numbers can be added with a fairly small number n in a half_adder(n).
+# For example, half_adder(10) can add 1024-bit numbers together, while this would take
+# a CLA_adder(255) to do. 
+# With the CLA_adder, we can add numbers faster than with half_adder, at the cost of having more
+# nodes. For example, to add 32-bits integer, CLA_adder(7) does the job with a depth of 74 while
+# half_adder(5) does the job with a depth of 161, more than double the depth and with medium sized integers!
+#
+#
+############################################################################
+
+## smallest of smallest paths between inputs and outputs of half_adder:
+# g = adders.half_adder(2)[0]
+# smallest_dist = sys.maxsize
+# input_id = -1
+# output_id = -1
+# for i in g.get_inputs_ids():
+#     for j in g.get_outputs_ids():
+#         dist = g.shortest_path(i,j)
+#         if dist<smallest_dist:
+#             smallest_dist = dist
+#             input_id = i
+#             output_id = j
+
+# g.display_graph("test",verbose = True)
+# print(smallest_dist,input_id,output_id)
+# # # check_invarients()
+
+# print(add_registre_naive_half(162,210,size=8))
+# print(add_CLA(300,147))
+
+# print_stats()

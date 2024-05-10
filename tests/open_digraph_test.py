@@ -266,7 +266,7 @@ class InitTest(unittest.TestCase):
         g = bool_circ(op)
         g.add_node('|', {1:1}, {0:1})
         empt = open_digraph([],[],[])
-        g_nouv = g.parallel(g)
+        g_nouv = open_digraph.parallel(g,g)
         g.iparallel(g.copy())
         empt.iparallel(g)
 
@@ -284,9 +284,9 @@ class InitTest(unittest.TestCase):
         outputs1 = [2,3]
         gtest1 = open_digraph(inp2,outputs2,n02)
         gtest2 = open_digraph(inp1,outputs1,n1)
-        gtestNULL = gtest1.parallel(open_digraph([],[],[]))
-        gtestNULL2 = open_digraph([],[],{}).parallel(gtest2)
-        gtest3 = gtest1.parallel(gtest2)
+        gtestNULL = open_digraph.parallel(gtest1,open_digraph([],[],[]))
+        gtestNULL2 = open_digraph.parallel(open_digraph.empty(),gtest2)
+        gtest3 = open_digraph.parallel(gtest1,gtest2)
         
         self.assertEqual(gtest1, open_digraph(inp2,outputs2,n02))
         self.assertEqual(gtest1,gtestNULL)
@@ -310,7 +310,7 @@ class InitTest(unittest.TestCase):
         output2= [2,3]
         gtest1 = open_digraph(inp1,output1,n1)
         gtest2 = open_digraph(inp2,output2,n2)
-        comp = gtest2.compose(gtest1)
+        comp = open_digraph.compose(gtest2,gtest1)
         #gtest1.display_graph()
         #gtest2.display_graph()
         #comp.display_graph()
@@ -325,20 +325,20 @@ class InitTest(unittest.TestCase):
         outputs1 = [2,3]
         gtest1 = open_digraph(inp2,outputs2,n02)
         gtest2 = open_digraph(inp1,outputs1,n1)
-        m = gtest2.compose(gtest1)
+        m = open_digraph.compose(gtest2,gtest1)
         #gtest1.display_graph()
         #gtest2.display_graph()
         #m.display_graph()
 
         self.assertEqual(m,open_digraph([0,1],[8,9],[node(7,"ss",{5:1},{8:1,9:1}),node(8,"zs",{7:1},{}),node(9,"bb",{7:1},{}),node(4,"5",{2:3,3:2},{5:1}),node(5,"&",{4:1},{7:1}),node(2,"zs",{0:1},{4:3}),node(3,"ee",{1:1},{4:2}),node(1,"ss",{},{3:1}),node(0,"0",{},{2:1})]))
         with self.assertRaises(AssertionError) as context:
-            gtest2.compose(comp)
+            open_digraph.compose(gtest2,comp)
         # Check if the error message matches the expected message
         self.assertEqual(str(context.exception), "error, domains don't match.")
 
         # Use assertRaises with the exception class and the callable
         with self.assertRaises(AssertionError) as context:
-            comp.compose(m)
+            open_digraph.compose(comp,m)
         # Check if the error message matches the expected message
         self.assertEqual(str(context.exception), "error, domains don't match.")
 
@@ -356,8 +356,8 @@ class InitTest(unittest.TestCase):
         gtest1 = open_digraph(inp2,outputs2,n02)
         gtest2 = open_digraph(inp1,outputs1,n1)
         testlist = gtest1.component_list()
-        testliste2 = gtest1.parallel(gtest2).component_list()
-        m = gtest2.compose(gtest1)
+        testliste2 = open_digraph.parallel(gtest1,gtest2).component_list()
+        m = open_digraph.compose(gtest2,gtest1)
         testliste3 = m.component_list()
         #m.display_graph()
         

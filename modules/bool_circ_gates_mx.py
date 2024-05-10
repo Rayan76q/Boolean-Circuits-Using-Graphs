@@ -1,9 +1,8 @@
 import os
 import sys
 sys.path[0] = os.path.abspath(os.path.join(sys.path[0], '..'))
-from modules.open_digraph import open_digraph
 
-class bool_circ_gates_mx(open_digraph):
+class bool_circ_gates_mx():
     def copy_gate(self,copy_node_id, input_node_id):
         inp = self.get_node_by_id(input_node_id).get_label()
         assert inp == "1" or inp == "0"
@@ -279,7 +278,7 @@ class bool_circ_gates_mx(open_digraph):
         
         nullifier = self.add_copy_node()
         self.add_edge(or_node, nullifier)
-        effacement(or_id,nullifier)
+        self.effacement(or_id,nullifier)
         return True
     
     def absoroption_or(self,copy_id,or_id,and_id):
@@ -290,5 +289,5 @@ class bool_circ_gates_mx(open_digraph):
         
         nullifier = self.add_copy_node()
         self.add_edge(and_node, nullifier)
-        effacement(and_id,nullifier)
+        self.effacement(and_id,nullifier)
         return True
