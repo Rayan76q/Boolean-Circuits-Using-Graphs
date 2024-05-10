@@ -24,7 +24,7 @@ class open_digraph_paths_distance:
         prev = {}
         while Q != []:
             shortest = sys.maxsize
-            u = None
+            u = -1
             for node in Q:
                 if dist[node] <= shortest:
                     shortest = dist[node]
@@ -33,21 +33,21 @@ class open_digraph_paths_distance:
                 return dist,prev
             Q.remove(u)
             if direction == 1:
-                neighbours = u.get_children()
+                new_dict =self.get_node_by_id(u).get_children()
             elif direction == -1:
-                neighbours = u.get_parents()
+                new_dict = self.get_node_by_id(u).get_parents()
             else :
-                new_dict = u.get_children().copy()
-                neighbours = new_dict.update(u.get_parents())
-            for nei in neighbours:
-                v= self.get_node_by_id(nei)
-                if v not in dist:
-                    Q.append(v)
-                if v not in dist or dist[v]> dist[u]+1:
-                    dist[v] = dist[u]+1
-                    prev[v] = u
+                new_dict = self.get_node_by_id(u).get_children().copy()
+                new_dict.update(self.get_node_by_id(u).get_parents().copy())
+            for nei in list(new_dict.keys()):
+                if nei not in dist.keys():
+                    Q.append(nei)
+                if nei not in dist or dist[nei]> dist[u]+1:
+                    dist[nei] = dist[u] + 1
+                    prev[nei] = u
         return dist,prev
     
+
     
     def shortest_path(self , u , v):
         return self.dijkstra( u , direction = 0,tgt = v)[0][v]  #dist[v] with u as source node

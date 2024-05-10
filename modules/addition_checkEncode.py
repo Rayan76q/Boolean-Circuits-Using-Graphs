@@ -245,11 +245,11 @@ def print_stats():
 #check_invarients()
 
 
-# g = adders.half_adder(3)[0]
+g = adders.half_adder(3)[0]
 # g = adders.CLA_adder(2)
-# print(len(g.get_nodes()))
-# print(g.depth_acyclic())
-# print(len(g.get_inputs_ids()))
+print(len(g.get_nodes()))
+print(g.depth_acyclic())
+print(len(g.get_inputs_ids()))
 
 ############################################################################
 #
@@ -279,22 +279,23 @@ def print_stats():
 ############################################################################
 
 ## smallest of smallest paths between inputs and outputs of half_adder:
-# g = adders.half_adder(0)[0]
-# smallest_dist = sys.maxsize
-# input_id = -1
-# output_id = -1
-# for i in g.get_inputs_ids():
-#     for j in g.get_outputs_ids():
-#         dist = g.shortest_path(i,j)
-#         if dist<smallest_dist:
-#             smallest_dist = dist
-#             input_id = i
-#             output_id = j
+g = adders.half_adder(2)[0]
+smallest_dist = sys.maxsize
+input_id = -1
+output_id = -1
+for i in g.get_inputs_ids():
+    for j in g.get_outputs_ids():
+        dist = g.shortest_path(i,j)
+        if dist<smallest_dist:
+            smallest_dist = dist
+            input_id = i
+            output_id = j
 
-# print(smallest_dist,input_id,output_id)
-check_invarients()
+# g.display_graph("anh",verbose = True)
+print(smallest_dist,input_id,output_id)
+# # check_invarients()
 
-print(add_registre_naive_half(162,210,size=8))
-print(add_CLA(300,147))
+# print(add_registre_naive_half(162,210,size=8))
+# print(add_CLA(300,147))
 
-print_stats()
+# print_stats()
