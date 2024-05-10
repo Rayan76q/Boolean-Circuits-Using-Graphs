@@ -22,143 +22,89 @@ This module focuses on boolean circuits and contains the following functions:
 3. **`insert_node`**  
    Inserts a new node into the circuit at a specified location.
 
-4. **`add_copy_node`**  
-   Adds a "copy" node to the circuit, duplicating the input signal.
-
-5. **`add_and_node`**  
-   Adds an "AND" node that outputs a logical AND of its inputs.
-
-6. **`add_or_node`**  
-   Adds an "OR" node that outputs a logical OR of its inputs.
-
-7. **`add_not_node`**  
-   Adds a "NOT" node that inverts the input signal.
-
-8. **`add_xor_node`**  
-   Adds an "XOR" node that outputs a logical XOR of its inputs.
-
-9. **`add_constant_node`**  
-   Adds a node that always outputs a constant logical value (0 or 1).
-
-10. **`identity`**  
+4. **`identity`**  
     Checks if two boolean circuits are identical.
 
-11. **`parse_parentheses`**  
+5. **`parse_parentheses`**  
     Parses a circuit defined with parentheses notation into a boolean circuit object.
 
-12. **`random_circ_bool`**  
+6. **`random_circ_bool`**  
     Generates a random boolean circuit with the specified number of nodes.
 
-13. **`adder_helper`**  
-    Helper function for adding two boolean circuits.
-
-14. **`adder`**  
-    Adds two boolean circuits using logical addition.
-
-15. **`half_adder`**  
-    Implements a half-adder circuit using logical gates.
-
-16. **`create_registre`**  
+7. **`create_registre`**  
     Creates a register with the specified configuration.
 
-17. **`copy_gate`**  
-    Implements a "copy" logical gate.
-
-18. **`not_gate`**  
-    Implements a "NOT" logical gate.
-
-19. **`and_gate`**  
-    Implements an "AND" logical gate.
-
-20. **`or_gate`**  
-    Implements an "OR" logical gate.
-
-21. **`xor_gate`**  
-    Implements an "XOR" logical gate.
-
-22. **`neutral_element`**  
-    Returns a circuit with a neutral element.
-
-23. **`evaluate`**  
+8. **`evaluate`**  
     Evaluates the boolean circuit and returns the logical output.
 
-24. **`encodeur_4bits`**  
+9. **`encodeur_4bits`**  
     Implements a 4-bit encoder circuit.
 
-25. **`decodeur_7bits`**  
+10. **`decodeur_7bits`**  
     Implements a 7-bit decoder circuit.
 
-26. **`assoc_xor`**  
-    Checks the associativity of XOR logical gates.
-
-27. **`assoc_and`**  
-    Checks the associativity of AND logical gates.
-
-28. **`assoc_or`**  
-    Checks the associativity of OR logical gates.
-
-29. **`assoc_copy`**  
-    Checks the associativity of copy logical gates.
-
-30. **`involution_xor`**  
-    Checks the involution property of XOR logical gates.
-
-31. **`effacement`**  
-    Validates the logical circuit's effacement.
-
-32. **`not_xor`**  
-    Validates if NOT and XOR logical gates satisfy specific logical constraints.
-
-33. **`not_copy`**  
-    Checks specific logical constraints involving NOT and copy logical gates.
-
-34. **`involution_not`**  
-    Validates the involution property of NOT logical gates.
-
-35. **`transform_circuit`**  
+11. **`transform_circuit`**  
     Transforms the boolean circuit into another logical representation.
 
-36. **`transform_once`**  
-    Applies a single transformation to the circuit.
-
-37. **`calculate`**  
+12. **`calculate`**  
     Computes logical results based on the circuit's nodes.
 
-38. **`perturbe_bit`**  
-    Randomly perturbs a single bit in a logical circuit.
+13. **`perturbe_bit`**  
+    Randomly perturbs a single bit in a logical 
+    circuit.
 
-39. **`CL_4bit`**  
-    Implements a 4-bit carry-lookahead adder circuit.
-
-40. **`CLA_4bit`**  
-    Implements a 4-bit carry-lookahead adder.
-
-41. **`CLA_helper`**  
-    Helper function for the carry-lookahead adder.
-
-42. **`CLA_adder`**  
-    Implements a carry-lookahead adder circuit.
-
-43. **`convert_to_binary_string`**  
+14. **`convert_to_binary_string`**  
     Converts the circuit's results to a binary string.
 
-44. **`find_bigger_2_pow`**  
-    Finds the next largest power of 2 given a number.
+### `bool_circ_gates_max.py`
 
-45. **`add_registre_CLA`**  
-    Adds a carry-lookahead adder register to the circuit.
+1. **`copy_gate`**  
+    Implements a "copy" logical gate.
 
-46. **`add_CLA`**  
-    Adds a carry-lookahead adder to the circuit.
+2. **`not_gate`**  
+    Implements a "NOT" logical gate.
 
-47. **`add_registre_naive`**  
-    Adds a naive register circuit to the boolean circuit.
+3. **`and_gate`**  
+    Implements an "AND" logical gate.
 
-48. **`add_naive`**  
-    Implements a naive addition operation in the boolean circuit.
+4. **`or_gate`**  
+    Implements an "OR" logical gate.
 
-49. **`check_invarients`**  
-    Verifies that the circuit satisfies specific invariants.
+5. **`xor_gate`**  
+    Implements an "XOR" logical gate.
+
+6. **`neutral_element`**  
+    Returns a circuit with a neutral element.
+
+7. **`assoc_xor`**  
+    Checks the associativity of XOR logical gates.
+
+8. **`assoc_and`**  
+    Checks the associativity of AND logical gates.
+
+9. **`assoc_or`**  
+    Checks the associativity of OR logical gates.
+
+10. **`assoc_copy`**  
+    Checks the associativity of copy logical gates.
+
+11. **`involution_xor`**  
+    Checks the involution property of XOR logical gates.
+
+12. **`effacement`**  
+    Validates the logical circuit's effacement.
+
+13. **`not_xor`**  
+    Validates if NOT and XOR logical gates satisfy specific logical constraints.
+
+14. **`not_copy`**  
+    Checks specific logical constraints involving NOT and copy logical gates.
+
+15. **`involution_not`**  
+    Validates the involution property of NOT logical gates.
+
+
+### `addition_checkEncode.py`
 
 ### `matrix_operations.py`
 This module provides various matrix operations and contains the following functions:
@@ -283,100 +229,34 @@ This module manages open directed graphs and contains the following functions an
 1. **`graph_from_adjacency_matrix`**  
    Creates a graph based on the given adjacency matrix.
 
-2. **`__init__`**  
-   Initializes an empty graph or one with given nodes and edges.
-
-3. **`__eq__`**  
-   Determines whether two graphs are equal by comparing their nodes and edges.
-
-4. **`__ne__`**  
-   Determines whether two graphs are not equal.
-
-5. **`empty`**  
-   Returns an empty graph.
-
-6. **`add_input_id`**  
-   Adds a node to the graph's input list.
-
-7. **`add_output_id`**  
-   Adds a node to the graph's output list.
-
-8. **`new_id`**  
-   Generates a new unique node ID.
-
-9. **`add_edge`**  
-   Adds an edge between two nodes.
-
-10. **`add_edges`**  
-    Adds multiple edges between node pairs.
-
-11. **`add_node`**  
-    Adds a new node to the graph.
-
-12. **`remove_edge`**  
-    Removes an edge between two nodes.
-
-13. **`remove_parallel_edges`**  
-    Removes all parallel edges between a pair of nodes.
-
-14. **`remove_node_by_id`**  
-    Removes a node by its ID and updates the graph.
-
-15. **`remove_edges`**  
-    Removes multiple edges between pairs of nodes.
-
-16. **`remove_nodes_by_id`**  
-    Removes multiple nodes from the graph by their IDs.
-
-17. **`is_well_formed`**  
+2. **`is_well_formed`**  
     Checks whether the graph is well-formed.
 
-18. **`add_input_node`**  
-    Adds an input node to the graph.
-
-19. **`add_output_node`**  
-    Adds an output node to the graph.
-
-20. **`copy`**  
-    Creates a deep copy of the graph.
-
-21. **`__str__`**  
-    Returns a string representation of the graph.
-
-22. **`__repr__`**  
-    Returns a string representation for debugging.
-
-23. **`id_map`**  
-    Maps node IDs between two graphs.
-
-24. **`adjacency_matrix`**  
+3. **`adjacency_matrix`**  
     Returns the adjacency matrix representation of the graph.
 
-25. **`random`**  
+4. **`random`**  
     Generates a random graph based on the given parameters.
 
-26. **`save_as_dot_file`**  
+5. **`save_as_dot_file`**  
     Saves the graph in the DOT format.
 
-27. **`display_graph`**  
+6. **`display_graph`**  
     Displays the graph using Graphviz.
 
-28. **`from_dot_file`**  
+7. **`from_dot_file`**  
     Loads a graph from a DOT file.
 
-29. **`is_acyclic`**  
+8. **`is_acyclic`**  
     Determines if the graph is acyclic.
 
-30. **`dfs`**  
-    Performs a depth-first search on the graph.
-
-31. **`identity`**  
+9. **`identity`**  
     Returns an identity graph.
 
-32. **`component_list`**  
+10. **`component_list`**  
     Returns a list of all components in the graph.
 
-33. **`merge_nodes`**  
+11. **`merge_nodes`**  
     Merges two or more nodes into one.
 
 ### `open_digraph_composition_mx.py`
@@ -421,27 +301,46 @@ This module handles path and distance calculations using matrix operations and c
 2. **`shortest_path`**  
    Returns the shortest path between two nodes.
 
-3. **`distances_from_common_ancestors`**  
-   Computes distances from a given node to common ancestors.
-
-4. **`topological_sort`**  
+3. **`topological_sort`**  
    Arranges nodes in topological order in a directed acyclic graph.
 
-5. **`get_coleave`**  
-   Returns a list of nodes that have no common descendants.
-
-6. **`depth_node_acyclic_knowing_Topological_sort`**  
+4. **`depth_node_acyclic_knowing_Topological_sort`**  
    Returns the depth of a node, assuming the graph is sorted topologically.
 
-7. **`depth_node_acyclic`**  
+5. **`depth_node_acyclic`**  
    Calculates the depth of a node in an acyclic graph.
 
-8. **`depth_acyclic`**  
+6. **`depth_acyclic`**  
    Computes the depth of an acyclic graph.
 
-9. **`longest_path`**  
+7. **`longest_path`**  
    Determines the longest path between two nodes in a directed acyclic graph.
 
+
+### `adders.py`
+
+The `adders.py` module contains various functions to create different types of adder circuits. The key functions are described below.
+
+1. **`adder_helper`**  
+   An auxiliary function that assists in creating the adder recursively based on the desired level.
+
+2. **`adder`**  
+   Uses the `adder_helper` function to create an adder circuit.
+
+3. **`half_adder`**  
+   Uses `adder_helper` to create a half-adder circuit.
+
+4. **`CL_4bit`**  
+   Creates the circuit representing the `pn` and `gn` algebraic expressions.
+
+5. **`CLA_4bit`**  
+   Creates the circuit representing a 4-bit CLA adder.
+
+6. **`CLA_helper`**  
+   An auxiliary function that helps in creating the CLA adder recursively.
+
+7. **`CLA_adder`**  
+   Creates a CLA adder circuit.
 
 # Project Architecture
 
