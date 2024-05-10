@@ -446,10 +446,11 @@ This module handles path and distance calculations using matrix operations and c
 # Project Architecture
 
 The project articulate itself around 3 main modules: **`node.py`** , **`open_digraph.py`** and **`bool_circ`** the latter two having been devided for readability using mixins as shown in the image below : 
-<img src = "./UML class.jpeg">>
+<img src = "gifImages/UML class.jpeg">
 <p>
-The color <span style = "color: #ffb07c;"> peach</span> represents files that were generated using mixins from the main ones. 
-An arrow represents depending on the color either a dependence to another file, mixins relation or heritage on the of <code>circuit_node</code> and children.
+The color <span style = "color: #ffb07c;"> peach</span> represents files that were generated using mixins from the main ones.
+the color <span style = "color: #b29700;"> golden_light </span> are child classes that were added outside of the projects demands. We did this for better user experience. 
+An arrow represents depending on the color either a dependence to another file (white with strips), mixins relation (black with strips) or heritage (black full line) on the of <code>circuit_node</code> and children.
 </p>
 <h2> Nodes </h2>
 <p>
@@ -481,7 +482,7 @@ The implementation of this class was clearly directed during previous worksheets
 The main class for our study of boolean circuits. It contains class methods to create many of our circuits: <i>identity, encoders, decoders, registers, bit pertubators</i> as well as the main two methods that modify our circuits <code>transfrom , evaluate</code> which we will discuss in the approriate sections. The <code>adders</code> file contains all the methods related to creating adder circuits, be it <b>adders</b>, <b>half_adders</b> or <b>CLA adders</b>, as well as random boolean circuits.
 </p>
 <p>
-The <code>modules.open_digraph_composition_mx.py</code> contains all the methods that implement the transformations used for either evaluating or transforming a circuit.
+The <code>modules.bool_circ_gates_mx.py</code> contains all the methods that implement the transformations used for either evaluating or transforming a circuit.
 </p>
 <p>
 Lastly the <code>modules.addition_checkEncode.py</code> ,does not implement methods per say but many functions that practically use our circuits either for adding numbers of arbitrary size or checking the Hamming code property or displaying stats on the simplification of random circuits.
@@ -493,7 +494,7 @@ Lastly the <code>modules.addition_checkEncode.py</code> ,does not implement meth
 The methods <code>transform_circuit</code> and <code>evalaute</code> can get quickly complicated with many if statements to check if any recognizable configuration was found thus encouraging us to inroduce some heritage into the mix.
 </p>
 <h2> How they work </h2>
-The bluprint is fairly the same for both as <code>evaluate</code> mainly transforms the circuit using new rules for constant nodes. The idea here is that the main code of both functions has two things to do: iterate over the nodes and know where it's done. When iterating it will call two methods respectively: <code>node.eval</code> and <code>node.transform</code> both of which are tasked to recognize any configuration where a transformation could be applied given the circuit.
+The blueprint is fairly the same for both as <code>evaluate</code> mainly transforms the circuit using new rules for constant nodes. The idea here is that the main code of both functions has two things to do: iterate over the nodes and know where it's done. When iterating it will call two methods respectively: <code>node.eval</code> and <code>node.transform</code> both of which are tasked to recognize any configuration where a transformation could be applied given the circuit.
 <ul>
 <li>For eval, this is done immediately in the node class because we iterate only over the constant nodes that wait for evalaution in <code>bool_circuit.evaluate</code>, no need to delegate to subclasses.
 
@@ -567,7 +568,7 @@ And as you can see in the return statements, when finding a pattern we call the 
 </p>
 With all this out of the way we can get into answering our questions.
 <h1>Half Adder evaluation</h1>
-<img src = "g_half.gif">
+<img src = "gifImages/g_half.gif">
 <p>Addition of 162 and 210</p>
 <p>
 The half adder has been defined following the sheet 10 implementation thus we have first implemented an <code>adder(0)</code> that we recursively build up on to add more and more bits always making sure that the carry bit is transferred to the next one.
@@ -585,19 +586,75 @@ Here's the code snippet for the recursion part :
         adder_1.get_outputs_ids().remove(carry_out1+n)
         return adder_1,carry_in1+n,carry_out2
 ```
-The half_addder is then easily implemented after that. For practical use, we have a **class method** <code>bool_circ.create_registre(cls,acc ,size=8)</code> that converts *acc* to binary and loads it inside a circuit representing the identity, giving us the possibility to compose it with any circuit of the adequate inputs number and that's what we do in our addition function.
+The half_adder is then easily implemented after that. For practical use, we have a **class method** <code>bool_circ.create_registre(cls,acc ,size=8)</code> that converts *acc* to binary and loads it inside a circuit representing the identity, giving us the possibility to compose it with any circuit of the adequate inputs number and that's what we do in our addition function.
 </p>
-<img src = "illustration2.jpg">
+<img src = "gifImages/illustration2.jpg">
 Here's what we get after loading it a half_adder
-<img src = "illustration.jpg"  width = "500" height = "600">
+<img src = "gifImages/illustration.jpg"  width = "500" height = "600">
 Note that the bit order might seem off (and a bit hard to read otherwise the image would be too large) and that's normal because our adders (except the CLA) load the bits by weight (an bn , ..., a0 b0).
 
+<h2>Half_adder and CLA_adder comparison</h2>
+
+#### Comparison
+- Half_adder 
+    - depth half_adder(n) = 5*2^n+1
+    - number of gates half_adder(n) = 14*2^n 
+    - number of outputs half_adder(n) = 1 + 2^n
+    - number of inputs half_adder(n) = 2^(n+1) (+1 if counting the fixed 0)
+
+- CLA_adder
+    - depth CLA_adder(n) = 11 + 9*n
+    - number of gates CLA_adder(n) = 79*(n+1)
+    - number of outputs CLA_adder(n) = 1 + 4*(n+1)
+    - number of inputs CLA_adder(n) = 1 + 8*(n+1)
+
+<div style = 'display:flex;'>
+
+<p>
+We can clearly see the advantages of each compared to the other: with the half_adder, 
+very large numbers can be added with a fairly small number n in a half_adder(n).
+For example, half_adder(10) can add 1024-bit numbers together, while this would take
+a CLA_adder(255) to do. 
+With the CLA_adder, we can add numbers faster than with half_adder, at the cost of having more
+nodes. For example, to add 32-bits integer, CLA_adder(7) does the job with a depth of 74 while
+half_adder(5) does the job with a depth of 161, more than double the depth and with medium sized integers!
+</p>
+<img src = "gifImages/g_cl.gif" width = '200'>
+</div>
+#### Shortest distances
+
+For the shortest distance between an input and an output, we programmed the function:
+```python
+    def shortest_path_input_output(n, half_):
+        if (half_):
+            g = adders.half_adder(n)[0]
+        else :
+            g = adders.CLA_adder(n)
+        
+        smallest_dist = sys.maxsize
+        input_id = -1
+        output_id = -1
+        for i in g.get_inputs_ids():
+            for j in g.get_outputs_ids():
+                dist = g.shortest_path(i,j)
+                if dist<smallest_dist:
+                    smallest_dist = dist
+                    input_id = i
+                    output_id = j
+        #g.display_graph("test",verbose = True)
+        return smallest_dist,input_id,output_id
+```
+which returns the input_id and output_id that represents the input and the output that are the closest (have the shortest distance) and the distance itself.
+
+We notice that the input and output that have the shortest distance is always the carry in bit with the c0 output which would be the output furthest to the right in the graphs representations. 
+
+This makes sense as this would be the shortest path for Half_adder(0) and CLA_adder(0) and adding anything else would have larger distances since the carry of the added circuits won't be an input anymore and anything would have a minimum distance to an output >=3
 
 <h2>Hamming code and perturbations</h2>
 <p>
 For this verfication of the Hamming code property we have implemented as suggested in worksheet 12 two methods <code>encodeur_4bits()</code> and  <code>decodeur_7bits</code> that implement the respective circuits. We also added a method that creates perturbations <code>bool_circ.perturb_bit(cls,n,list_pos)</code> that takes the number of inputs/ouputs and a list of positions in {0,...,n-1} and inverts said bits, here's how it looks like: 
 </p>
-<img src = "illu3.jpg">
+<img src = "gifImages/illu3.jpg">
 You can see here that we perturbated the first and last bit given in entry, we will be using this the same way as we use register.For our experiment we will compose in this order:  decodeur o perturb_bit o encodeur(sigal). Resulting in the following protocol:
 
 ```python
@@ -634,9 +691,9 @@ Since we are restraining oursevles to 4 bits making sure that we get the same ou
 </p>
 <p>
 The second part of the code introduces another perturbation at a diffrent bit from the first and count how many mistakes were made i.e how many times we couldnt retreive the message, here's the result of executing this code:
-<img src = "illu4.png">
+<img src = "gifImages/illu4.png">
 And the evaluation associated to it with one perturbation:
-<img src = "enc_dec.gif">
+<img src = "gifImages/enc_dec.gif">
 </p>
 
 
@@ -688,7 +745,7 @@ def print_stats():
     print(f"Moyenne d'arêtes éliminées: {moy_e}")
     print(f"Variance d'arêtes éliminées: {var_e}, écart type: {np.sqrt(var_e)}")
 ```
-<img src= "illu5.png">
+<img src= "gifImages/illu5.png">
 </p>
 
 
