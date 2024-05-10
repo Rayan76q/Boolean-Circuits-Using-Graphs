@@ -238,32 +238,48 @@ class bool_circ_gates_mx(open_digraph):
         self.add_edge(parent_of_node1,child_of_node2)
         return True
     
-    def involution_and(self, and_id , copy_id):
+    def idempotance_and(self, and_id , copy_id):
         and_node = self.get_node_by_id(and_id)
         copy_node = self.get_node_by_id(copy_id)
         assert and_node.is_and() and copy_node.is_copy()
         nb_arretes = (copy_node.get_children())[and_id]
-        if nb_arretes >=2:
-            if nb_arretes % 2 == 0:
-                self.remove_parallel_edges(copy_id, and_id)
-            else:
-                self.remove_parallel_edges(copy_id, and_id)
-                self.add_edge(copy_id,and_id)
+        if nb_arretes >1:
+            self.remove_parallel_edges(copy_id, and_id)
+            self.add_edge(copy_id,and_id)
             return True
         else:
             return False
         
-    def involution_or(self, or_id , copy_id):
+    def idempotance_or(self, or_id , copy_id):
         or_node = self.get_node_by_id(or_id)
         copy_node = self.get_node_by_id(copy_id)
         assert or_node.is_or() and copy_node.is_copy()
         nb_arretes = (copy_node.get_children())[or_id]
-        if nb_arretes >=2:
-            if nb_arretes % 2 == 0:
-                self.remove_parallel_edges(copy_id, or_id)
-            else:
-                self.remove_parallel_edges(copy_id, or_id)
-                self.add_edge(copy_id,or_id)
+        if nb_arretes >1:
+            self.remove_parallel_edges(copy_id, or_id)
+            self.add_edge(copy_id,or_id)
             return True
         else:
             return False
+        
+    def absoroption_and(self,copy_id,or_id,and_id):
+        or_node = self.get_node_by_id(or_id)
+        copy_node = self.get_node_by_id(copy_id)
+        and_node = self.get_node_by_id(and_id)
+        assert or_node.is_or() and copy_node.is_copy() and and_node.is_and()
+        
+        nullifier = self.add_copy_node()
+        self.add_edge(or_node, nullifier)
+        self.effacement(or_id,nullifier)
+        return True
+    
+    def absoroption_or(self,copy_id,or_id,and_id):
+        or_node = self.get_node_by_id(or_id)
+        copy_node = self.get_node_by_id(copy_id)
+        and_node = self.get_node_by_id(and_id)
+        assert or_node.is_or() and copy_node.is_copy() and and_node.is_and()
+        
+        nullifier = self.add_copy_node()
+        self.add_edge(and_node, nullifier)
+        self.effacement(and_id,nullifier)
+        return True

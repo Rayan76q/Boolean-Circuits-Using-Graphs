@@ -80,7 +80,6 @@ def add_registre_naive_half(a,b, size=8):
     n = g.icompose(registre)
     g.get_inputs_ids().append(cin+n)
     #on le rajoute car c'est un input a la fin et calculate en a besoin
-    g.display_graph()
     return g.calculate()
 
 def add_naive(a,b):
@@ -95,7 +94,7 @@ def check_invarients():
     enc = adders.encodeur_4bits()
     dec = adders.decodeur_7bits()
     
-    for i in range(2,3): #-1 -> no error is introduced
+    for i in range(-1,4): #-1 -> no error is introduced
         noise = adders.perturbe_bit(7,[i]) 
         g = adders(noise.compose(enc))
         g2 = adders(dec.compose(g))
@@ -108,7 +107,7 @@ def check_invarients():
     print("Hamming property verfied when introducing one error at most.")
     
     mistakes = 0
-    for i in range(4,-1): 
+    for i in range(0,4): 
         for j in range(i+1,4):
             noise = adders.perturbe_bit(7,[i,j]) 
             g = adders(noise.compose(enc))
@@ -235,10 +234,10 @@ def print_stats():
     var_n = vn / number_trials - moy_n**2
     var_e = ve / number_trials - moy_e**2
 
-    print(f"Moyenne de Portes éliminées: {moy_n}")
-    print(f"Variance de Portes éliminées: {var_n}, écart type: {np.sqrt(var_n)}")
-    print(f"Moyenne d'arêtes éliminées: {moy_e}")
-    print(f"Variance d'arêtes éliminées: {var_e}, écart type: {np.sqrt(var_e)}")
+    print(f"Average number of removed gates : {moy_n}")
+    print(f"Variance : {var_n}, deviation : {np.sqrt(var_n)}")
+    print(f"Average number of removed edges : {moy_e}")
+    print(f"Variance : {var_e}, deviation : {np.sqrt(var_e)}")
 
 
 
@@ -293,3 +292,9 @@ def print_stats():
 #             output_id = j
 
 # print(smallest_dist,input_id,output_id)
+check_invarients()
+
+print(add_registre_naive_half(162,210,size=8))
+print(add_CLA(300,147))
+
+print_stats()

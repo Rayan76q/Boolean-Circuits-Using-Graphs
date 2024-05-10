@@ -370,7 +370,7 @@ class bool_circ(bool_circ_gates_mx):
             calculated.remove(node_id)
             node = self.get_node_by_id(node_id)
             calculated += node.eval(self,outputs)
-            self.display_graph(f"{k}.pdf")
+            #self.display_graph(f"{k}.pdf")
             k+=1
         #cleanning up the circuit
         for c in calculated:
@@ -406,7 +406,7 @@ class bool_circ(bool_circ_gates_mx):
         while cont:
             nodes = list(self.get_node_ids())
             cont = transform_once(self, nodes)
-            self.display_graph(f"p{m}.pdf")
+            #self.display_graph(f"p{m}.pdf")
             m+=1
     
     def calculate(self):

@@ -443,6 +443,255 @@ This module handles path and distance calculations using matrix operations and c
    Determines the longest path between two nodes in a directed acyclic graph.
 
 
+# Project Architecture
+
+The project articulate itself around 3 main modules: **`node.py`** , **`open_digraph.py`** and **`bool_circ`** the latter two having been devided for readability using mixins as shown in the image below : 
+<img src = "./UML class.jpeg">>
+<p>
+The color <span style = "color: #ffb07c;"> peach</span> represents files that were generated using mixins from the main ones. 
+An arrow represents depending on the color either a dependence to another file, mixins relation or heritage on the of <code>circuit_node</code> and children.
+</p>
+<h2> Nodes </h2>
+<p>
+Starting from the basic elements of our graphs and boolean circuit, the class <code>node</code> implements all the basic methods of the first worksheets to manipulate them : getters, setters, calculating degrees etc. The class <code>circuit_node</code> is an <i>abstract class</i> as shown in the following code snippet:
+</p>
+
+    ``` python
+        class circuit_node(node):
+        @classmethod
+        def from_node(cls,node):
+            """
+            Creats the appropriate specialization of node
+            from the node passed in parameter and returns it
+            """
+
+        @abstractmethod
+        def transform(self,circuit):
+            pass
+    ```
+<p>
+All circuit_nodes meaning constants ,binary and unary gates are specializations of this class implementing the method <code>transform</code> that we will talk about more in details later. This addition allows us to write shorter methods in <code>boolean_circuits</code> and delegate some of the work when transfroming a circuit or evaluating it to the nodes themselves rather than doing everyting on the circuit level.
+</p>
+
+<h2>open_digraph</h2>
+The implementation of this class was clearly directed during previous worksheets up until sheet 8 , we did not divert too much from that so there is not much to say that was not already specified in said sheets except that we added two files using mixins: <code>modules.open_digraph_paths_distance_mx.py</code> and <code>modules.open_digraph_composition_mx.py</code>. One contains all the methods of sheets 7 and 8 regarding path lengths and topological sort and the latter the methods for composing graphs (in parallel or sequence) which we heavily rely on later.
+
+<h2>bool_circ</h2>
+<p>
+The main class for our study of boolean circuits. It contains class methods to create many of our circuits: <i>identity, encoders, decoders, registers, bit pertubators</i> as well as the main two methods that modify our circuits <code>transfrom , evaluate</code> which we will discuss in the approriate sections. The <code>adders</code> file contains all the methods related to creating adder circuits, be it <b>adders</b>, <b>half_adders</b> or <b>CLA adders</b>, as well as random boolean circuits.
+</p>
+<p>
+The <code>modules.open_digraph_composition_mx.py</code> contains all the methods that implement the transformations used for either evaluating or transforming a circuit.
+</p>
+<p>
+Lastly the <code>modules.addition_checkEncode.py</code> ,does not implement methods per say but many functions that practically use our circuits either for adding numbers of arbitrary size or checking the Hamming code property or displaying stats on the simplification of random circuits.
+</p>
+
+
+<h1>Transformation and evaluation</h1>
+<p>
+The methods <code>transform_circuit</code> and <code>evalaute</code> can get quickly complicated with many if statements to check if any recognizable configuration was found thus encouraging us to inroduce some heritage into the mix.
+</p>
+<h2> How they work </h2>
+The bluprint is fairly the same for both as <code>evaluate</code> mainly transforms the circuit using new rules for constant nodes. The idea here is that the main code of both functions has two things to do: iterate over the nodes and know where it's done. When iterating it will call two methods respectively: <code>node.eval</code> and <code>node.transform</code> both of which are tasked to recognize any configuration where a transformation could be applied given the circuit.
+<ul>
+<li>For eval, this is done immediately in the node class because we iterate only over the constant nodes that wait for evalaution in <code>bool_circuit.evaluate</code>, no need to delegate to subclasses.
+
+```python
+def eval(self,circuit,outputs):
+        
+        #Neutral element management
+        if (self.is_and() or self.is_or() or self.is_xor()) and len(self.parents)==0:
+            circuit.neutral_element(self.id)
+            res = [self.id]
+        
+        else:
+            
+            assert self.get_label() == "0" or self.get_label() == "1" 
+            res = []
+            node_id = self.get_id()
+            child = list(self.get_children())[0]
+            if child in circuit.get_outputs_ids():
+                circuit.get_node_by_id(child).set_label(self.get_label())
+                circuit.remove_node_by_id(node_id)
+                outputs.remove(child)
+            else:
+                
+                child_node = circuit.get_node_by_id(child)
+                if child_node.is_and():
+                    res = circuit.and_gate(child,node_id)
+                elif child_node.is_or():
+                    res = circuit.or_gate(child,node_id)
+                elif child_node.is_xor():
+                    res = circuit.xor_gate(child,node_id)
+                elif child_node.is_not():
+                    res = circuit.not_gate(child,node_id)
+                elif child_node.is_copy():
+                    res = circuit.copy_gate(child,node_id)
+        
+        return res
+```
+</li>
+<li>For trasform, it's a bit trickier cause we iterate over and over on the graph until no transformation is possible and on many types of nodes thus we call <code>circuit_node.transfoom</code> delegating this work to every sub_class thus making the code more readable and modular.
+
+```python
+def transform(self, circuit):
+        if self.is_copy():
+            return circuit_node.from_node(self).transform(circuit)
+        elif self.is_and():
+            return circuit_node.from_node(self).transform(circuit)
+        elif self.is_or():
+            return circuit_node.from_node(self).transform(circuit)
+        elif self.is_not():
+            return circuit_node.from_node(self).transform(circuit)
+        elif self.is_xor():
+            return circuit_node.from_node(self).transform(circuit)
+```
+</li>
+</ul>
+Here's an exemple with <code>and_node</code> (the others follow the same pattern):
+
+```python
+def transform(self, circuit):
+        r = False
+        parents = list(self.get_parents())
+        
+        for p in parents:
+            parent_node = circuit.get_node_by_id(p)
+            if  parent_node.is_and():
+                r=circuit.assoc_and(p,self.get_id())
+        return r
+```
+<p>
+And as you can see in the return statements, when finding a pattern we call the appropriate method that applies the transformation to the circuit and return a boolean if we did apply any, useful for knowing when to stop.
+</p>
+With all this out of the way we can get into answering our questions.
+<h1>Half Adder evaluation</h1>
+<img src = "g_half.gif">
+<p>Addition of 162 and 210</p>
+<p>
+The half adder has been defined following the sheet 10 implementation thus we have first implemented an <code>adder(0)</code> that we recursively build up on to add more and more bits always making sure that the carry bit is transferred to the next one.
+Here's the code snippet for the recursion part : 
+
+```python
+    if n == 0
+        #create adder(0) and return it
+    else:
+        adder_1,carry_in1,carry_out1 = cls.adder_helper(n-1)
+        adder_2,carry_in2,carry_out2 = cls.adder_helper(n-1)
+        n = adder_1.iparallel(adder_2)
+        adder_1.add_edge(carry_out1+n,carry_in2)
+        adder_1.get_inputs_ids().remove(carry_in2)
+        adder_1.get_outputs_ids().remove(carry_out1+n)
+        return adder_1,carry_in1+n,carry_out2
+```
+The half_addder is then easily implemented after that. For practical use, we have a **class method** <code>bool_circ.create_registre(cls,acc ,size=8)</code> that converts *acc* to binary and loads it inside a circuit representing the identity, giving us the possibility to compose it with any circuit of the adequate inputs number and that's what we do in our addition function.
+</p>
+<img src = "illustration2.jpg">
+Here's what we get after loading it a half_adder
+<img src = "illustration.jpg"  width = "500" height = "600">
+Note that the bit order might seem off (and a bit hard to read otherwise the image would be too large) and that's normal because our adders (except the CLA) load the bits by weight (an bn , ..., a0 b0).
+
+
+<h2>Hamming code and perturbations</h2>
+<p>
+For this verfication of the Hamming code property we have implemented as suggested in worksheet 12 two methods <code>encodeur_4bits()</code> and  <code>decodeur_7bits</code> that implement the respective circuits. We also added a method that creates perturbations <code>bool_circ.perturb_bit(cls,n,list_pos)</code> that takes the number of inputs/ouputs and a list of positions in {0,...,n-1} and inverts said bits, here's how it looks like: 
+</p>
+<img src = "illu3.jpg">
+You can see here that we perturbated the first and last bit given in entry, we will be using this the same way as we use register.For our experiment we will compose in this order:  decodeur o perturb_bit o encodeur(sigal). Resulting in the following protocol:
+
+```python
+    def check_invarients():
+    enc = adders.encodeur_4bits()
+    dec = adders.decodeur_7bits()
+    
+    for i in range(-1,4): #-1 -> no error is introduced
+        noise = adders.perturbe_bit(7,[i]) 
+        g = adders(noise.compose(enc))
+        g2 = adders(dec.compose(g))
+        
+        for i in range(10,11):
+            reg = adders.create_registre(i,size=4)
+            g3 = adders(g2.compose(reg))
+            assert (i==g3.calculate())
+    
+    print("Hamming property verfied when introducing one error at most.")
+    
+    mistakes = 0
+    for i in range(0,4): 
+        for j in range(i+1,4):
+            noise = adders.perturbe_bit(7,[i,j]) 
+            g = adders(noise.compose(enc))
+            g2 = adders(dec.compose(g))
+            for k in range(0,16):
+                reg = adders.create_registre(k,size=4)
+                g3 = adders(g2.compose(reg))
+                mistakes += (i!=g3.calculate())
+    print(f"Number of time that the original signal couldn't be retreived when introducing 2 errors: {mistakes} out of {6*16} attempts.")
+```
+<p>
+Since we are restraining oursevles to 4 bits making sure that we get the same output as our input for number ranging from 0 to 15 is enough to state if the hamming propery was conserved or not.
+</p>
+<p>
+The second part of the code introduces another perturbation at a diffrent bit from the first and count how many mistakes were made i.e how many times we couldnt retreive the message, here's the result of executing this code:
+<img src = "illu4.png">
+And the evaluation associated to it with one perturbation:
+<img src = "enc_dec.gif">
+</p>
+
+
+<h2>Circuit Simplification</h2>
+
+<p> Beside the transformations that were given in the last two worksheets we have implemented some more operations to simplify boolean circuits, those being: associativity for <b>and</b> ,  <b>or</b> on the same patter and xor's associativity as well as idempotance s for these two gates:
+<code>A+A = A and A.A = A</code> which is somewhat analogous to the xor's involution, we also addded absorbtion for both of these gates as well:
+<ul>
+<li>A.(A+B) = A</li>
+<li>A+(A.B) = A</li>
+</ul>
+Where . is the and gate and + the or.Adding more transformation heavily impacted the complexity of <code>transform</code> so we decided to stick to thsese,(these already forces us to check all the children of copy nodes another time and it just gets worse with other simplifications).With these new additions and the previous transformations we went ahead and tried to judge just how well our transform function performs. To do so we will test our code on a large number of randomly generated boolean_circuits and we will calculate the number of gates and edges that we suppressed using our transform function.Here's the function that illustrates the protocole with the result of the execution:
+
+```python
+def print_stats():
+    diff_nodes = 0
+    diff_edges = 0
+    vn = 0
+    ve = 0
+    number_trials = 1000
+
+    for i in range(number_trials):
+        inputs = random.choice([8,16,32,64])
+        outputs = random.choice([8,16,32,64])
+        node_number = inputs + outputs + random.randint(32, 128)
+        circuit = bool_circ.random_circ_bool(node_number, inputs, outputs)
+        node_number = len(circuit.get_nodes())
+        edges_number = count_edges(circuit)
+        
+        circuit.transform_circuit()
+        
+        number_left_nodes = len(circuit.get_nodes())
+        edges_left = count_edges(circuit)
+        
+        diff_nodes += node_number - number_left_nodes
+        diff_edges += edges_number - edges_left
+        
+        vn += (node_number - number_left_nodes)**2
+        ve += (edges_number - edges_left)**2
+
+    moy_n = diff_nodes / number_trials
+    moy_e = diff_edges / number_trials
+
+    var_n = vn / number_trials - moy_n**2
+    var_e = ve / number_trials - moy_e**2
+
+    print(f"Moyenne de Portes éliminées: {moy_n}")
+    print(f"Variance de Portes éliminées: {var_n}, écart type: {np.sqrt(var_n)}")
+    print(f"Moyenne d'arêtes éliminées: {moy_e}")
+    print(f"Variance d'arêtes éliminées: {var_e}, écart type: {np.sqrt(var_e)}")
+```
+<img src= "illu5.png">
+</p>
+
+
 ## Conclusion
 This project provides a robust suite of tools for working with boolean circuits, matrix operations, and open directed graphs. Each module is carefully designed to encapsulate key computational operations, allowing for efficient manipulation and analysis of these data structures. Further development in optimization and Implementation of more graph algorithms (e.g., Bellman-Ford for shortest paths) and more circuit gates could expand the project's reach and applicability.
 
