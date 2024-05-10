@@ -16,7 +16,17 @@ def find_bigger_2_pow(n):
 
 def add_registre_CLA(a,b, size=8):
     """
-        b is added to a
+        b is added to a using a CLA_adder
+
+        Parameters:
+        -----------
+        b (int)
+        a (int)
+        size (int): size of max(a,b)
+
+        Returns:
+        --------
+        sum of a and b
     """
     a_str = bool_circ.convert_to_binary_string(a,size=size)
     b_str = bool_circ.convert_to_binary_string(b,size=size)
@@ -47,7 +57,17 @@ def add_CLA(a,b):
 
 def add_registre_naive(a,b, size=8):
     """
-        b is added to a
+        b is added to a using an adder
+
+        Parameters:
+        -----------
+        b (int)
+        a (int)
+        size (int): size of max(a,b)
+
+        Returns:
+        --------
+        sum of a and b
     """
     reg_size , n = find_bigger_2_pow(size)
     a_str = bool_circ.convert_to_binary_string(a,size=reg_size)
@@ -64,7 +84,17 @@ def add_registre_naive(a,b, size=8):
 
 def add_registre_naive_half(a,b, size=8):
     """
-        b is added to a
+        b is added to a using a half_adder
+
+        Parameters:
+        -----------
+        b (int)
+        a (int)
+        size (int): size of max(a,b)
+
+        Returns:
+        --------
+        sum of a and b
     """
     reg_size , n = find_bigger_2_pow(size)
     a_str = bool_circ.convert_to_binary_string(a,size=reg_size)
@@ -87,13 +117,24 @@ def add_registre_naive_half(a,b, size=8):
 
 def add_naive(a,b):
     """
-        b is added to a without needing to specify size
+        b is added to a with adder without needing to specify size
     """
     size = max(a.bit_length(),b.bit_length())
     return add_registre_naive(a,b,size = size)
 
 
 def check_invarients():
+    '''
+        Prints information about our encoding and decoding functions
+
+        Parameters:
+        -----------
+        None
+
+        Returns:
+        --------
+        None
+    '''
     #Initialize our circuits
     enc = bool_circ.encodeur_4bits()
     dec = bool_circ.decodeur_7bits()
@@ -207,6 +248,17 @@ def count_edges(circuit):
 
 
 def print_stats():
+    '''
+        prints the statistics involving transformation
+
+        Parameters:
+        -----------
+        None
+
+        Return:
+        -------
+        None
+    '''
     diff_nodes = 0
     diff_edges = 0
     vn = 0
@@ -283,6 +335,18 @@ def print_stats():
 
 ## smallest of smallest paths between inputs and outputs of half_adder:
 def shortest_path_input_output(n, half_):
+    '''
+        gets the smallest distance between an input and an output of either a half_adder or a CLA_adder
+
+        Parameters:
+        -----------
+        half_ (boolean): specifies if we want a half_adder or a CLA_adder
+        n (int): Level of adder (half/CLA _adder(n))
+
+        Returns:
+        --------
+        minimal distance and input_id, output_id which have the shortest path from one to another
+    '''
     if (half_):
         g = adders.half_adder(n)[0]
     else :
