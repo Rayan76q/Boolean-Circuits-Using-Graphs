@@ -7,6 +7,7 @@ class bool_circ_gates_mx(open_digraph):
     def copy_gate(self,copy_node_id, input_node_id):
         inp = self.get_node_by_id(input_node_id).get_label()
         assert inp == "1" or inp == "0"
+        
         children = list(self.get_node_by_id(copy_node_id).get_children())
         self.remove_node_by_id(copy_node_id)
         self.remove_node_by_id(input_node_id)
@@ -20,6 +21,7 @@ class bool_circ_gates_mx(open_digraph):
     def not_gate(self, not_node_id,input_node_id):
         inp = self.get_node_by_id(input_node_id).get_label()
         assert inp == "1" or inp == "0"
+        
         not_node = self.get_node_by_id(not_node_id)
         self.remove_node_by_id(input_node_id)
         if inp == "1":
@@ -54,7 +56,6 @@ class bool_circ_gates_mx(open_digraph):
         inp = self.get_node_by_id(input_node_id).get_label()
         assert inp == "1" or inp == "0"
         
-        
         self.remove_node_by_id(input_node_id)
         or_node = self.get_node_by_id(or_node_id)
         if inp == "1":
@@ -66,6 +67,7 @@ class bool_circ_gates_mx(open_digraph):
                 self.add_edge(p,nullifier)
             return [or_node_id]
         
+        #immediately takes care of the node if it turned into a neutral element
         if len(or_node.get_parents())==0:
             self.neutral_element(or_node_id)
             return [or_node_id]
@@ -151,6 +153,7 @@ class bool_circ_gates_mx(open_digraph):
         parent_node = self.get_node_by_id(parent_copy)
         child_node = self.get_node_by_id(child_copy)
         assert parent_node.is_copy() and child_node.is_copy()
+        
         if child_copy in self.get_outputs_ids() or parent_copy in self.get_inputs_ids():
             return False
         
@@ -164,14 +167,16 @@ class bool_circ_gates_mx(open_digraph):
     def involution_xor(self, xor_id , copy_id):
         xor_node = self.get_node_by_id(xor_id)
         copy_node = self.get_node_by_id(copy_id)
+        
         assert xor_node.is_xor() and copy_node.is_copy()
         nb_arretes = (copy_node.get_children())[xor_id]
+        
         if nb_arretes >=2:
-            if nb_arretes % 2 == 0:
-                self.remove_parallel_edges(copy_id, xor_id)
-            else:
-                self.remove_parallel_edges(copy_id, xor_id)
+            self.remove_parallel_edges(copy_id, xor_id)
+            
+            if nb_arretes % 2 == 1: #speeds up the inlvolution
                 self.add_edge(copy_id,xor_id)
+            
             return True
         else:
             return False
@@ -179,6 +184,7 @@ class bool_circ_gates_mx(open_digraph):
     def effacement(self , op_id,child_id):
         if child_id in self.get_outputs_ids():
             return False
+        
         parents = list(self.get_node_by_id(op_id).get_parents())
         self.remove_node_by_id(op_id)
         self.remove_node_by_id(child_id)
@@ -261,7 +267,10 @@ class bool_circ_gates_mx(open_digraph):
             return True
         else:
             return False
-        
+
+    
+    
+    #The next two really slow the transformation process
     def absoroption_and(self,copy_id,or_id,and_id):
         or_node = self.get_node_by_id(or_id)
         copy_node = self.get_node_by_id(copy_id)

@@ -99,7 +99,7 @@ def check_invarients():
         g = adders(noise.compose(enc))
         g2 = adders(dec.compose(g))
         
-        for i in range(10,11):
+        for i in range(0,16):
             reg = adders.create_registre(i,size=4)
             g3 = adders(g2.compose(reg))
             assert (i==g3.calculate())

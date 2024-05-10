@@ -355,6 +355,7 @@ class bool_circ(bool_circ_gates_mx):
 
     def evaluate(self):
         tmp = []
+        
         #taking care of neutral gates at the beginning which dont result of transformations
         copy = (self.get_id_node_map().copy()).values()
         for node in copy:
@@ -362,20 +363,22 @@ class bool_circ(bool_circ_gates_mx):
                 self.neutral_element(node.get_id())
                 tmp.append(node.get_id())
 
-        calculated = list(self.get_inputs_ids()) + tmp
+        calculated = list(self.get_inputs_ids()) + tmp #constant nodes
         outputs = list(self.get_outputs_ids())
         k = 0
         while outputs != [] and calculated != []:
             node_id = calculated[0]
             calculated.remove(node_id)
             node = self.get_node_by_id(node_id)
-            calculated += node.eval(self,outputs)
+            calculated += node.eval(self,outputs)  #returns nodes that wait to be evaluated
             #self.display_graph(f"{k}.pdf")
             k+=1
+        
         #cleanning up the circuit
         for c in calculated:
             self.remove_node_by_id(c)
 
+        #getting the result
         res = ""
         (self.get_outputs_ids()).sort()
         for out in (self.get_outputs_ids()):
@@ -389,21 +392,26 @@ class bool_circ(bool_circ_gates_mx):
             flag = False
             for node_id in nodes:
                 r = False
+                #if id was erased dureing previous transformation, ignore
                 if node_id in self.get_inputs_ids() or node_id in self.get_outputs_ids() or node_id not in self.get_node_ids():
                     continue
+                
                 node = self.get_node_by_id(node_id)
                 label = node.get_label()
                 first_child = (self.get_node_by_id((list(node.get_children())[0])))
+                
                 if first_child.is_copy() and len(first_child.get_children()) == 0:
                         r=self.effacement(node_id ,list(node.get_children())[0] )
                 else:
                     r = node.transform(self)
-                if r:
+                    
+                if r: # a transformation was made, will iterate again
                     flag = True
             return flag
         m = 0
+        
         cont = True
-        while cont:
+        while cont: 
             nodes = list(self.get_node_ids())
             cont = transform_once(self, nodes)
             #self.display_graph(f"p{m}.pdf")
