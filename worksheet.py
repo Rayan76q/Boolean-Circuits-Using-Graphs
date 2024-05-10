@@ -26,7 +26,6 @@ def print_content(file_name, method_name=None):
         
         cls = getattr(module, file_name[:-3])
         members = inspect.getmembers(cls)
-        print(members)
 
         # Check if any of the members are methods with the specified name
         for name, member in members:
@@ -53,6 +52,7 @@ def print_content(file_name, method_name=None):
         # Print the whole file content
         with open(file_path, 'r') as file:
             content = file.read()
+            print(content)
     else:
         files = os.listdir("./modules")
         for f in files:
@@ -70,7 +70,7 @@ def print_content(file_name, method_name=None):
                 else:
                     print("Error")
 
-file_name = 'bool_circ.py'
-method_name = "transform_circuit"
+file_name = 'adders.py'
+method_name = "CLA_adder"
 
 print_content(file_name, method_name)
