@@ -85,7 +85,8 @@ class open_digraph_composition:
         return -minId1+maxId2+1
 
     #6#
-    def parallel(self, g):
+    @classmethod
+    def parallel(cls,first, g):
         """
             Appends the graph g in parallel to the current graph 
             
@@ -99,7 +100,7 @@ class open_digraph_composition:
             
             A graph that will now be composed of current graph plus the graph g next to it
         """
-        c = self.copy()
+        c = first.copy()
         c.iparallel(g)
         return c
 
@@ -149,7 +150,8 @@ class open_digraph_composition:
         return minMAx
 
     #6#
-    def compose(self , f):
+    @classmethod
+    def compose(cls ,first, f):
         """
             Appends the graph f sequentially to the current graph connecting the inputs of self to the outputs of f
             
@@ -163,7 +165,7 @@ class open_digraph_composition:
             
             A graph that will now be composed of f followed by the former self in sequence
         """
-        c = self.copy()
+        c = first.copy()
         c.icompose(f)
         return c
 
