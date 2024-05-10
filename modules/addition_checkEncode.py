@@ -185,9 +185,9 @@ def count_edges(circuit):
 #print(g.max_id())
 #g.display_graph(verbose = True)
 
-# for i in range(16):
-#     for j in range(16):
-#         print( f"{i} + {j} =", add_registre(i,j,size=4) )
+for i in range(16):
+    for j in range(16):
+        print( f"{i} + {j} =", add_registre_naive(i,j,size=4) )
 
 
 

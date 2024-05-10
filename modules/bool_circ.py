@@ -300,6 +300,13 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
 
     @classmethod
     def encodeur_4bits(cls):
+        """
+        Creates a circuit that encodes 4bit signals using the Hamming Code
+        
+        Returns:
+        --------
+        A boolean circuit with 4 inputs and 7 outputs representing an encoder that uses the Hamming code
+        """
         circuit = cls.empty_bool_circ()
         copies = [circuit.add_copy_node() for i in range(4)]
         xors = [circuit.add_xor_node() for i in range(3)]
@@ -322,6 +329,14 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
     
     @classmethod
     def decodeur_7bits(cls):
+        """
+        Creates a circuit that decodes 7bit signals previously encoded using the Hamming code
+        
+        Returns:
+        --------
+        A boolean circuit with 7 inputs and 4 outputs representing 
+        the original message before encoding
+        """
         circuit = cls.empty_bool_circ()
         copies = [circuit.add_copy_node() for i in range(7)]
         xors = [circuit.add_xor_node() for i in range(7)]
@@ -350,7 +365,19 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
     @classmethod
     def perturbe_bit(cls,n,list_pos):
         """
-            introduit une erreur aux bits de positions donnée
+            Creates an identity boolean circuit with certain bits perturbated (inversed)
+            mimicking errors in signals
+            
+            Parameters:
+            -----------
+            
+            n (int): number of bits of the signal
+            list_pos (list) : a list of position representing the bits that should be reversed (range {0,...,n-1})
+            
+            Returns:
+            --------
+            A bool_circ with n inputs, n outputs either linked directely (no perturbation) or with a not gate 
+            in between (addition of perturbation)
         """
         circuit = cls.empty_bool_circ()
         for i in range(n):
@@ -375,7 +402,7 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
 
             The evaluation starts from the input nodes and propagates to the output nodes,
             applying logical operations based on the node labels.
-
+            
             Returns:
             -------
             int that represents the result in binary
@@ -396,7 +423,7 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
             node_id = calculated[0]
             calculated.remove(node_id)
             node = self.get_node_by_id(node_id)
-            calculated += node.eval(self,outputs)  #returns nodes that wait to be evaluated
+            calculated += node.eval(self,outputs)  #returns nodes that wait to be evaluated and updates queue
             #self.display_graph(f"{k}.pdf")
             k+=1
         
@@ -413,8 +440,24 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
         return int(res , 2)
     
     def transform_circuit(self):
+        """
+        Applies as many simplifications as possible to the boolean circuit using already predefined rules
         
-        def transform_once(self,nodes):
+        Result:
+        -------
+        A simplified version of self that is equivalent to it
+        """
+        
+        def transform_once():
+            """
+            Runs through all the nodes of a bool_circ and applies as many transformations as possible
+
+            Returns:
+            -------
+            True if a transformation was successfully applied, false otherwise
+            (used as a flag for continuing the iteration of the circuit)
+            """
+            nodes = list(self.get_node_ids())
             flag = False
             for node_id in nodes:
                 r = False
@@ -438,11 +481,13 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
         
         cont = True
         while cont: 
-            nodes = list(self.get_node_ids())
-            cont = transform_once(self, nodes)
+            cont = transform_once()
             #self.display_graph(f"p{m}.pdf")
             m+=1
     
     def calculate(self):
+        """
+        A simple method that simplifies the circuit before evaluating it
+        """
         self.transform_circuit()
         return self.evaluate()

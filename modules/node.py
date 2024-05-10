@@ -155,6 +155,22 @@ class node:
     
     
     def transform(self, circuit):
+        """
+            call the appropriate transform method defined in the adequate subclass of node (relatively to self)
+            for circuit simplificaion
+            This method serves as an interface for the all the code that has been devided between subclasses
+            
+            Parameters:
+            -----------
+            
+            circuit (bool_circ) : the circuit containing the node self
+            
+            Returns:
+            --------
+            
+            True if a transformation is performed false otherwise
+        """
+        
         if self.is_copy():
             return circuit_node.from_node(self).transform(circuit)
         elif self.is_and():
@@ -167,6 +183,23 @@ class node:
             return circuit_node.from_node(self).transform(circuit)
 
     def eval(self,circuit,outputs):
+        """
+            gets the child of self in circuit and calls the adequate calcul method from it
+            Preconditions:
+            -------------
+            self.label = "1" or self.label = "0" i.e the node is already a constant ready to be propagated
+            
+            Parameters:
+            -----------
+            circuit (bool_circ) : the boolean circuit that contains self
+            
+            outputs (list) : a list of ids representing the outputs that have yet to be calculated in the main evaluate() function
+            
+            Returns:
+            --------
+            A list of ids of the nodes (potentially empty) that have turned into a constant and are ready to propagate the signal
+            
+        """
         
         #Neutral element management
         if (self.is_and() or self.is_or() or self.is_xor()) and len(self.parents)==0:
@@ -205,6 +238,9 @@ class node:
 class circuit_node(node):
     @classmethod
     def from_node(cls,node):
+        """
+            Given a node, returns the adequate specialization of said node 
+        """
         id = node.get_id()
         label = node.get_label()
         parents = node.get_parents().copy()
@@ -227,6 +263,19 @@ class circuit_node(node):
 
     @abstractmethod
     def transform(self,circuit):
+        """
+        Given the node and the circuit it is in, checks if it can make any transformation
+        and calls the adequate method from circuit to apply it
+        
+        Parameters:
+        ----------
+        
+        circuit (bool_circ) : the circuit containing the given node 
+        
+        Returns:
+        -------
+        True if a transformation was made , false otherwise
+        """
         pass
 
 class copy_node(circuit_node):
@@ -353,3 +402,7 @@ class constant_node(circuit_node):
         assert inp == "0" or inp == "1"
         super().__init__(identity,inp,parents, children)
     
+    
+    def transform(self, circuit):
+        #such transformations are taked care of in the eval function
+        pass

@@ -619,7 +619,7 @@ With the CLA_adder, we can add numbers faster than with half_adder, at the cost 
 nodes. For example, to add 32-bits integer, CLA_adder(7) does the job with a depth of 74 while
 half_adder(5) does the job with a depth of 161, more than double the depth and with medium sized integers!
 </p>
-<img src = "gifImages/g_cl.gif" width = '200'>
+<img src = "gifImages/g_cl.gif" width = '300'>
 </div>
 #### Shortest distances
 
