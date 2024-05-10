@@ -364,8 +364,8 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
                 self.neutral_element(node.get_id())
                 tmp.append(node.get_id())
 
-        calculated = list(self.get_inputs_ids()) + tmp #constant nodes
-        outputs = list(self.get_outputs_ids())
+        calculated = list(self.get_inputs_ids()) + tmp #constant nodes queue ready to be evaluated
+        outputs = list(self.get_outputs_ids()) 
         k = 0
         while outputs != [] and calculated != []:
             node_id = calculated[0]
@@ -403,7 +403,7 @@ class bool_circ(bool_circ_gates_mx,open_digraph):
                 
                 if first_child.is_copy() and len(first_child.get_children()) == 0:
                         r=self.effacement(node_id ,list(node.get_children())[0] )
-                else:
+                else:  #look for transformation
                     r = node.transform(self)
                     
                 if r: # a transformation was made, will iterate again

@@ -538,7 +538,7 @@ class open_digraph(open_digraph_paths_distance,open_digraph_composition): # for 
                 s += f'    v{iden} [label="'
                 if verbose:
                     s+= f'{iden}'
-                s+= f'", shape=circle, width=0.2, height=0.2, fixedsize=true, input=False, output=False];\n'
+                s+= f'", shape=circle, width=0.4, height=0.4, fixedsize=true, input=False, output=False];\n'
             else:
                 s += f'    v{iden} [label="{node.get_label()}'
                 if verbose:

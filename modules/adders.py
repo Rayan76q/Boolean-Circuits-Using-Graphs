@@ -59,7 +59,6 @@ class adders(bool_circ):
         circuit ,inps = cls.CL_4bit()
         dict_inputs = {inps[i]:list(circuit.get_inputs_ids())[i] for i in range(len(inps))}
         
-        #circuit.display_graph(verbose=True)
         copies  = [circuit.add_copy_node() for i in range(13)]
         ands = [circuit.add_and_node() for i in range(4)]
         xors = [circuit.add_xor_node() for i in range(8)]
@@ -71,7 +70,7 @@ class adders(bool_circ):
             [(xors[i],copies[9+i]) for i in range(4)],[]
         )
         
-        
+        #linking the "inputs" of CL with the top portion of the circuit
         circuit.add_edge(copies[8] , dict_inputs["c0"])
         for i in range(0,4):
             circuit.add_edge(copies[9+i],dict_inputs["p"+str(i)])
@@ -82,11 +81,14 @@ class adders(bool_circ):
             circuit.add_edge(copies[9+i],xors[4+i])
         circuit.add_edge(copies[8], xors[4])
         
+        #linking outputs to the bottom portion of the circuit
         circuit.get_outputs_ids().sort()
         for i in range(1,len(circuit.get_outputs_ids())):
             circuit.add_edge(list(circuit.get_outputs_ids())[i] , xors[8-i])
-        
         c_n1 = list(circuit.get_outputs_ids())[0]
+        
+        
+        #resetting the inputs and outputs of the circuit and adding the final ones
         circuit.set_outputs([])
         circuit.set_inputs([])
         

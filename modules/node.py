@@ -179,11 +179,13 @@ class node:
             res = []
             node_id = self.get_id()
             child = list(self.get_children())[0]
-            if child in circuit.get_outputs_ids():
+            
+            if child in circuit.get_outputs_ids(): #if output,copy the value of the parent and remove it from the queue
                 circuit.get_node_by_id(child).set_label(self.get_label())
                 circuit.remove_node_by_id(node_id)
                 outputs.remove(child)
-            else:
+                
+            else: #apply calculation accodingly
                 
                 child_node = circuit.get_node_by_id(child)
                 if child_node.is_and():
@@ -238,7 +240,7 @@ class copy_node(circuit_node):
         parents = list(self.get_parents())
         children = list(self.get_children())
             
-        if len(children) == 1:  #gets rid of unecessary copies
+        if len(children) == 1:  #gets rid of unecessary copy node forming chains
             circuit.remove_node_by_id(self.get_id())
             circuit.add_edge(parents[0],children[0])
             return True
@@ -249,6 +251,8 @@ class copy_node(circuit_node):
                     r=circuit.assoc_copy(self.get_id(),c)        
                 elif c_node.is_xor():
                     r=circuit.involution_xor(c,self.get_id())
+                    
+                #necessary for absorptions, heavy time-complexity wise
                 elif c_node.is_and():
                     r = circuit.idempotance_and(c,self.get_id())
                     for other_node_id in children:
@@ -256,6 +260,7 @@ class copy_node(circuit_node):
                             other_node = circuit.get_node_by_id(other_node_id)
                             if other_node_id != c and other_node.is_or() and list(other_node.get_children())[0] == c_node:
                                 r = circuit.absoroption_and(self.get_id() ,list(other_node.get_children())[0],other_node_id )
+                
                 elif c_node.is_or():
                     for other_node_id in children:
                         if other_node_id in circuit.get_node_ids():
@@ -277,6 +282,7 @@ class and_node(circuit_node):
         
         for p in parents:
             parent_node = circuit.get_node_by_id(p)
+            
             if  parent_node.is_and():
                 r=circuit.assoc_and(p,self.get_id())
         return r
@@ -291,6 +297,7 @@ class or_node(circuit_node):
         parents = list(self.get_parents())
         for p in parents:
             parent_node = circuit.get_node_by_id(p)
+            
             if  parent_node.is_or():
                 r = circuit.assoc_or(p,self.get_id())  
         return r 
@@ -309,6 +316,7 @@ class not_node(circuit_node):
                         
         if circuit.get_node_by_id(parent).is_not() :
             r=circuit.involution_not(parent,self.get_id())
+            
         elif circuit.get_node_by_id(child).is_not() :
             r=circuit.involution_not(self.get_id(),child)
                             
@@ -330,8 +338,10 @@ class xor_node(circuit_node):
             parent_node = circuit.get_node_by_id(p)
             if  parent_node.is_xor():
                 r=circuit.assoc_xor(p,self.get_id())
+                
             elif parent_node.is_copy():
                 r=circuit.involution_xor(self.get_id(),p)
+                
             elif parent_node.is_not():
                 r=circuit.not_xor(p,self.get_id())
         return r

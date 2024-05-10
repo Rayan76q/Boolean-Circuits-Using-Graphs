@@ -18,9 +18,9 @@ def add_registre_CLA(a,b, size=8):
     """
         b is added to a
     """
-    a_str = adders.convert_to_binary_string(a,size=size)
-    b_str = adders.convert_to_binary_string(b,size=size)
-    #on doit ajouter les bits 4 par 4 coz of how cla is coded
+    a_str = bool_circ.convert_to_binary_string(a,size=size)
+    b_str = bool_circ.convert_to_binary_string(b,size=size)
+    #bits must be added 4 by 4
     quotient, remainder = divmod(size, 4)
     res = ""
     for i in range(quotient-1,-1,-1):
@@ -32,7 +32,7 @@ def add_registre_CLA(a,b, size=8):
             res+= c[i]
     res = "0"+res  # adding 0 carry bit"
     g = adders.CLA_adder(quotient-1)
-    registre = adders.create_registre(int(res , 2),size=(quotient)*8+1)
+    registre = bool_circ.create_registre(int(res , 2),size=(quotient)*8+1)
     g.icompose(registre)
     return g.calculate()
     
@@ -49,15 +49,16 @@ def add_registre_naive(a,b, size=8):
     """
         b is added to a
     """
-    a_str = adders.convert_to_binary_string(a,size=size)
-    b_str = adders.convert_to_binary_string(b,size=size)
+    reg_size , n = find_bigger_2_pow(size)
+    a_str = bool_circ.convert_to_binary_string(a,size=reg_size)
+    b_str = bool_circ.convert_to_binary_string(b,size=reg_size)
     res = ""
-    for i in range(size):
+    for i in range(reg_size):
         res +=   b_str[i]+a_str[i]
     res = res + "0" # adding 0 carry bit
-    reg_size , n = find_bigger_2_pow(size)
+    
     g = adders.adder(n)
-    registre = adders.create_registre(int(res , 2),size=2*reg_size+1)
+    registre = bool_circ.create_registre(int(res , 2),size=2*reg_size+1)
     g.icompose(registre)
     return g.calculate()
 
@@ -65,21 +66,23 @@ def add_registre_naive_half(a,b, size=8):
     """
         b is added to a
     """
-    a_str = adders.convert_to_binary_string(a,size=size)
-    b_str = adders.convert_to_binary_string(b,size=size)
+    reg_size , n = find_bigger_2_pow(size)
+    a_str = bool_circ.convert_to_binary_string(a,size=reg_size)
+    b_str = bool_circ.convert_to_binary_string(b,size=reg_size)
     res = ""
-    for i in range(size):
+    for i in range(reg_size):
         res +=   b_str[i]+a_str[i]
     res = res
     res = res[::-1]
-    reg_size , n = find_bigger_2_pow(size)
+    
+
     g,cin = adders.half_adder(n)
     g.get_inputs_ids().remove(cin)
-    #on enleve le bit qui contient deja un 0 des inputs pour que icompose n'y touche pas
-    registre = adders.create_registre(int(res , 2),size=2*reg_size)
+    #We remove the carry bit so that it wont be affected by icompose
+    registre = bool_circ.create_registre(int(res , 2),size=2*reg_size)
     n = g.icompose(registre)
-    g.get_inputs_ids().append(cin+n)
-    #on le rajoute car c'est un input a la fin et calculate en a besoin
+    g.display_graph("test2",verbose=True)
+    g.get_inputs_ids().append(cin+n) #we put him back in for evaluatio
     return g.calculate()
 
 def add_naive(a,b):
@@ -91,17 +94,18 @@ def add_naive(a,b):
 
 
 def check_invarients():
-    enc = adders.encodeur_4bits()
-    dec = adders.decodeur_7bits()
+    #Initialize our circuits
+    enc = bool_circ.encodeur_4bits()
+    dec = bool_circ.decodeur_7bits()
     
     for i in range(-1,4): #-1 -> no error is introduced
-        noise = adders.perturbe_bit(7,[i]) 
-        g = adders(noise.compose(enc))
-        g2 = adders(dec.compose(g))
+        noise = adders.perturbe_bit(7,[i])  
+        g = bool_circ.compose(noise,enc)  #adding perturbations
+        g2 = bool_circ.compose(dec,g)
         
         for i in range(0,16):
-            reg = adders.create_registre(i,size=4)
-            g3 = adders(g2.compose(reg))
+            reg = bool_circ.create_registre(i,size=4)
+            g3 = bool_circ(bool_circ.compose(g2,reg))
             assert (i==g3.calculate())
     
     print("Hamming property verfied when introducing one error at most.")
@@ -109,12 +113,12 @@ def check_invarients():
     mistakes = 0
     for i in range(0,4): 
         for j in range(i+1,4):
-            noise = adders.perturbe_bit(7,[i,j]) 
-            g = adders(noise.compose(enc))
-            g2 = adders(dec.compose(g))
+            noise = bool_circ.perturbe_bit(7,[i,j]) 
+            g = bool_circ.compose(noise,enc)
+            g2 = bool_circ.compose(dec,g)
             for k in range(0,16):
-                reg = adders.create_registre(k,size=4)
-                g3 = adders(g2.compose(reg))
+                reg = bool_circ.create_registre(k,size=4)
+                g3 = bool_circ(bool_circ.compose(g2,reg))
                 mistakes += (i!=g3.calculate())
     print(f"Number of time that the original signal couldn't be retreived when introducing 2 errors: {mistakes} out of {6*16} attempts.")
     
@@ -238,11 +242,6 @@ def print_stats():
     print(f"Variance : {var_n}, deviation : {np.sqrt(var_n)}")
     print(f"Average number of removed edges : {moy_e}")
     print(f"Variance : {var_e}, deviation : {np.sqrt(var_e)}")
-
-
-
-
-#check_invarients()
 
 
 g = adders.half_adder(3)[0]
